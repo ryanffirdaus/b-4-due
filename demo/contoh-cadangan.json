@@ -1,0 +1,452 @@
+{
+  "format": "b4due-backup",
+  "version": 1,
+  "exportedAt": "2026-10-01T02:00:00.000Z",
+  "bills": [
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000001",
+      "name": "Listrik PLN",
+      "category": "electricity",
+      "amount": 487500,
+      "amountIsEstimate": true,
+      "dueDate": "2026-10-20",
+      "anchorDay": 20,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": null,
+      "reminderMinuteOfDay": null,
+      "notes": "ID pelanggan 5412 0000 1234 (contoh)",
+      "paymentUrl": "https://www.pln.co.id",
+      "createdAt": "2026-01-05T03:00:00.000Z",
+      "updatedAt": "2026-09-18T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000002",
+      "name": "BPJS Kesehatan",
+      "category": "health",
+      "amount": 150000,
+      "amountIsEstimate": false,
+      "dueDate": "2026-10-10",
+      "anchorDay": 10,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": [
+        3,
+        1,
+        0
+      ],
+      "reminderMinuteOfDay": 480,
+      "notes": "Iuran kelas 2, 3 orang",
+      "paymentUrl": null,
+      "createdAt": "2026-01-05T03:05:00.000Z",
+      "updatedAt": "2026-09-09T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000003",
+      "name": "Internet rumah",
+      "category": "internet",
+      "amount": 330000,
+      "amountIsEstimate": false,
+      "dueDate": "2026-10-08",
+      "anchorDay": 14,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": null,
+      "reminderMinuteOfDay": null,
+      "notes": null,
+      "paymentUrl": null,
+      "createdAt": "2026-01-05T03:10:00.000Z",
+      "updatedAt": "2026-09-14T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000004",
+      "name": "Cicilan motor",
+      "category": "installment",
+      "amount": 1250000,
+      "amountIsEstimate": false,
+      "dueDate": "2026-10-25",
+      "anchorDay": 25,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": [
+        7,
+        3,
+        1,
+        0
+      ],
+      "reminderMinuteOfDay": 1140,
+      "notes": "Sisa 14 kali",
+      "paymentUrl": null,
+      "createdAt": "2026-01-05T03:15:00.000Z",
+      "updatedAt": "2026-09-25T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000005",
+      "name": "Netflix",
+      "category": "subscription",
+      "amount": 65000,
+      "amountIsEstimate": false,
+      "dueDate": "2026-10-31",
+      "anchorDay": 31,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": [
+        1
+      ],
+      "reminderMinuteOfDay": null,
+      "notes": null,
+      "paymentUrl": null,
+      "createdAt": "2026-02-01T03:00:00.000Z",
+      "updatedAt": "2026-09-30T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000009",
+      "name": "Claude Pro",
+      "category": "subscription",
+      "amount": 357611,
+      "amountIsEstimate": true,
+      "dueDate": "2026-10-12",
+      "anchorDay": 12,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": [
+        1
+      ],
+      "reminderMinuteOfDay": null,
+      "notes": null,
+      "paymentUrl": null,
+      "createdAt": "2026-02-01T03:00:00.000Z",
+      "updatedAt": "2026-09-30T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null,
+      "currency": "USD",
+      "originalAmountMinor": 2000
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000006",
+      "name": "Pajak motor (tahunan)",
+      "category": "vehicleTax",
+      "amount": 285000,
+      "amountIsEstimate": true,
+      "dueDate": "2026-12-03",
+      "anchorDay": 3,
+      "recurrence": "yearly",
+      "intervalMonths": 12,
+      "reminderOffsets": [
+        30,
+        7,
+        1
+      ],
+      "reminderMinuteOfDay": null,
+      "notes": "Bawa KTP dan STNK asli",
+      "paymentUrl": null,
+      "createdAt": "2026-01-05T03:20:00.000Z",
+      "updatedAt": "2026-01-05T03:20:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000007",
+      "name": "Perpanjang STNK (5 tahunan)",
+      "category": "vehicleTax",
+      "amount": null,
+      "amountIsEstimate": false,
+      "dueDate": "2028-12-03",
+      "anchorDay": 3,
+      "recurrence": "every5Years",
+      "intervalMonths": 60,
+      "reminderOffsets": [
+        60,
+        30,
+        7
+      ],
+      "reminderMinuteOfDay": null,
+      "notes": "Perlu cek fisik kendaraan",
+      "paymentUrl": null,
+      "createdAt": "2026-01-05T03:25:00.000Z",
+      "updatedAt": "2026-01-05T03:25:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000008",
+      "name": "Asuransi jiwa",
+      "category": "insurance",
+      "amount": 2100000,
+      "amountIsEstimate": false,
+      "dueDate": "2027-01-15",
+      "anchorDay": 15,
+      "recurrence": "everyNMonths",
+      "intervalMonths": 6,
+      "reminderOffsets": null,
+      "reminderMinuteOfDay": null,
+      "notes": "Premi semesteran",
+      "paymentUrl": null,
+      "createdAt": "2026-01-15T03:00:00.000Z",
+      "updatedAt": "2026-07-15T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    },
+    {
+      "id": "0d6c2f1e-5b7a-4c3e-9a10-000000000010",
+      "name": "Air PDAM",
+      "category": "water",
+      "amount": 98000,
+      "amountIsEstimate": true,
+      "dueDate": "2026-11-05",
+      "anchorDay": 5,
+      "recurrence": "monthly",
+      "intervalMonths": 1,
+      "reminderOffsets": null,
+      "reminderMinuteOfDay": null,
+      "notes": null,
+      "paymentUrl": null,
+      "createdAt": "2026-01-05T03:00:00.000Z",
+      "updatedAt": "2026-09-18T03:00:00.000Z",
+      "archivedAt": null,
+      "deletedAt": null,
+      "snoozedUntil": null
+    }
+  ],
+  "payments": [
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000001",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000001",
+      "dueDate": "2026-09-20",
+      "paidAt": "2026-09-18T03:00:00.000Z",
+      "amount": 471200,
+      "createdAt": "2026-09-18T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000002",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000002",
+      "dueDate": "2026-09-10",
+      "paidAt": "2026-09-09T03:00:00.000Z",
+      "amount": 150000,
+      "createdAt": "2026-09-09T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000003",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000003",
+      "dueDate": "2026-09-14",
+      "paidAt": "2026-09-14T03:00:00.000Z",
+      "amount": 330000,
+      "createdAt": "2026-09-14T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000004",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000004",
+      "dueDate": "2026-09-25",
+      "paidAt": "2026-09-25T12:30:00.000Z",
+      "amount": 1250000,
+      "createdAt": "2026-09-25T12:30:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000005",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000005",
+      "dueDate": "2026-09-30",
+      "paidAt": "2026-09-30T03:00:00.000Z",
+      "amount": 65000,
+      "createdAt": "2026-09-30T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000006",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000001",
+      "dueDate": "2026-05-20",
+      "paidAt": "2026-05-19T03:00:00.000Z",
+      "amount": 452300,
+      "createdAt": "2026-05-19T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000007",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000003",
+      "dueDate": "2026-05-14",
+      "paidAt": "2026-05-13T03:00:00.000Z",
+      "amount": 330000,
+      "createdAt": "2026-05-13T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000008",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000005",
+      "dueDate": "2026-05-28",
+      "paidAt": "2026-05-27T03:00:00.000Z",
+      "amount": 65000,
+      "createdAt": "2026-05-27T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000009",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000004",
+      "dueDate": "2026-05-25",
+      "paidAt": "2026-05-24T03:00:00.000Z",
+      "amount": 1250000,
+      "createdAt": "2026-05-24T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000010",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000002",
+      "dueDate": "2026-05-10",
+      "paidAt": "2026-05-09T03:00:00.000Z",
+      "amount": 150000,
+      "createdAt": "2026-05-09T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000011",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000001",
+      "dueDate": "2026-06-20",
+      "paidAt": "2026-06-19T03:00:00.000Z",
+      "amount": 468900,
+      "createdAt": "2026-06-19T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000012",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000003",
+      "dueDate": "2026-06-14",
+      "paidAt": "2026-06-13T03:00:00.000Z",
+      "amount": 330000,
+      "createdAt": "2026-06-13T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000013",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000005",
+      "dueDate": "2026-06-28",
+      "paidAt": "2026-06-27T03:00:00.000Z",
+      "amount": 65000,
+      "createdAt": "2026-06-27T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000014",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000004",
+      "dueDate": "2026-06-25",
+      "paidAt": "2026-06-24T03:00:00.000Z",
+      "amount": 1250000,
+      "createdAt": "2026-06-24T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000015",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000002",
+      "dueDate": "2026-06-10",
+      "paidAt": "2026-06-09T03:00:00.000Z",
+      "amount": 150000,
+      "createdAt": "2026-06-09T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000016",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000001",
+      "dueDate": "2026-07-20",
+      "paidAt": "2026-07-19T03:00:00.000Z",
+      "amount": 489100,
+      "createdAt": "2026-07-19T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000017",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000003",
+      "dueDate": "2026-07-14",
+      "paidAt": "2026-07-13T03:00:00.000Z",
+      "amount": 330000,
+      "createdAt": "2026-07-13T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000018",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000005",
+      "dueDate": "2026-07-28",
+      "paidAt": "2026-07-27T03:00:00.000Z",
+      "amount": 65000,
+      "createdAt": "2026-07-27T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000019",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000004",
+      "dueDate": "2026-07-25",
+      "paidAt": "2026-07-24T03:00:00.000Z",
+      "amount": 1250000,
+      "createdAt": "2026-07-24T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000020",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000002",
+      "dueDate": "2026-07-10",
+      "paidAt": "2026-07-09T03:00:00.000Z",
+      "amount": 150000,
+      "createdAt": "2026-07-09T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000021",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000001",
+      "dueDate": "2026-08-20",
+      "paidAt": "2026-08-19T03:00:00.000Z",
+      "amount": 476500,
+      "createdAt": "2026-08-19T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000022",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000003",
+      "dueDate": "2026-08-14",
+      "paidAt": "2026-08-13T03:00:00.000Z",
+      "amount": 330000,
+      "createdAt": "2026-08-13T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000023",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000005",
+      "dueDate": "2026-08-28",
+      "paidAt": "2026-08-27T03:00:00.000Z",
+      "amount": 65000,
+      "createdAt": "2026-08-27T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000024",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000004",
+      "dueDate": "2026-08-25",
+      "paidAt": "2026-08-24T03:00:00.000Z",
+      "amount": 1250000,
+      "createdAt": "2026-08-24T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000025",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000002",
+      "dueDate": "2026-08-10",
+      "paidAt": "2026-08-09T03:00:00.000Z",
+      "amount": 150000,
+      "createdAt": "2026-08-09T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000026",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000009",
+      "dueDate": "2026-09-12",
+      "paidAt": "2026-09-12T03:00:00.000Z",
+      "amount": 354200,
+      "createdAt": "2026-09-12T03:00:00.000Z"
+    },
+    {
+      "id": "7a3e9c55-1f20-4b8d-8c11-000000000027",
+      "billId": "0d6c2f1e-5b7a-4c3e-9a10-000000000010",
+      "dueDate": "2026-10-05",
+      "paidAt": "2026-10-04T03:00:00.000Z",
+      "amount": 96500,
+      "createdAt": "2026-10-04T03:00:00.000Z"
+    }
+  ],
+  "settings": {
+    "reminder.offsets": "[7,3,1,0]",
+    "reminder.minuteOfDay": "540"
+  }
+}
