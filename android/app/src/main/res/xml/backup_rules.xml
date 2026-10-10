@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android Auto Backup (Android 6-11). Only the bill database is backed up, to
+  the user's own Google Drive. Scheduled-notification state is deliberately
+  excluded: the app rebuilds it from the database after a restore.
+-->
+<full-backup-content>
+    <include domain="file" path="b4due.sqlite" />
+    <include domain="file" path="b4due.sqlite-wal" />
+</full-backup-content>
