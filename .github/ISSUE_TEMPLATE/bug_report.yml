@@ -1,0 +1,39 @@
+name: Laporan bug / Bug report
+description: Ada yang tidak berjalan semestinya.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Apa yang terjadi?
+      description: Jelaskan bugnya dan apa yang seharusnya terjadi.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Langkah untuk mengulang
+      placeholder: |
+        1. Buka ...
+        2. Tekan ...
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Merek, tipe HP, dan versi Android
+      placeholder: Xiaomi Redmi Note 12, Android 14
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Versi B4Due
+      placeholder: 0.1.0
+  - type: textarea
+    id: battery
+    attributes:
+      label: Pengaturan baterai yang sudah dicoba (untuk masalah notifikasi)
+  - type: markdown
+    attributes:
+      value: "**Jangan** melampirkan file cadangan asli; isinya data pribadi."

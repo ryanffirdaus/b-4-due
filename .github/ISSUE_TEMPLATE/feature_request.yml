@@ -1,0 +1,23 @@
+name: Usulan fitur / Feature request
+description: Ide untuk membuat B4Due lebih berguna.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Masalah apa yang ingin diselesaikan?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Usulan solusi
+    validations:
+      required: true
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Prinsip B4Due
+      options:
+        - label: Tetap bekerja tanpa akun, tanpa server, dan tanpa koneksi (internet hanya untuk kurs).
+          required: true
