@@ -1,0 +1,22 @@
+B4Due reminds you of bills and subscriptions before they are due: electricity, water, internet, BPJS health insurance, loans, vehicle tax, insurance, streaming services and more. Built for Indonesia, with an Indonesian-first interface and English included.
+
+<b>Private by design</b>
+<ul>
+<li>No account, server, ads or analytics.</li>
+<li>Your data stays on your phone. The internet is only used to download exchange rates, with no personal data.</li>
+</ul>
+
+<b>Features</b>
+<ul>
+<li>Reminders 7, 3 and 1 day before and on the due date, at the time you choose.</li>
+<li>"Paid" and "Remind me tomorrow" actions on the notification.</li>
+<li>One-off, monthly, yearly, 5-yearly or every-N-months bills.</li>
+<li>Templates for common Indonesian bills.</li>
+<li>Prices in foreign currencies (USD, EUR, SGD, JPY…) with a rupiah estimate at today's rate.</li>
+<li>Home screen with the monthly total, swipe to mark paid, a bill calendar and spending statistics.</li>
+<li>Light and dark mode.</li>
+<li>JSON backup, CSV export and Android Auto Backup.</li>
+<li>Optional PIN or biometric app lock.</li>
+<li>Optional calendar events as a backup reminder.</li>
+<li>Battery-saver guide per phone brand.</li>
+</ul>

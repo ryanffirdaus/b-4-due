@@ -1,0 +1,22 @@
+B4Due mengingatkan tagihan dan langganan Anda sebelum jatuh tempo: listrik PLN, PDAM, internet, BPJS, cicilan, pajak kendaraan (tahunan dan 5 tahunan), asuransi, hingga Netflix dan Spotify.
+
+<b>Privasi sejak awal</b>
+<ul>
+<li>Tanpa akun, server, iklan, atau analytics.</li>
+<li>Data hanya ada di HP Anda. Internet hanya dipakai untuk mengunduh kurs mata uang, tanpa data pribadi.</li>
+</ul>
+
+<b>Fitur</b>
+<ul>
+<li>Pengingat H-7, H-3, H-1, dan hari-H di jam yang Anda pilih, bisa diatur per tagihan.</li>
+<li>Tombol "Sudah dibayar" dan "Ingatkan besok" langsung di notifikasi.</li>
+<li>Tagihan sekali, bulanan, tahunan, 5 tahunan, atau tiap N bulan.</li>
+<li>Template tagihan umum Indonesia.</li>
+<li>Harga dalam mata uang asing (USD, EUR, SGD, JPY, dll.) dengan perkiraan rupiah dari kurs hari ini.</li>
+<li>Beranda dengan total bulan ini, geser kartu untuk menandai lunas, kalender tagihan, dan statistik pengeluaran.</li>
+<li>Mode terang dan gelap.</li>
+<li>Cadangan file JSON, ekspor CSV, dan Android Auto Backup.</li>
+<li>Kunci aplikasi dengan PIN atau sidik jari (opsional).</li>
+<li>Cadangan pengingat lewat kalender HP (opsional).</li>
+<li>Panduan pengaturan baterai per merek HP agar notifikasi tidak terlewat.</li>
+</ul>

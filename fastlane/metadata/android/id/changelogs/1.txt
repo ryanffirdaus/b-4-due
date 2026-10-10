@@ -1,0 +1,1 @@
+Rilis pertama: pengingat tagihan, aksi notifikasi, riwayat, cadangan, kunci aplikasi, kalender, dan panduan baterai.
