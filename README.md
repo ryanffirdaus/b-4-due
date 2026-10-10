@@ -62,6 +62,27 @@ dolar). Permintaan itu tidak membawa data Anda sama sekali.
 
 > Setelah terpasang, Anda boleh mematikan lagi "Izinkan dari sumber ini". Untuk pembaruan, cukup pasang APK versi baru di atas versi lama; data tidak hilang.
 
+### Pembaruan otomatis (Obtainium)
+
+[Obtainium](https://github.com/ImranR98/Obtainium) (gratis, open source) memeriksa GitHub
+Releases dan memasang versi baru B4Due tanpa Play Store.
+
+1. Pasang Obtainium dari [halaman rilisnya](https://github.com/ImranR98/Obtainium/releases/latest) (`app-arm64-v8a-release.apk`).
+2. Di Obtainium, tekan **Tambah aplikasi**, isi URL `https://github.com/ryanffirdaus/b-4-due`.
+3. Pilih jalurnya:
+   - **Stabil**: biarkan pengaturan bawaan. Anda hanya mendapat rilis resmi (`v0.1.0`, `v0.2.0`, ...).
+   - **Nightly** (versi terbaru dari setiap perubahan di `main`, untuk penguji): aktifkan
+     **Sertakan prarilis** (*Include prereleases*). Setiap commit yang lulus CI menjadi
+     pre-release `X.Y.Z-nightly.N` beberapa menit kemudian.
+4. Isi **Filter APK** dengan `arm64-v8a` (atau `universal` untuk HP lama), lalu **Tambah** dan **Instal**.
+5. Agar pembaruan terpasang sendiri di latar belakang, aktifkan *Pembaruan latar belakang* di
+   pengaturan Obtainium (Android 12+ dapat memasang tanpa konfirmasi untuk aplikasi yang
+   dipasang lewat Obtainium).
+
+> Rilis resmi dan nightly ditandatangani dengan kunci yang sama dan nomor build-nya selalu naik,
+> jadi Anda bisa berpindah jalur kapan saja tanpa kehilangan data. APK dari `flutter run`/debug
+> memakai kunci lain: hapus dulu versi debug sebelum memasang dari Releases.
+
 <details>
 <summary>Ingin memastikan file APK asli? (opsional)</summary>
 
@@ -242,6 +263,8 @@ The UI is Indonesian-first with English included.
 **Install:** download `b4due-…-arm64-v8a.apk` (or `universal`) from
 [Releases](https://github.com/ryanffirdaus/b-4-due/releases/latest), allow installs from that
 source when Android asks, and follow the in-app setup. It ends with a test notification.
+For automatic updates add the repository to [Obtainium](https://github.com/ImranR98/Obtainium);
+enable *Include prereleases* to follow the nightly builds published after every green CI run on `main`.
 
 **Missed notifications:** usually caused by the phone's battery saver. Open *Pengaturan >
 Pengaturan baterai* in the app for steps tailored to your phone's brand (see also
