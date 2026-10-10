@@ -32,7 +32,13 @@ Perlu JDK 17 dan Android SDK 36. Lihat bagian *Untuk pengembang* di [README](REA
 
 1. **Setiap perubahan dimulai dari issue.** Buka issue (bug atau usulan fitur) dan catat nomornya.
 2. Buat branch dari `main`, misalnya `feat/12-yearly-recurrence`, lalu kirim pull request kecil
-   yang fokus pada satu hal. Tulis `Closes #12` di deskripsi PR.
+   yang fokus pada satu hal. Tulis `Closes #12` di deskripsi PR. Judul PR juga berformat
+   `type(scope): deskripsi` **tanpa** nomor; saat squash merge GitHub menambahkan nomor PR,
+   misalnya `feat(bills): add yearly recurrence (#13)`.
+
+   `main` dilindungi: tidak bisa di-push langsung, di-force-push, atau dihapus. PR hanya bisa
+   di-merge (squash atau rebase) setelah job CI *Commit messages*, *Analyze & test*, dan
+   *Release build & permission audit* lulus.
 3. Setiap commit memakai [Conventional Commits](https://www.conventionalcommits.org/) **dengan
    scope dan nomor issue**:
 
@@ -84,7 +90,8 @@ B4Due memakai [Semantic Versioning](https://semver.org/) yang diatur otomatis ol
 
 **English:** contributions are welcome. Non-negotiables: the network is used only for anonymous
 exchange-rate downloads (no analytics or trackers, everything works offline), no accounts or servers, and plain Indonesian UI text that works at large font
-sizes. Start every change from an issue; commit subjects use
+sizes. `main` is protected: changes land only through pull requests that pass CI (squash
+or rebase, linear history, no force pushes). Start every change from an issue; commit subjects use
 Conventional Commits with a scope and the issue number, e.g. `feat(bills): add yearly
 recurrence (#12)` (checked by CI). Never add AI co-author trailers (Claude, Copilot, ChatGPT…); CI rejects them. Versions are semver and released by release-please from
 those commits; never edit the version or CHANGELOG by hand. Keep code and comments in English, put UI strings in the ARB
