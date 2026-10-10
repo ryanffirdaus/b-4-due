@@ -45,6 +45,8 @@ Perlu JDK 17 dan Android SDK 36. Lihat bagian *Untuk pengembang* di [README](REA
    `chore`, `revert`. Perubahan yang merusak kompatibilitas diberi `!` (`feat(backup)!: ...`)
    dan paragraf `BREAKING CHANGE:` di badan commit. CI menolak commit yang tidak sesuai; cek
    sendiri dengan `tool/check_commits.sh origin/main..HEAD`.
+   Commit hanya atas nama manusia: **tanpa** trailer `Co-Authored-By` untuk Claude, Copilot,
+   ChatGPT, atau alat AI lain. CI menolak commit yang memuatnya.
 4. Kode, nama variabel, dan komentar dalam **bahasa Inggris**; teks UI lewat file ARB.
 5. Sebelum PR: `dart format lib test integration_test`, `flutter analyze --fatal-infos`, dan `flutter test`.
 
@@ -84,7 +86,7 @@ B4Due memakai [Semantic Versioning](https://semver.org/) yang diatur otomatis ol
 exchange-rate downloads (no analytics or trackers, everything works offline), no accounts or servers, and plain Indonesian UI text that works at large font
 sizes. Start every change from an issue; commit subjects use
 Conventional Commits with a scope and the issue number, e.g. `feat(bills): add yearly
-recurrence (#12)` (checked by CI). Versions are semver and released by release-please from
+recurrence (#12)` (checked by CI). Never add AI co-author trailers (Claude, Copilot, ChatGPT…); CI rejects them. Versions are semver and released by release-please from
 those commits; never edit the version or CHANGELOG by hand. Keep code and comments in English, put UI strings in the ARB
 files, and run format, analyze and tests before opening a PR. Schema changes need a migration
 step plus a migration test; scheduling changes need planner tests.

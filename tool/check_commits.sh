@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Checks that commit subjects follow Conventional Commits with a scope and
-# reference their issue, e.g. "feat(bills): add yearly recurrence (#12)".
+# reference their issue, e.g. "feat(bills): add yearly recurrence (#12)",
+# and that no commit carries AI attribution (Co-Authored-By Claude, etc.).
 # Usage: tool/check_commits.sh <git revision range>   (default: origin/main..HEAD)
 set -euo pipefail
 
@@ -19,6 +20,15 @@ while IFS= read -r line; do
     bad=1
   fi
 done < <(git log --format='%h %s' "$range")
+
+# Commits are authored by people only: no AI co-author trailers or banners.
+ai='^co-authored-by:.*(claude|anthropic|openai|copilot|chatgpt)|generated with .*(claude|ai)|noreply@anthropic\.com'
+while IFS= read -r sha; do
+  if git log -1 --format=%B "$sha" | grep -qiE "$ai"; then
+    echo "::error::$(git log -1 --format='%h %s' "$sha") contains AI attribution; remove the trailer"
+    bad=1
+  fi
+done < <(git rev-list "$range")
 
 if [[ $bad -eq 1 ]]; then
   echo "Allowed types: feat fix perf refactor style test docs build ci chore revert." >&2
