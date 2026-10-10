@@ -93,7 +93,7 @@ jobs:
           cp "$out/app-release.apk"             "dist/b4due-$VERSION-universal.apk"
 
       - name: Audit permissions (allowlist only)
-        run: tool/check_apk_permissions.sh dist/*.apk
+        run: bash tool/check_apk_permissions.sh dist/*.apk
 
       - name: Verify signatures and write checksums
         run: |

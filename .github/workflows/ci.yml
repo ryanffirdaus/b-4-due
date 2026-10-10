@@ -32,7 +32,7 @@ jobs:
           else
             range="$BASE..$HEAD"
           fi
-          tool/check_commits.sh "$range"
+          bash tool/check_commits.sh "$range"
 
   test:
     name: Analyze & test
@@ -103,7 +103,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Only allowlisted permissions (INTERNET is for exchange rates only)
-        run: tool/check_apk_permissions.sh build/app/outputs/flutter-apk/app-release.apk
+        run: bash tool/check_apk_permissions.sh build/app/outputs/flutter-apk/app-release.apk
 
   device:
     name: Integration test on an emulator
