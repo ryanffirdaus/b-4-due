@@ -1,3 +1,5 @@
+import 'dart:ui' show Color;
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -43,6 +45,7 @@ class LocalNotificationGateway implements NotificationGateway {
       priority: Priority.high,
       category: AndroidNotificationCategory.reminder,
       icon: 'ic_stat_b4due',
+      color: const Color(0xFF459AF8), // Electric Blue, tints the small icon
       actions: withActions
           ? [
               AndroidNotificationAction(

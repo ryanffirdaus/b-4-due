@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://github.com/ryanffirdaus/b-4-due/actions/workflows/ci.yml"><img src="https://github.com/ryanffirdaus/b-4-due/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/lisensi-MIT-f2b84b" alt="Lisensi MIT"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/lisensi-MIT-459af8" alt="Lisensi MIT"></a>
 </p>
 
 <p align="center"><a href="#english">English below</a></p>

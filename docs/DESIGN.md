@@ -5,6 +5,16 @@ spacing, rounded cards. Everything below is implemented in `lib/app/theme.dart`
 (`Palette` for colours, `Tokens` for spacing and radii, `buildAppTheme` for the
 Material theme). Widgets read colours with `context.palette`, never hard-coded values.
 
+## Logo
+
+A white calendar card with a Midnight Navy header and a check mark in primary text blue
+(`#1C6DD0`), on a diagonal Electric Blue (`#459AF8`) to Cornflower (`#375390`) gradient.
+Sources: the adaptive-icon vectors in `android/app/src/main/res/drawable/ic_launcher_*.xml`
+(including a monochrome version for themed icons) and `tool/generate_icons.py`, which renders
+the same geometry as PNG for older Android, iOS and `docs/images/icon-512.png`. The
+notification icon is the same mark as a white silhouette, tinted Electric Blue. The splash
+screen uses the page background (`#F7F8FC` light, `#0F172A` dark).
+
 ## Colour
 
 | Role | Light | Dark | Use |

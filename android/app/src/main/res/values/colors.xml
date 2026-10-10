@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Matches AppColors.background in lib/app/theme.dart. -->
-    <color name="b4due_background">#111316</color>
+    <!-- Window and splash background; matches Palette.light.background in
+         lib/app/theme.dart. values-night holds the dark variant. -->
+    <color name="b4due_background">#F7F8FC</color>
 </resources>

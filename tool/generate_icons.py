@@ -1,8 +1,9 @@
 """Renders the B4Due launcher icon (PNG fallbacks for Android < 8 and iOS).
 
-The artwork is the same geometry as the adaptive-icon vector in
-android/app/src/main/res/drawable/ic_launcher_foreground.xml: a calendar page
-with a check mark, amber on the app's dark background.
+The artwork is the same geometry as the adaptive-icon vectors in
+android/app/src/main/res/drawable/ic_launcher_{background,foreground}.xml:
+a white calendar card with a Midnight Navy header and a blue check mark on an
+Electric Blue to Cornflower gradient (docs/DESIGN.md).
 
     python -m pip install pillow
     python tool/generate_icons.py
@@ -12,47 +13,59 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-BACKGROUND = (0x11, 0x13, 0x16, 255)
-ACCENT = (0xF2, 0xB8, 0x4B, 255)
+GRADIENT_START = (0x45, 0x9A, 0xF8)  # Electric Blue, top left
+GRADIENT_END = (0x37, 0x53, 0x90)  # Cornflower, bottom right
+CARD = (0xFF, 0xFF, 0xFF, 255)
+HEADER = (0x20, 0x29, 0x4C, 255)  # Midnight Navy
+CHECK = (0x1C, 0x6D, 0xD0, 255)
 
 # Geometry in the 108-unit adaptive-icon viewport.
 VIEWPORT = 108
 
 
-def render(size: int, *, rounded: bool, zoom: float = 1.4) -> Image.Image:
+def _gradient(s: int) -> Image.Image:
+    """Diagonal linear gradient, like the vector's startX/Y=0 to endX/Y=108."""
+    img = Image.new('RGBA', (s, s))
+    px = img.load()
+    for y in range(s):
+        for x in range(s):
+            t = (x + y) / (2 * (s - 1))
+            px[x, y] = tuple(round(a + (b - a) * t) for a, b in zip(GRADIENT_START, GRADIENT_END)) + (255,)
+    return img
+
+
+def render(size: int, *, rounded: bool, zoom: float = 1.3) -> Image.Image:
     """[zoom] enlarges the glyph: PNG icons have no adaptive-icon safe
     zone to respect, so the glyph can fill more of the square."""
     scale = 4  # supersample for smooth edges
     s = size * scale
     u = s / VIEWPORT * zoom
     offset = (s - VIEWPORT * u) / 2
-    img = Image.new('RGBA', (s, s), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
 
+    img = _gradient(s)
     if rounded:
-        d.rounded_rectangle((0, 0, s - 1, s - 1), radius=int(s * 0.22), fill=BACKGROUND)
-    else:
-        d.rectangle((0, 0, s, s), fill=BACKGROUND)
+        mask = Image.new('L', (s, s), 0)
+        ImageDraw.Draw(mask).rounded_rectangle((0, 0, s - 1, s - 1), radius=int(s * 0.22), fill=255)
+        img.putalpha(mask)
+    d = ImageDraw.Draw(img)
 
     def x(v):
         return offset + v * u
 
-    w = int(4 * u)
-    # Calendar page.
-    d.rounded_rectangle((x(34), x(38), x(74), x(74)), radius=6 * u, outline=ACCENT, width=w)
-    d.line((x(34), x(48), x(74), x(48)), fill=ACCENT, width=w)
+    # Card, then the header band clipped to the card's rounded top.
+    d.rounded_rectangle((x(30), x(34), x(78), x(78)), radius=8 * u, fill=CARD)
+    d.rounded_rectangle((x(30), x(34), x(78), x(54)), radius=8 * u, fill=HEADER)
+    d.rectangle((x(30), x(46), x(78), x(54)), fill=CARD)
     # Binder rings.
-    for rx in (44, 64):
-        d.line((x(rx), x(33), x(rx), x(42)), fill=ACCENT, width=w)
-        for ry in (33, 42):
-            r = w / 2
-            d.ellipse((x(rx) - r, x(ry) - r, x(rx) + r, x(ry) + r), fill=ACCENT)
-    # Check mark.
-    points = [(x(43), x(60)), (x(51), x(67)), (x(66), x(53))]
-    d.line(points, fill=ACCENT, width=int(4.5 * u), joint='curve')
-    for px, py in (points[0], points[-1]):
-        r = 4.5 * u / 2
-        d.ellipse((px - r, py - r, px + r, py + r), fill=ACCENT)
+    for rx in (39, 63):
+        d.rounded_rectangle((x(rx), x(28), x(rx + 6), x(40)), radius=1.5 * u, fill=CARD)
+    # Check mark with round caps and joint.
+    points = [(x(42), x(61)), (x(51), x(69)), (x(67), x(53))]
+    w = 6 * u
+    d.line(points, fill=CHECK, width=int(w), joint='curve')
+    for px, py in points:
+        r = w / 2
+        d.ellipse((px - r, py - r, px + r, py + r), fill=CHECK)
 
     return img.resize((size, size), Image.LANCZOS)
 

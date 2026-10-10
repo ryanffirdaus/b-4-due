@@ -37,7 +37,7 @@ class EventideCalendarGateway implements CalendarGateway {
     try {
       final calendar = await _eventide.createCalendar(
         title: name,
-        color: const Color(0xFFF2B84B),
+        color: const Color(0xFF459AF8), // Electric Blue
       );
       return CalendarInfo(id: calendar.id, name: calendar.title);
     } on ETPermissionException {
