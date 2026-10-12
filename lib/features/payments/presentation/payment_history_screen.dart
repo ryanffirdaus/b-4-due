@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../domain/payment.dart';
 
@@ -17,8 +17,8 @@ class PaymentHistoryScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final history = ref.watch(paymentHistoryProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.historyTitle)),
+    return B4Scaffold(
+      topBar: B4TopBar(title: l10n.historyTitle),
       body: switch (history) {
         AsyncData(:final value) when value.isEmpty => Center(
           child: Padding(
@@ -26,14 +26,15 @@ class PaymentHistoryScreen extends ConsumerWidget {
             child: Text(
               l10n.historyEmpty,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge
-                  ?.copyWith(color: context.palette.textSecondary),
+              style: context.text.bodyLarge.copyWith(
+                color: context.palette.textSecondary,
+              ),
             ),
           ),
         ),
         AsyncData(:final value) => _HistoryList(entries: value),
         AsyncError(:final error) => Center(child: Text('$error')),
-        _ => const Center(child: CircularProgressIndicator()),
+        _ => const B4LoadingView(),
       },
     );
   }
@@ -47,7 +48,6 @@ class _HistoryList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final format = context.formatters;
-    final theme = Theme.of(context);
 
     // Group by the local month of payment, keeping newest-first order.
     final groups = <String, List<PaymentEntry>>{};
@@ -60,31 +60,19 @@ class _HistoryList extends StatelessWidget {
     }
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      padding: const EdgeInsets.fromLTRB(
+        Tokens.pagePadding,
+        0,
+        Tokens.pagePadding,
+        32,
+      ),
       children: [
         for (final key in groups.keys) ...[
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 16, 4, 10),
-            child: Semantics(
-              header: true,
-              child: Text(
-                labels[key]!,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: context.palette.textSecondary,
-                ),
-              ),
-            ),
-          ),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                for (var i = 0; i < groups[key]!.length; i++) ...[
-                  if (i > 0) const Divider(indent: 16),
-                  _PaymentTile(entry: groups[key]![i]),
-                ],
-              ],
-            ),
+          B4GroupLabel(labels[key]!),
+          B4ListGroup(
+            children: [
+              for (final entry in groups[key]!) _PaymentTile(entry: entry),
+            ],
           ),
         ],
       ],
@@ -105,20 +93,16 @@ class _PaymentTile extends StatelessWidget {
     final amount = payment.amount;
     final paidOn = LocalDate.fromDateTime(payment.paidAt.toLocal());
 
-    return ListTile(
-      title: Text(entry.billName),
-      subtitle: Text(
-        '${l10n.historyPaidOn(format.longDate(paidOn))}\n'
-        '${l10n.historyPeriod(format.longDate(payment.dueDate))}',
-      ),
-      isThreeLine: true,
+    return B4ListRow(
+      icon: RemixIcons.checkLine,
+      tone: B4Tone.success,
+      title: entry.billName,
+      subtitle:
+          '${l10n.historyPaidOn(format.longDate(paidOn))}\n'
+          '${l10n.historyPeriod(format.longDate(payment.dueDate))}',
       trailing: amount == null
           ? null
-          : Text(
-              format.rupiah(amount),
-              style: Theme.of(context).textTheme.bodyLarge
-                  ?.copyWith(fontWeight: FontWeight.w600),
-            ),
+          : Text(format.rupiah(amount), style: context.text.titleSmall),
     );
   }
 }
