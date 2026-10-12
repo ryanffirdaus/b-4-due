@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../app_lock_controller.dart';
 import '../domain/pin_hasher.dart';
 import 'pin_pad.dart';
@@ -50,12 +51,12 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
           });
           return;
         }
-        final messenger = ScaffoldMessenger.of(context);
+        final toast = B4Toast.of(context);
         final config = ref.read(appLockConfigProvider);
         await ref
             .read(appLockConfigProvider.notifier)
             .setPin(pin, biometric: config.biometricEnabled);
-        messenger.showSnackBar(SnackBar(content: Text(l10n.securityPinSaved)));
+        toast.show(l10n.securityPinSaved);
         if (mounted) context.pop();
     }
   }
@@ -68,13 +69,16 @@ class _SetPinScreenState extends ConsumerState<SetPinScreen> {
       _Stage.enter => l10n.securitySetPinTitle,
       _Stage.confirm => l10n.securityConfirmPinTitle,
     };
-    return Scaffold(
-      appBar: AppBar(),
+    return B4Scaffold(
+      topBar: const B4TopBar(),
       body: Center(
         child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 24),
           child: Column(
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleLarge),
+              const B4IconTile(icon: RemixIcons.key2Line, size: 64),
+              const SizedBox(height: 20),
+              Text(title, style: context.text.headlineLarge),
               const SizedBox(height: 24),
               PinPad(
                 // A new key per stage resets the entered digits.

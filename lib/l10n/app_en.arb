@@ -303,5 +303,18 @@
   "detailDeleteTitle": "Delete this bill?",
   "detailDeleteBody": "Its reminders will stop. Payment history is kept.",
   "detailDeleted": "Bill deleted.",
-  "detailNotFound": "Bill not found. It may have been deleted."
+  "detailNotFound": "Bill not found. It may have been deleted.",
+
+  "actionBack": "Back",
+  "textCut": "Cut",
+  "textCopy": "Copy",
+  "textPaste": "Paste",
+  "textSelectAll": "Select all",
+  "textCopied": "Copied",
+  "pickerDateTitle": "Choose a date",
+  "pickerTimeTitle": "Choose a time",
+  "pickerChoose": "Choose",
+  "pickerHour": "Hour",
+  "pickerMinute": "Minute",
+  "subsFilterRemove": "Remove filter"
 }
