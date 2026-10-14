@@ -1,14 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../app/routes.dart';
-import '../../../app/shell.dart';
-import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../bills/domain/bill_status.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../bills/presentation/widgets/status_ui.dart';
@@ -34,10 +32,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       setState(() => _month = _month.addMonths(months, preferredDay: 1));
 
   Future<void> _openDay(LocalDate day, List<CalendarEntry> entries) {
-    return showModalBottomSheet<void>(
+    return showB4Sheet<void>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
+      title: context.formatters.longDateWithDay(day),
       builder: (context) => _DaySheet(day: day, entries: entries),
     );
   }
@@ -46,8 +43,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final theme = Theme.of(context);
-    final p = context.palette;
     final today = ref.watch(todayProvider);
     final entries = calendarMonth(
       bills: ref.watch(activeBillsProvider).value ?? const [],
@@ -56,102 +51,45 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       today: today,
     );
 
-    // Monday-first grid, as on Indonesian calendars.
-    final leading = (DateTime.utc(_month.year, _month.month).weekday - 1) % 7;
-    final days = LocalDate.daysInMonth(_month.year, _month.month);
-    final weekdays = [
-      for (var i = 0; i < 7; i++)
-        DateFormat.E(Localizations.localeOf(context).toLanguageTag())
-            .format(DateTime.utc(2024, 1, 1 + i)), // 1 Jan 2024 was a Monday
-    ];
-
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: Tokens.sectionGap),
-          children: [
-            TabTitle(l10n.navCalendar),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Tokens.pagePadding,
-              ),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          IconButton(
-                            tooltip: l10n.calendarPrevMonth,
-                            onPressed: () => _shift(-1),
-                            icon: const Icon(Icons.chevron_left_rounded),
-                          ),
-                          Expanded(
-                            child: Text(
-                              format.monthYear(_month),
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.headlineMedium,
-                            ),
-                          ),
-                          IconButton(
-                            tooltip: l10n.calendarNextMonth,
-                            onPressed: () => _shift(1),
-                            icon: const Icon(Icons.chevron_right_rounded),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          for (final w in weekdays)
-                            Expanded(
-                              child: Text(
-                                w,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: p.textSecondary,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: leading + days,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 7,
-                              childAspectRatio: 0.82,
-                            ),
-                        itemBuilder: (context, index) {
-                          if (index < leading) return const SizedBox.shrink();
-                          final day = LocalDate(
-                            _month.year,
-                            _month.month,
-                            index - leading + 1,
-                          );
-                          final dayEntries = entries[day] ?? const [];
-                          return _DayCell(
-                            day: day,
-                            isToday: day == today,
-                            entries: dayEntries,
-                            onTap: () => _openDay(day, dayEntries),
-                          );
-                        },
-                      ),
-                    ],
+    return B4Scaffold(
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: Tokens.sectionGap),
+        children: [
+          B4PageTitle(l10n.navCalendar),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Tokens.pagePadding,
+              vertical: 8,
+            ),
+            child: B4Card(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 12),
+              child: Column(
+                children: [
+                  B4MonthHeader(
+                    title: format.monthYear(_month),
+                    onPrevious: () => _shift(-1),
+                    onNext: () => _shift(1),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  B4MonthGrid(
+                    month: _month,
+                    dayBuilder: (context, day) {
+                      final dayEntries = entries[day] ?? const [];
+                      return _DayCell(
+                        day: day,
+                        isToday: day == today,
+                        entries: dayEntries,
+                        onTap: () => _openDay(day, dayEntries),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: Tokens.cardGap),
-            const _Legend(),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          const _Legend(),
+        ],
       ),
     );
   }
@@ -173,54 +111,52 @@ class _DayCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final theme = Theme.of(context);
     final format = context.formatters;
-    return Semantics(
-      button: true,
-      label: '${format.longDate(day)}, ${entries.length}',
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isToday ? p.primary : null,
-              ),
-              child: Text(
-                '${day.day}',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: isToday ? p.onPrimary : p.textPrimary,
-                  fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
-                ),
+    return Pressable(
+      onTap: onTap,
+      semanticLabel: '${format.longDate(day)}, ${entries.length}',
+      excludeChildSemantics: true,
+      borderRadius: BorderRadius.circular(14),
+      pressedScale: 0.92,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: isToday ? p.primary : null,
+            ),
+            child: Text(
+              '${day.day}',
+              style: context.text.bodyLarge.copyWith(
+                color: isToday ? p.onPrimary : p.textPrimary,
+                fontWeight: isToday ? FontWeight.w700 : FontWeight.w500,
               ),
             ),
-            const SizedBox(height: 4),
-            SizedBox(
-              height: 8,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (final e in entries.take(3))
-                    Container(
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                      decoration: BoxDecoration(
-                        color: e.status.color(p),
-                        shape: BoxShape.circle,
-                      ),
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                for (final e in entries.take(3))
+                  Container(
+                    width: 6,
+                    height: 6,
+                    margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                    decoration: BoxDecoration(
+                      color: e.status.color(p),
+                      shape: BoxShape.circle,
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -234,7 +170,7 @@ class _Legend extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final p = context.palette;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Tokens.pagePadding),
+      padding: const EdgeInsets.symmetric(horizontal: Tokens.pagePadding + 4),
       child: Wrap(
         spacing: 16,
         runSpacing: 8,
@@ -258,10 +194,7 @@ class _Legend extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  s.label(l10n),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
+                Text(s.label(l10n), style: context.text.bodyMedium),
               ],
             ),
         ],
@@ -280,8 +213,7 @@ class _DaySheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final theme = Theme.of(context);
-    final p = context.palette;
+    final text = context.text;
     final defaults =
         ref.watch(reminderSettingsProvider).value ?? const ReminderSettings();
 
@@ -299,89 +231,66 @@ class _DaySheet extends ConsumerWidget {
           .join(', ');
     }
 
-    return SafeArea(
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.fromLTRB(
-          Tokens.pagePadding,
-          0,
-          Tokens.pagePadding,
-          Tokens.pagePadding,
-        ),
-        children: [
-          Text(
-            format.longDateWithDay(day),
-            style: theme.textTheme.headlineMedium,
-          ),
-          const SizedBox(height: Tokens.listGap),
-          if (entries.isEmpty)
-            Text(
-              l10n.calendarNothing,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: p.textSecondary,
-              ),
-            ),
-          for (final e in entries)
-            Padding(
-              padding: const EdgeInsets.only(bottom: Tokens.listGap),
-              child: Card(
-                child: InkWell(
-                  onTap: e.bill == null
-                      ? null
-                      : () {
-                          Navigator.pop(context);
-                          context.push(Routes.billDetail(e.billId));
-                        },
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                e.name,
-                                style: theme.textTheme.titleSmall,
-                              ),
-                            ),
-                            StatusChip(
-                              status: e.status,
-                              text: e.status.label(l10n),
-                            ),
-                          ],
-                        ),
-                        if (e.bill case final bill?
-                            when billPrice(l10n, format, bill) != null) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            billPrice(l10n, format, bill)!,
-                            style: theme.textTheme.bodyLarge,
-                          ),
-                        ] else if (e.amount != null) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            format.rupiah(e.amount!),
-                            style: theme.textTheme.bodyLarge,
-                          ),
-                        ],
-                        if (e.bill != null && e.status != BillStatus.paid) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            l10n.calendarReminderTimes(reminderTimes(e)),
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: p.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+    return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.fromLTRB(
+        Tokens.pagePadding,
+        4,
+        Tokens.pagePadding,
+        Tokens.pagePadding,
       ),
+      children: [
+        if (entries.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              l10n.calendarNothing,
+              style: text.bodyLarge.copyWith(
+                color: context.palette.textSecondary,
+              ),
+            ),
+          ),
+        for (final e in entries)
+          Padding(
+            padding: const EdgeInsets.only(bottom: Tokens.listGap),
+            child: B4Card(
+              padding: const EdgeInsets.all(16),
+              onTap: e.bill == null
+                  ? null
+                  : () {
+                      Navigator.of(context).pop();
+                      context.push(Routes.billDetail(e.billId));
+                    },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: Text(e.name, style: text.titleSmall)),
+                      const SizedBox(width: 8),
+                      StatusChip(status: e.status, text: e.status.label(l10n)),
+                    ],
+                  ),
+                  if (e.bill case final bill?
+                      when billPrice(l10n, format, bill) != null) ...[
+                    const SizedBox(height: 6),
+                    Text(billPrice(l10n, format, bill)!, style: text.bodyLarge),
+                  ] else if (e.amount != null) ...[
+                    const SizedBox(height: 6),
+                    Text(format.rupiah(e.amount!), style: text.bodyLarge),
+                  ],
+                  if (e.bill != null && e.status != BillStatus.paid) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.calendarReminderTimes(reminderTimes(e)),
+                      style: text.bodySmall,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

@@ -1,16 +1,16 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
-import '../../../app/theme.dart';
 import '../../../core/format/formatters.dart';
 import '../../../core/format/rupiah_input_formatter.dart';
 import '../../../core/providers.dart';
 import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../currency/currency_providers.dart';
 import '../../currency/domain/money.dart';
 import '../../reminders/domain/reminder_settings.dart';
@@ -173,14 +173,14 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     setState(() => _saving = true);
     final l10n = AppLocalizations.of(context);
     final service = ref.read(billServiceProvider);
-    final messenger = ScaffoldMessenger.of(context);
+    final toast = B4Toast.of(context);
     try {
       final existing = widget.bill;
       final saved = existing == null
           ? await service.create(_draft())
           : await service.update(existing, _draft());
       if (!mounted) return;
-      messenger.showSnackBar(SnackBar(content: Text(l10n.formSaved)));
+      toast.show(l10n.formSaved);
       if (_isEditing) {
         context.pop();
       } else {
@@ -195,58 +195,55 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     final today = ref.read(todayProvider);
     final first = today.addDays(-365 * 2);
     final initial = _dueDate.isBefore(first) ? first : _dueDate;
-    final picked = await showDatePicker(
+    final picked = await showB4DatePicker(
       context: context,
-      initialDate: initial.toUtcDateTime(),
-      firstDate: first.toUtcDateTime(),
-      lastDate: today.addMonths(12 * 10).toUtcDateTime(),
+      title: AppLocalizations.of(context).formDueDate,
+      initial: initial,
+      first: first,
+      last: today.addMonths(12 * 10),
     );
-    if (picked != null) {
-      setState(() => _dueDate = LocalDate.fromDateTime(picked));
-    }
+    if (picked != null) setState(() => _dueDate = picked);
   }
 
   Future<void> _pickTime(int currentMinute) async {
-    final picked = await showTimePicker(
+    final picked = await showB4TimePicker(
       context: context,
-      initialTime: TimeOfDay(
-        hour: currentMinute ~/ 60,
-        minute: currentMinute % 60,
-      ),
+      title: AppLocalizations.of(context).formReminderTime,
+      initialMinuteOfDay: currentMinute,
     );
-    if (picked != null) {
-      setState(() => _minuteOfDay = picked.hour * 60 + picked.minute);
-    }
+    if (picked != null) setState(() => _minuteOfDay = picked);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final theme = Theme.of(context);
+    final p = context.palette;
     final defaults =
         ref.watch(reminderSettingsProvider).value ?? const ReminderSettings();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? l10n.formEditTitle : l10n.formNewTitle),
+    return B4Scaffold(
+      topBar: B4TopBar(
+        title: _isEditing ? l10n.formEditTitle : l10n.formNewTitle,
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          padding: const EdgeInsets.fromLTRB(
+            Tokens.pagePadding,
+            8,
+            Tokens.pagePadding,
+            32,
+          ),
           children: [
-            TextFormField(
+            B4TextFormField(
               controller: _name,
+              label: l10n.formName,
+              hint: l10n.formNameHint,
               textCapitalization: TextCapitalization.sentences,
               maxLength: BillDraft.maxNameLength,
-              decoration: InputDecoration(
-                labelText: l10n.formName,
-                hintText: l10n.formNameHint,
-                counterText: '',
-              ),
               validator: (value) {
-                final text = value?.trim() ?? '';
+                final text = value.trim();
                 if (text.isEmpty) return l10n.formErrorNameEmpty;
                 if (text.length > BillDraft.maxNameLength) {
                   return l10n.formErrorNameTooLong;
@@ -255,46 +252,29 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               },
             ),
             const _Gap(),
-            DropdownButtonFormField<BillCategory>(
-              initialValue: _category,
-              isExpanded: true,
-              decoration: InputDecoration(labelText: l10n.formCategory),
-              items: [
-                for (final category in BillCategory.values)
-                  DropdownMenuItem(
-                    value: category,
-                    child: Row(
-                      children: [
-                        Icon(category.icon, size: 22),
-                        const SizedBox(width: 12),
-                        Flexible(
-                          child: Text(
-                            category.label(l10n),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+            B4SelectField<BillCategory>(
+              label: l10n.formCategory,
+              value: _category,
+              options: [
+                for (final c in BillCategory.values)
+                  B4Option(c, c.label(l10n), icon: c.icon),
               ],
-              onChanged: (value) => setState(() => _category = value!),
+              onChanged: (value) => setState(() => _category = value),
             ),
             const _Gap(),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 112,
-                  child: DropdownButtonFormField<Currency>(
-                    initialValue: _currency,
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: l10n.formCurrency),
-                    items: [
-                      for (final c in supportedCurrencies)
-                        DropdownMenuItem(value: c, child: Text(c.code)),
+                  width: 116,
+                  child: B4SelectField<Currency>(
+                    label: l10n.formCurrency,
+                    value: _currency,
+                    options: [
+                      for (final c in supportedCurrencies) B4Option(c, c.code),
                     ],
                     onChanged: (value) => setState(() {
-                      if (value == null || value == _currency) return;
+                      if (value == _currency) return;
                       _currency = value;
                       _amount.clear();
                       if (value != idr) _ensureRates();
@@ -303,8 +283,10 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextFormField(
+                  child: B4TextFormField(
                     controller: _amount,
+                    label: l10n.formAmountIn(_currency.code),
+                    hint: l10n.formAmountHint,
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
@@ -315,13 +297,8 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                               RegExp(r'[0-9.,]'),
                             ),
                           ],
-                    decoration: InputDecoration(
-                      labelText: l10n.formAmountIn(_currency.code),
-                      hintText: l10n.formAmountHint,
-                    ),
                     validator: (value) {
-                      final text = value?.trim() ?? '';
-                      if (text.isEmpty) return null;
+                      if (value.trim().isEmpty) return null;
                       return _originalMinor() == null
                           ? l10n.formErrorAmount
                           : null;
@@ -339,18 +316,19 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                     .read(exchangeRateServiceProvider)
                     .refreshIfStale(force: true),
               ),
-            if (_amount.text.isNotEmpty && _currency == idr)
-              SwitchListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                title: Text(l10n.formAmountEstimate),
+            if (_amount.text.isNotEmpty && _currency == idr) ...[
+              const SizedBox(height: 8),
+              B4SwitchRow(
+                title: l10n.formAmountEstimate,
                 value: _amountIsEstimate,
                 onChanged: (v) => setState(() => _amountIsEstimate = v),
               ),
+            ],
             const _Gap(),
-            _FieldButton(
+            B4FieldButton(
               label: l10n.formDueDate,
               value: format.longDateWithDay(_dueDate),
-              icon: Icons.event_outlined,
+              icon: RemixIcons.calendarEventLine,
               onTap: _pickDate,
             ),
             const _Gap(),
@@ -360,57 +338,59 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               runSpacing: 8,
               children: [
                 for (final type in RecurrenceType.values)
-                  ChoiceChip(
-                    label: Text(_recurrenceLabel(l10n, type)),
+                  B4Chip(
+                    label: _recurrenceLabel(l10n, type),
                     selected: _recurrenceType == type,
-                    onSelected: (_) => setState(() => _recurrenceType = type),
+                    onTap: () => setState(() => _recurrenceType = type),
                   ),
               ],
             ),
             if (_recurrenceType == RecurrenceType.everyNMonths) ...[
               const _Gap(),
-              TextFormField(
+              B4TextFormField(
                 controller: _months,
+                label: l10n.formEveryNMonths,
                 keyboardType: TextInputType.number,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(3),
                 ],
-                decoration: InputDecoration(labelText: l10n.formEveryNMonths),
                 validator: (_) =>
                     _customRecurrence() == null ? l10n.formErrorMonths : null,
               ),
             ],
             const _Gap(),
             _SectionLabel(l10n.formReminders),
-            SwitchListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-              title: Text(l10n.formRemindersUseDefault),
-              subtitle: Text(
-                remindersSummary(
+            B4Card(
+              padding: EdgeInsets.zero,
+              child: B4SwitchRow(
+                icon: RemixIcons.notification3Line,
+                title: l10n.formRemindersUseDefault,
+                subtitle: remindersSummary(
                   l10n,
                   format,
                   defaults.defaultOffsets,
                   defaults.defaultMinuteOfDay,
                 ),
+                value: _offsets == null,
+                onChanged: (useDefault) => setState(() {
+                  _offsets = useDefault ? null : [...defaults.defaultOffsets];
+                  _minuteOfDay = useDefault ? null : _minuteOfDay;
+                }),
               ),
-              value: _offsets == null,
-              onChanged: (useDefault) => setState(() {
-                _offsets = useDefault ? null : [...defaults.defaultOffsets];
-                _minuteOfDay = useDefault ? null : _minuteOfDay;
-              }),
             ),
             if (_offsets != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: [
                   for (final offset in _offsetChoices)
-                    FilterChip(
-                      label: Text(offsetLabel(l10n, offset)),
+                    B4Chip(
+                      label: offsetLabel(l10n, offset),
                       selected: _offsets!.contains(offset),
-                      onSelected: (on) => setState(() {
+                      onTap: () => setState(() {
+                        final on = !_offsets!.contains(offset);
                         _offsets = ReminderSettings.normalizeOffsets(
                           on
                               ? [..._offsets!, offset]
@@ -422,47 +402,43 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               ),
               if (_offsets!.isEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.only(top: 8, left: 4),
                   child: Text(
                     l10n.formRemindersPickAtLeastOne,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: context.palette.dangerText,
+                    style: context.text.bodyMedium.copyWith(
+                      color: p.dangerText,
                     ),
                   ),
                 ),
               const _Gap(),
-              _FieldButton(
+              B4FieldButton(
                 label: l10n.formReminderTime,
                 value: format.timeOfDay(
                   _minuteOfDay ?? defaults.defaultMinuteOfDay,
                 ),
-                icon: Icons.schedule_outlined,
+                icon: RemixIcons.timeLine,
                 onTap: () =>
                     _pickTime(_minuteOfDay ?? defaults.defaultMinuteOfDay),
               ),
             ],
             const _Gap(),
-            TextFormField(
+            B4TextFormField(
               controller: _notes,
+              label: l10n.formNotes,
+              hint: l10n.formNotesHint,
               textCapitalization: TextCapitalization.sentences,
               minLines: 2,
               maxLines: 5,
-              decoration: InputDecoration(
-                labelText: l10n.formNotes,
-                hintText: l10n.formNotesHint,
-              ),
             ),
             const _Gap(),
-            TextFormField(
+            B4TextFormField(
               controller: _url,
+              label: l10n.formPaymentUrl,
+              hint: l10n.formPaymentUrlHint,
               keyboardType: TextInputType.url,
               autocorrect: false,
-              decoration: InputDecoration(
-                labelText: l10n.formPaymentUrl,
-                hintText: l10n.formPaymentUrlHint,
-              ),
               validator: (value) {
-                final text = value?.trim() ?? '';
+                final text = value.trim();
                 if (text.isEmpty) return null;
                 return BillDraft.normalizePaymentUrl(text) == null
                     ? l10n.formErrorUrl
@@ -470,9 +446,10 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
               },
             ),
             const SizedBox(height: 28),
-            FilledButton(
-              onPressed: _saving ? null : _save,
-              child: Text(l10n.actionSave),
+            B4Button(
+              label: l10n.actionSave,
+              loading: _saving,
+              onPressed: _save,
             ),
           ],
         ),
@@ -506,12 +483,9 @@ class _ConversionHint extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final theme = Theme.of(context);
     final rates = ref.watch(exchangeRatesProvider).value;
     final rate = rates?.rateFor(currency);
-    final style = theme.textTheme.bodyMedium?.copyWith(
-      color: theme.colorScheme.onSurfaceVariant,
-    );
+    final style = context.text.bodySmall;
 
     if (rates == null || rate == null) {
       return Padding(
@@ -519,7 +493,11 @@ class _ConversionHint extends ConsumerWidget {
         child: Row(
           children: [
             Expanded(child: Text(l10n.formRateUnavailable, style: style)),
-            TextButton(onPressed: onRetry, child: Text(l10n.actionRetry)),
+            B4Button.ghost(
+              label: l10n.actionRetry,
+              icon: RemixIcons.refreshLine,
+              onPressed: onRetry,
+            ),
           ],
         ),
       );
@@ -535,8 +513,9 @@ class _ConversionHint extends ConsumerWidget {
           if (rupiah != null)
             Text(
               l10n.formApproxRupiah(format.rupiah(rupiah)),
-              style: theme.textTheme.titleMedium?.copyWith(
+              style: context.text.titleMedium.copyWith(
                 color: context.palette.primaryText,
+                fontWeight: FontWeight.w600,
               ),
             ),
           Text(
@@ -571,37 +550,8 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.bodyMedium
-            ?.copyWith(color: context.palette.textSecondary),
-      ),
-    );
-  }
-}
-
-/// A tappable, input-styled row that opens a picker.
-class _FieldButton extends StatelessWidget {
-  const _FieldButton({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: const BorderRadius.all(Radius.circular(14)),
-        child: InputDecorator(
-          decoration: InputDecoration(labelText: label, suffixIcon: Icon(icon)),
-          child: Text(value, style: Theme.of(context).textTheme.bodyLarge),
+        style: context.text.labelMedium.copyWith(
+          color: context.palette.textSecondary,
         ),
       ),
     );

@@ -1,29 +1,15 @@
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../app/shell.dart';
-import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../bills/domain/bill_category.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../bills/presentation/widgets/subscription_card.dart';
 import '../../payments/domain/payment.dart';
 import '../domain/insights.dart';
-
-/// Colours for the category chart: the brand blue first, then calm tones
-/// from the spec palette.
-List<Color> _chartColors(Palette p) => [
-  p.primary,
-  const Color(0xFF375390),
-  p.success,
-  p.warning,
-  const Color(0xFF8B5CF6),
-  p.today,
-  const Color(0xFF14B8A6),
-  p.muted,
-];
 
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
@@ -32,7 +18,7 @@ class StatisticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final theme = Theme.of(context);
+    final text = context.text;
     final p = context.palette;
     final today = ref.watch(todayProvider);
     final bills = ref.watch(activeBillsProvider).value ?? const [];
@@ -46,118 +32,98 @@ class StatisticsScreen extends ConsumerWidget {
 
     Widget card({required String title, required Widget child}) => Padding(
       padding: const EdgeInsets.only(bottom: Tokens.cardGap),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(Tokens.pagePadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: p.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              child,
-            ],
-          ),
+      child: B4Card(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: text.bodySmall),
+            const SizedBox(height: 8),
+            child,
+          ],
         ),
       ),
     );
 
-    return Scaffold(
-      body: SafeArea(
-        bottom: false,
-        child: ListView(
-          padding: const EdgeInsets.only(bottom: Tokens.sectionGap),
-          children: [
-            TabTitle(l10n.navStatistics),
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Tokens.pagePadding,
-                vertical: 8,
-              ),
-              child: stats.isEmpty
-                  ? Text(
-                      l10n.statsEmpty,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: p.textSecondary,
+    return B4Scaffold(
+      body: ListView(
+        padding: const EdgeInsets.only(bottom: Tokens.sectionGap),
+        children: [
+          B4PageTitle(l10n.navStatistics),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Tokens.pagePadding,
+              vertical: 8,
+            ),
+            child: stats.isEmpty
+                ? Text(
+                    l10n.statsEmpty,
+                    style: text.bodyLarge.copyWith(color: p.textSecondary),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      card(
+                        title: l10n.statsAverage,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              format.rupiah(stats.averageMonthly),
+                              style: text.displayMedium,
+                            ),
+                            Text(l10n.statsAverageHelp, style: text.bodySmall),
+                          ],
+                        ),
                       ),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                      card(
+                        title: l10n.statsUpcoming,
+                        child: Text(
+                          l10n.statsUpcomingValue(
+                            stats.upcomingCount,
+                            format.rupiah(stats.upcomingTotal),
+                          ),
+                          style: text.headlineMedium,
+                        ),
+                      ),
+                      if (stats.mostExpensive case final top?)
                         card(
-                          title: l10n.statsAverage,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          title: l10n.statsMostExpensive,
+                          child: Row(
                             children: [
-                              Text(
-                                format.rupiah(stats.averageMonthly),
-                                style: theme.textTheme.displayMedium,
-                              ),
-                              Text(
-                                l10n.statsAverageHelp,
-                                style: theme.textTheme.bodySmall,
+                              CategoryLogo(bill: top, size: 44),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(top.name, style: text.titleSmall),
+                                    Text(
+                                      l10n.statsPerMonth(
+                                        format.rupiah(
+                                          stats.mostExpensiveMonthly,
+                                        ),
+                                      ),
+                                      style: text.bodyMedium,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
                         ),
+                      if (stats.byCategory.isNotEmpty)
                         card(
-                          title: l10n.statsUpcoming,
-                          child: Text(
-                            l10n.statsUpcomingValue(
-                              stats.upcomingCount,
-                              format.rupiah(stats.upcomingTotal),
-                            ),
-                            style: theme.textTheme.headlineMedium,
-                          ),
+                          title: l10n.statsByCategory,
+                          child: _CategoryChart(stats: stats),
                         ),
-                        if (stats.mostExpensive case final top?)
-                          card(
-                            title: l10n.statsMostExpensive,
-                            child: Row(
-                              children: [
-                                CategoryLogo(bill: top, size: 44),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        top.name,
-                                        style: theme.textTheme.titleSmall,
-                                      ),
-                                      Text(
-                                        l10n.statsPerMonth(
-                                          format.rupiah(
-                                            stats.mostExpensiveMonthly,
-                                          ),
-                                        ),
-                                        style: theme.textTheme.bodyMedium,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (stats.byCategory.isNotEmpty)
-                          card(
-                            title: l10n.statsByCategory,
-                            child: _CategoryChart(stats: stats),
-                          ),
-                        card(
-                          title: l10n.statsMonthlyPaid,
-                          child: _MonthlyBars(stats: stats),
-                        ),
-                      ],
-                    ),
-            ),
-          ],
-        ),
+                      card(
+                        title: l10n.statsMonthlyPaid,
+                        child: _MonthlyBars(stats: stats),
+                      ),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -173,7 +139,7 @@ class _CategoryChart extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
     final p = context.palette;
-    final colors = _chartColors(p);
+    final colors = p.chart;
     final total = stats.byCategory.fold<int>(0, (sum, e) => sum + e.value);
 
     return Column(
@@ -229,7 +195,7 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final text = context.text;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -240,15 +206,15 @@ class _CategoryRow extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(label, style: theme.textTheme.bodyLarge)),
-          Text(amount, style: theme.textTheme.titleSmall),
+          Expanded(child: Text(label, style: text.bodyLarge)),
+          Text(amount, style: text.titleSmall),
           const SizedBox(width: 8),
           SizedBox(
             width: 44,
             child: Text(
               percent,
               textAlign: TextAlign.end,
-              style: theme.textTheme.bodyMedium?.copyWith(
+              style: text.bodyMedium.copyWith(
                 color: context.palette.textSecondary,
               ),
             ),
@@ -267,7 +233,7 @@ class _MonthlyBars extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final format = context.formatters;
-    final theme = Theme.of(context);
+    final text = context.text;
     final p = context.palette;
     final maxY = stats.monthlyPaid
         .map((e) => e.value)
@@ -283,10 +249,10 @@ class _MonthlyBars extends StatelessWidget {
           borderData: FlBorderData(show: false),
           barTouchData: BarTouchData(
             touchTooltipData: BarTouchTooltipData(
-              getTooltipColor: (_) => p.navy,
+              getTooltipColor: (_) => p.inverseSurface,
               getTooltipItem: (group, _, rod, _) => BarTooltipItem(
                 format.rupiah(rod.toY.round()),
-                const TextStyle(color: Colors.white),
+                text.labelMedium.copyWith(color: p.onInverseSurface),
               ),
             ),
           ),
@@ -307,9 +273,7 @@ class _MonthlyBars extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
                       format.shortMonth(stats.monthlyPaid[i].key),
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: p.textSecondary,
-                      ),
+                      style: text.labelMedium.copyWith(color: p.textSecondary),
                     ),
                   );
                 },
@@ -326,7 +290,7 @@ class _MonthlyBars extends StatelessWidget {
                     width: 22,
                     color: i == stats.monthlyPaid.length - 1
                         ? p.primary
-                        : p.primary.withValues(alpha: 0.45),
+                        : p.primary.withValues(alpha: 0.35),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(8),
                     ),

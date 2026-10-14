@@ -10,7 +10,7 @@ import 'package:b4due/features/currency/currency_providers.dart';
 import 'package:b4due/features/currency/domain/exchange_rate_service.dart';
 import 'package:b4due/features/currency/domain/money.dart';
 import 'package:drift/native.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/fixtures.dart';
@@ -57,7 +57,7 @@ void main() {
 
   testWidgets('a USD subscription shows its rupiah estimate', (tester) async {
     await _pumpForm(tester, const BillFormScreen(templateKey: 'claude_pro'));
-    await tester.enterText(find.byType(TextField).at(1), '20');
+    await tester.enterText(find.byType(EditableText).at(1), '20');
     await tester.pumpAndSettle();
     expect(find.textContaining('357.611'), findsOneWidget);
     await expectLater(
