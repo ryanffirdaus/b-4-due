@@ -2,6 +2,7 @@ import 'package:b4due/app/theme.dart';
 import 'package:b4due/core/providers.dart';
 import 'package:b4due/core/time/local_date.dart';
 import 'package:b4due/l10n/generated/app_localizations.dart';
+import 'package:b4due/ui/ui.dart' show B4ThemeScope, B4Toaster;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,7 +50,10 @@ Future<void> pumpScreen(
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: TextScaler.linear(textScale)),
-          child: child!,
+          child: B4ThemeScope(
+            brightness: brightness,
+            child: B4Toaster(child: child!),
+          ),
         ),
         home: child,
       ),
