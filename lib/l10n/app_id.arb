@@ -331,5 +331,17 @@
   "detailDeleteTitle": "Hapus tagihan ini?",
   "detailDeleteBody": "Pengingatnya akan berhenti. Riwayat pembayaran tetap tersimpan.",
   "detailDeleted": "Tagihan dihapus.",
-  "detailNotFound": "Tagihan tidak ditemukan. Mungkin sudah dihapus."
+  "detailNotFound": "Tagihan tidak ditemukan. Mungkin sudah dihapus.",
+
+  "actionBack": "Kembali",
+  "textCut": "Potong",
+  "textCopy": "Salin",
+  "textPaste": "Tempel",
+  "textSelectAll": "Pilih semua",
+  "textCopied": "Disalin",
+  "pickerDateTitle": "Pilih tanggal",
+  "pickerTimeTitle": "Pilih jam",
+  "pickerChoose": "Pilih",
+  "pickerHour": "Jam",
+  "pickerMinute": "Menit"
 }
