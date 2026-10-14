@@ -343,5 +343,6 @@
   "pickerTimeTitle": "Pilih jam",
   "pickerChoose": "Pilih",
   "pickerHour": "Jam",
-  "pickerMinute": "Menit"
+  "pickerMinute": "Menit",
+  "subsFilterRemove": "Hapus filter"
 }
