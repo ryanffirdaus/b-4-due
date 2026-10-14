@@ -1,8 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 
+import '../../../app/theme.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 
 /// Large numeric keypad with PIN dots. Calls [onCompleted] when [length]
 /// digits are entered (or on "OK" for variable-length entry).
@@ -70,7 +70,7 @@ class PinPadState extends State<PinPad> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final p = context.palette;
+    final theme = Theme.of(context);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -81,17 +81,17 @@ class PinPadState extends State<PinPad> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               for (var i = 0; i < widget.maxLength; i++)
-                AnimatedContainer(
-                  duration: Tokens.motion,
-                  curve: Tokens.curve,
+                Container(
                   margin: const EdgeInsets.symmetric(horizontal: 8),
-                  width: i < _pin.length ? 18 : 14,
-                  height: i < _pin.length ? 18 : 14,
+                  width: 16,
+                  height: 16,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: i < _pin.length ? p.primary : null,
+                    color: i < _pin.length ? context.palette.primaryText : null,
                     border: Border.all(
-                      color: i < _pin.length ? p.primary : p.outlineStrong,
+                      color: i < _pin.length
+                          ? context.palette.primaryText
+                          : context.palette.textSecondary,
                       width: 2,
                     ),
                   ),
@@ -107,10 +107,10 @@ class PinPadState extends State<PinPad> {
                 : Text(
                     widget.message!,
                     textAlign: TextAlign.center,
-                    style: context.text.bodyMedium.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: widget.messageIsError
-                          ? p.dangerText
-                          : p.textSecondary,
+                          ? context.palette.dangerText
+                          : context.palette.textSecondary,
                     ),
                   ),
           ),
@@ -136,22 +136,20 @@ class PinPadState extends State<PinPad> {
               child:
                   _pin.length >= widget.minLength &&
                       _pin.length < widget.maxLength
-                  ? Center(
-                      child: B4IconButton(
-                        label: 'OK',
-                        icon: RemixIcons.checkLine,
-                        size: 30,
-                        filled: true,
-                        onPressed: _submit,
+                  ? IconButton(
+                      tooltip: 'OK',
+                      iconSize: 32,
+                      onPressed: _submit,
+                      icon: Icon(
+                        Icons.check,
+                        color: context.palette.primaryText,
                       ),
                     )
-                  : Center(
-                      child: B4IconButton(
-                        label: l10n.lockDelete,
-                        icon: RemixIcons.deleteBack2Line,
-                        size: 28,
-                        onPressed: _backspace,
-                      ),
+                  : IconButton(
+                      tooltip: l10n.lockDelete,
+                      iconSize: 28,
+                      onPressed: _backspace,
+                      icon: const Icon(Icons.backspace_outlined),
                     ),
             ),
           ],
@@ -169,27 +167,22 @@ class _Key extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Pressable(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(Tokens.cardRadius),
-        pressedScale: 0.92,
-        pressedOverlay: p.primary.withValues(alpha: 0.12),
-        child: Container(
-          width: 80,
-          height: 64,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Tokens.cardRadius),
-            color: p.surface,
-            border: Border.all(color: p.outline),
-          ),
-          child: Text(
-            label,
-            style: context.text.headlineLarge.copyWith(
-              fontWeight: FontWeight.w500,
+      child: SizedBox.square(
+        dimension: 72,
+        child: Material(
+          color: context.palette.card,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: onTap,
+            child: Center(
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.headlineMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
+              ),
             ),
           ),
         ),

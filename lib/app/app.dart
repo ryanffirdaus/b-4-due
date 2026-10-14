@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,9 +13,9 @@ import '../features/reminders/reminder_providers.dart';
 import '../features/security/app_lock_controller.dart';
 import '../features/security/presentation/app_lock_gate.dart';
 import '../l10n/generated/app_localizations.dart';
-import '../ui/ui.dart';
 import 'router.dart';
 import 'routes.dart';
+import 'theme.dart';
 
 class B4DueApp extends ConsumerStatefulWidget {
   const B4DueApp({super.key});
@@ -86,13 +86,17 @@ class _B4DueAppState extends ConsumerState<B4DueApp>
 
   @override
   Widget build(BuildContext context) {
-    return WidgetsApp.router(
-      color: Palette.light.primary,
+    return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+      theme: buildAppTheme(Brightness.light),
+      darkTheme: buildAppTheme(Brightness.dark),
+      themeMode: ThemeMode.system,
       routerConfig: ref.watch(routerProvider),
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       // Indonesian unless the device explicitly prefers a supported language.
@@ -102,28 +106,9 @@ class _B4DueAppState extends ConsumerState<B4DueApp>
         }
         return const Locale('id');
       },
-      builder: (context, child) => B4AppFrame(child: child!),
-    );
-  }
-}
-
-/// Everything above the Navigator: theme (following the system's light or
-/// dark mode), the app lock, and the toast host. The lock covers every
-/// route, including ones opened from a notification, and keeps them alive
-/// underneath; toasts appear below the lock.
-class B4AppFrame extends StatelessWidget {
-  const B4AppFrame({required this.child, this.brightness, super.key});
-
-  final Widget child;
-
-  /// Overrides the system setting (tests, screenshots).
-  final Brightness? brightness;
-
-  @override
-  Widget build(BuildContext context) {
-    return B4ThemeScope(
-      brightness: brightness ?? MediaQuery.platformBrightnessOf(context),
-      child: AppLockGate(child: B4Toaster(child: child)),
+      // The lock covers every route, including ones opened from a
+      // notification, and keeps them alive underneath.
+      builder: (context, child) => AppLockGate(child: child!),
     );
   }
 }

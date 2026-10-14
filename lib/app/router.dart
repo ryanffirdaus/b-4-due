@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,7 +16,6 @@ import '../features/payments/presentation/payment_history_screen.dart';
 import '../features/security/presentation/set_pin_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/templates/presentation/template_picker_screen.dart';
-import '../ui/ui.dart';
 import 'routes.dart';
 import 'shell.dart';
 
@@ -30,13 +29,11 @@ final routerProvider = Provider<GoRouter>((ref) {
   GoRoute page(String path, Widget Function(GoRouterState) build) => GoRoute(
     path: path,
     parentNavigatorKey: _rootKey,
-    pageBuilder: (context, state) => b4Page(state, build(state)),
+    builder: (context, state) => build(state),
   );
 
-  GoRoute tab(String path, Widget screen) => GoRoute(
-    path: path,
-    pageBuilder: (context, state) => b4TabPage(state, screen),
-  );
+  GoRoute tab(String path, Widget screen) =>
+      GoRoute(path: path, builder: (context, state) => screen);
 
   final router = GoRouter(
     navigatorKey: _rootKey,
@@ -118,9 +115,9 @@ class _EditBillLoaderState extends ConsumerState<_EditBillLoader> {
         final bill = snapshot.data;
         if (bill != null) return BillFormScreen(bill: bill);
         if (snapshot.connectionState == ConnectionState.done) {
-          return const B4Scaffold(topBar: B4TopBar(), body: SizedBox.shrink());
+          return Scaffold(appBar: AppBar());
         }
-        return const B4Scaffold(body: B4LoadingView());
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
       },
     );
   }

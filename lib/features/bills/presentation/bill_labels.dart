@@ -1,27 +1,26 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import '../../../core/format/formatters.dart';
 import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 import '../domain/bill.dart';
 import '../domain/bill_category.dart';
 import '../domain/recurrence.dart';
 
 extension BillCategoryUi on BillCategory {
   IconData get icon => switch (this) {
-    BillCategory.electricity => RemixIcons.flashlightLine,
-    BillCategory.water => RemixIcons.dropLine,
-    BillCategory.internet => RemixIcons.wifiLine,
-    BillCategory.phone => RemixIcons.smartphoneLine,
-    BillCategory.health => RemixIcons.shieldCrossLine,
-    BillCategory.vehicleTax => RemixIcons.motorbikeLine,
-    BillCategory.installment => RemixIcons.bankCardLine,
-    BillCategory.insurance => RemixIcons.shieldCheckLine,
-    BillCategory.subscription => RemixIcons.playCircleLine,
-    BillCategory.housing => RemixIcons.home4Line,
-    BillCategory.education => RemixIcons.graduationCapLine,
-    BillCategory.other => RemixIcons.fileList3Line,
+    BillCategory.electricity => Icons.bolt_outlined,
+    BillCategory.water => Icons.water_drop_outlined,
+    BillCategory.internet => Icons.wifi,
+    BillCategory.phone => Icons.smartphone_outlined,
+    BillCategory.health => Icons.health_and_safety_outlined,
+    BillCategory.vehicleTax => Icons.two_wheeler_outlined,
+    BillCategory.installment => Icons.credit_card_outlined,
+    BillCategory.insurance => Icons.shield_outlined,
+    BillCategory.subscription => Icons.play_circle_outline,
+    BillCategory.housing => Icons.home_outlined,
+    BillCategory.education => Icons.school_outlined,
+    BillCategory.other => Icons.receipt_long_outlined,
   };
 
   String label(AppLocalizations l10n) => switch (this) {

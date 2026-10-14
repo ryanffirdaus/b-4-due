@@ -6,7 +6,7 @@ import 'lock_screen.dart';
 
 /// Covers [child] with the lock screen while the app is locked.
 ///
-/// Used in `B4AppFrame` (the app's builder), so it sits above the Navigator: every
+/// Used as `MaterialApp.builder`, so it sits above the Navigator: every
 /// route (including one opened from a notification) stays alive underneath
 /// and reappears after unlocking.
 class AppLockGate extends ConsumerWidget {

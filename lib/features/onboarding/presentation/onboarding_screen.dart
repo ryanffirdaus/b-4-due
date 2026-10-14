@@ -1,11 +1,11 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../app/theme.dart';
 import '../../../core/platform/device_channel.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 import '../../reminders/reminder_providers.dart';
 import '../onboarding_controller.dart';
 
@@ -107,21 +107,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
     final page = switch (_step) {
       _Step.welcome => _Page(
-        icon: RemixIcons.notification3Line,
+        icon: Icons.notifications_active_outlined,
         title: l10n.onboardingWelcomeTitle,
         body: l10n.onboardingWelcomeBody,
         extra: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Point(RemixIcons.calendarCheckLine, l10n.onboardingPointReminders),
-            _Point(RemixIcons.shieldUserLine, l10n.onboardingPointPrivate),
-            _Point(RemixIcons.handCoinLine, l10n.onboardingPointFree),
+            _Point(
+              Icons.event_available_outlined,
+              l10n.onboardingPointReminders,
+            ),
+            _Point(Icons.phonelink_lock_outlined, l10n.onboardingPointPrivate),
+            _Point(Icons.money_off_outlined, l10n.onboardingPointFree),
           ],
         ),
         primary: _Action(l10n.onboardingStart, _next),
       ),
       _Step.notifications => _Page(
-        icon: RemixIcons.notification3Line,
+        icon: Icons.notifications_outlined,
         title: l10n.onboardingNotifTitle,
         body: l10n.onboardingNotifBody,
         extra: switch (_notificationsGranted) {
@@ -134,7 +137,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
             : _Action(l10n.actionContinue, _next),
       ),
       _Step.exactAlarms => _Page(
-        icon: RemixIcons.alarmLine,
+        icon: Icons.alarm_on_outlined,
         title: l10n.onboardingExactTitle,
         body: l10n.onboardingExactBody,
         primary: _Action(
@@ -144,7 +147,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
         secondary: _Action(l10n.onboardingSkip, _next),
       ),
       _Step.battery => _Page(
-        icon: RemixIcons.battery2ChargeLine,
+        icon: Icons.battery_charging_full,
         title: l10n.onboardingBatteryTitle,
         body: l10n.onboardingBatteryBody,
         primary: _Action(l10n.batteryAllow, () async {
@@ -153,17 +156,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
               .requestIgnoreBatteryOptimizations();
         }),
         secondary: _Action(l10n.actionContinue, _next),
-        extra: Align(
-          alignment: Alignment.centerLeft,
-          child: B4Button.ghost(
-            icon: RemixIcons.informationLine,
-            label: l10n.onboardingBatteryGuide,
-            onPressed: () => context.push(Routes.battery),
-          ),
+        extra: TextButton(
+          onPressed: () => context.push(Routes.battery),
+          child: Text(l10n.onboardingBatteryGuide),
         ),
       ),
       _Step.test => _Page(
-        icon: RemixIcons.checkboxCircleLine,
+        icon: Icons.task_alt,
         title: l10n.onboardingTestTitle,
         body: l10n.onboardingTestBody,
         extra: _testSent ? _Note(l10n.onboardingTestSent, ok: true) : null,
@@ -176,7 +175,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
       ),
     };
 
-    return B4Scaffold(body: SafeArea(top: false, child: page));
+    return Scaffold(body: SafeArea(child: page));
   }
 }
 
@@ -205,7 +204,7 @@ class _Page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = context.text;
+    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -213,23 +212,17 @@ class _Page extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: B4IconTile(icon: icon, size: 72),
-              ),
-              const SizedBox(height: 28),
-              Semantics(
-                header: true,
-                child: Text(title, style: text.displayMedium),
-              ),
+              Icon(icon, size: 48, color: context.palette.primaryText),
+              const SizedBox(height: 24),
+              Text(title, style: theme.textTheme.headlineMedium),
               const SizedBox(height: 12),
               Text(
                 body,
-                style: text.bodyLarge.copyWith(
+                style: theme.textTheme.bodyLarge?.copyWith(
                   color: context.palette.textSecondary,
                 ),
               ),
-              if (extra != null) ...[const SizedBox(height: 28), extra!],
+              if (extra != null) ...[const SizedBox(height: 24), extra!],
             ],
           ),
         ),
@@ -238,12 +231,15 @@ class _Page extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              B4Button(label: primary.label, onPressed: primary.onPressed),
+              FilledButton(
+                onPressed: primary.onPressed,
+                child: Text(primary.label),
+              ),
               if (secondary != null) ...[
                 const SizedBox(height: 8),
-                B4Button.ghost(
-                  label: secondary!.label,
+                TextButton(
                   onPressed: secondary!.onPressed,
+                  child: Text(secondary!.label),
                 ),
               ],
             ],
@@ -265,10 +261,13 @@ class _Point extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          B4IconTile(icon: icon, size: 44),
+          Icon(icon, color: context.palette.textPrimary),
           const SizedBox(width: 14),
-          Expanded(child: Text(text, style: context.text.bodyLarge)),
+          Expanded(
+            child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
+          ),
         ],
       ),
     );
@@ -282,6 +281,25 @@ class _Note extends StatelessWidget {
   final bool ok;
 
   @override
-  Widget build(BuildContext context) =>
-      B4Note(text: text, tone: ok ? B4Tone.success : B4Tone.danger);
+  Widget build(BuildContext context) {
+    final color = ok ? context.palette.primaryText : context.palette.dangerText;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              ok ? Icons.check_circle_outline : Icons.info_outline,
+              color: color,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

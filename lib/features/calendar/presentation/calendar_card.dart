@@ -1,9 +1,9 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 import '../../bills/domain/bill.dart';
 import '../calendar_providers.dart';
 import '../domain/calendar_gateway.dart';
@@ -26,13 +26,15 @@ class _CalendarCardState extends ConsumerState<CalendarCard> {
     Future<String?> Function(AppLocalizations l10n) action,
   ) async {
     final l10n = AppLocalizations.of(context);
-    final toast = B4Toast.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     setState(() => _busy = true);
     try {
       final message = await action(l10n);
-      if (message != null) toast.show(message);
+      if (message != null) {
+        messenger.showSnackBar(SnackBar(content: Text(message)));
+      }
     } on CalendarPermissionDenied {
-      toast.error(l10n.calendarDenied);
+      messenger.showSnackBar(SnackBar(content: Text(l10n.calendarDenied)));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -71,22 +73,30 @@ class _CalendarCardState extends ConsumerState<CalendarCard> {
     if (calendars.any((c) => c.id == saved)) return saved;
     if (calendars.length == 1) return calendars.single.id;
     if (!mounted) return null;
-    final choice = await showB4OptionSheet<String>(
+    final picked = await showDialog<String>(
       context: context,
-      title: l10n.calendarChoose,
-      selected: saved,
-      options: [
-        for (final c in calendars)
-          B4Option(
-            c.id,
-            c.account != null && c.account != c.name
-                ? '${c.name} · ${c.account}'
-                : c.name,
-            icon: RemixIcons.calendar2Line,
-          ),
-      ],
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.calendarChoose),
+        children: [
+          for (final c in calendars)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, c.id),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(c.name, style: Theme.of(context).textTheme.bodyLarge),
+                  if (c.account != null && c.account != c.name)
+                    Text(
+                      c.account!,
+                      style: TextStyle(color: context.palette.textSecondary),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
-    final picked = choice?.value;
     if (picked != null) await settings.setCalendarId(picked);
     return picked;
   }
@@ -97,25 +107,31 @@ class _CalendarCardState extends ConsumerState<CalendarCard> {
     final linked =
         ref.watch(calendarLinkProvider(widget.bill.id)).value != null;
 
-    return B4ListGroup(
-      children: [
-        B4ListRow(
-          icon: linked
-              ? RemixIcons.calendarCheckLine
-              : RemixIcons.calendarTodoLine,
-          tone: linked ? B4Tone.success : B4Tone.primary,
-          title: linked ? l10n.calendarLinked : l10n.calendarAdd,
-          subtitle: linked ? l10n.calendarLinkedHelp : l10n.calendarAddHelp,
-          trailing: _busy ? const B4Spinner(size: 22) : null,
-          onTap: _busy || linked ? null : () => _run(_add),
-        ),
-        if (linked)
-          B4ListRow(
-            icon: RemixIcons.calendarCloseLine,
-            title: l10n.calendarRemove,
-            onTap: _busy ? null : () => _run(_remove),
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              linked ? Icons.event_available : Icons.edit_calendar_outlined,
+              color: linked ? context.palette.primaryText : null,
+            ),
+            title: Text(linked ? l10n.calendarLinked : l10n.calendarAdd),
+            subtitle: Text(
+              linked ? l10n.calendarLinkedHelp : l10n.calendarAddHelp,
+            ),
+            onTap: _busy || linked ? null : () => _run(_add),
           ),
-      ],
+          if (linked) ...[
+            const Divider(indent: 16),
+            ListTile(
+              leading: const Icon(Icons.event_busy_outlined),
+              title: Text(l10n.calendarRemove),
+              onTap: _busy ? null : () => _run(_remove),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

@@ -4,7 +4,7 @@ library;
 import 'package:b4due/features/bills/presentation/subscriptions_screen.dart';
 import 'package:b4due/features/insights/presentation/calendar_screen.dart';
 import 'package:b4due/features/insights/presentation/statistics_screen.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../support/golden.dart';
@@ -41,7 +41,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Claude Pro'), findsOneWidget);
     await expectLater(
-      find.byType(WidgetsApp),
+      find.byType(MaterialApp),
       matchesGoldenFile('calendar_day_sheet.png'),
     );
   });
