@@ -2,8 +2,8 @@
 
 The artwork is the same geometry as the adaptive-icon vectors in
 android/app/src/main/res/drawable/ic_launcher_{background,foreground}.xml:
-a white calendar card with an Ink header and a Plum check mark on a Violet to
-deep Plum gradient (docs/DESIGN.md).
+a white calendar card with a Midnight Navy header and a blue check mark on an
+Electric Blue to Cornflower gradient (docs/DESIGN.md).
 
     python -m pip install pillow
     python tool/generate_icons.py
@@ -13,11 +13,11 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-GRADIENT_START = (0x8B, 0x5C, 0xF6)  # Violet, top left
-GRADIENT_END = (0x4C, 0x1D, 0x95)  # deep Plum, bottom right
+GRADIENT_START = (0x45, 0x9A, 0xF8)  # Electric Blue, top left
+GRADIENT_END = (0x37, 0x53, 0x90)  # Cornflower, bottom right
 CARD = (0xFF, 0xFF, 0xFF, 255)
-HEADER = (0x1F, 0x1A, 0x2E, 255)  # Ink (Palette.light.textPrimary)
-CHECK = (0x6D, 0x28, 0xD9, 255)  # Plum (Palette.light.primary)
+HEADER = (0x20, 0x29, 0x4C, 255)  # Midnight Navy
+CHECK = (0x1C, 0x6D, 0xD0, 255)
 
 # Geometry in the 108-unit adaptive-icon viewport.
 VIEWPORT = 108

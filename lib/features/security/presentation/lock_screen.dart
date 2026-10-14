@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 import '../app_lock_controller.dart';
 import 'pin_pad.dart';
 
@@ -64,49 +64,57 @@ class _LockScreenState extends ConsumerState<LockScreen> {
           )
         : _error;
 
-    return B4Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Column(
-            children: [
-              const B4IconTile(icon: RemixIcons.lock2Line, size: 72),
-              const SizedBox(height: 20),
-              Text(l10n.lockTitle, style: context.text.headlineLarge),
-              const SizedBox(height: 24),
-              PinPad(
-                onCompleted: _pin,
-                enabled: !lockedOut,
-                message: message,
-                messageIsError: message != null,
-                extraAction: config.biometricEnabled
-                    ? Center(
-                        child: B4IconButton(
-                          label: l10n.lockUseBiometric,
-                          icon: RemixIcons.fingerprintLine,
-                          size: 32,
-                          onPressed: _biometric,
-                        ),
-                      )
-                    : null,
-              ),
-              const SizedBox(height: 8),
-              // Inline rather than a dialog: the lock screen sits above the
-              // app's Navigator.
-              B4Button.ghost(
-                label: l10n.lockForgot,
-                onPressed: () => setState(() => _showForgot = !_showForgot),
-              ),
-              if (_showForgot)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    l10n.lockForgotBody,
-                    textAlign: TextAlign.center,
-                    style: context.text.bodySmall,
-                  ),
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.lock_outline,
+                  size: 40,
+                  color: context.palette.primaryText,
                 ),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  l10n.lockTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 24),
+                PinPad(
+                  onCompleted: _pin,
+                  enabled: !lockedOut,
+                  message: message,
+                  messageIsError: message != null,
+                  extraAction: config.biometricEnabled
+                      ? IconButton(
+                          tooltip: l10n.lockUseBiometric,
+                          iconSize: 32,
+                          onPressed: _biometric,
+                          icon: const Icon(Icons.fingerprint),
+                        )
+                      : null,
+                ),
+                const SizedBox(height: 8),
+                // Inline rather than a dialog: the lock screen sits above the
+                // app's Navigator.
+                TextButton(
+                  onPressed: () => setState(() => _showForgot = !_showForgot),
+                  child: Text(l10n.lockForgot),
+                ),
+                if (_showForgot)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      l10n.lockForgotBody,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: context.palette.textSecondary),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

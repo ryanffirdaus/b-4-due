@@ -1,9 +1,9 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../app/theme.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../domain/bill_template.dart';
 
@@ -14,34 +14,47 @@ class TemplatePickerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return B4Scaffold(
-      topBar: B4TopBar(title: l10n.templatesTitle),
+    final theme = Theme.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.templatesTitle)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          Tokens.pagePadding,
-          8,
-          Tokens.pagePadding,
-          32,
-        ),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
         children: [
-          B4ListGroup(
-            children: [
-              B4ListRow(
-                icon: RemixIcons.pencilLine,
-                tone: B4Tone.primary,
-                title: l10n.templatesBlank,
-                subtitle: l10n.templatesBlankSubtitle,
-                showChevron: true,
-                onTap: () => context.pushReplacement(Routes.newBill()),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              leading: Icon(
+                Icons.edit_outlined,
+                color: context.palette.primaryText,
               ),
-            ],
+              title: Text(l10n.templatesBlank),
+              subtitle: Text(l10n.templatesBlankSubtitle),
+              onTap: () => context.pushReplacement(Routes.newBill()),
+            ),
           ),
-          B4GroupLabel(l10n.templatesHeader),
-          B4ListGroup(
-            children: [
-              for (final template in billTemplates)
-                _TemplateRow(template: template),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 24, 4, 10),
+            child: Semantics(
+              header: true,
+              child: Text(
+                l10n.templatesHeader,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: context.palette.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                for (var i = 0; i < billTemplates.length; i++) ...[
+                  if (i > 0) const Divider(indent: 72),
+                  _TemplateTile(template: billTemplates[i]),
+                ],
+              ],
+            ),
           ),
         ],
       ),
@@ -49,19 +62,18 @@ class TemplatePickerScreen extends StatelessWidget {
   }
 }
 
-class _TemplateRow extends StatelessWidget {
-  const _TemplateRow({required this.template});
+class _TemplateTile extends StatelessWidget {
+  const _TemplateTile({required this.template});
 
   final BillTemplate template;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return B4ListRow(
-      icon: template.category.icon,
-      tone: B4Tone.primary,
-      title: template.name,
-      subtitle: template.recurrence.label(l10n),
+    return ListTile(
+      leading: Icon(template.category.icon, color: context.palette.textPrimary),
+      title: Text(template.name),
+      subtitle: Text(template.recurrence.label(l10n)),
       onTap: () =>
           context.pushReplacement(Routes.newBill(templateKey: template.key)),
     );

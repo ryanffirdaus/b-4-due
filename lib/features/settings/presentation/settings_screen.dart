@@ -1,11 +1,11 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../ui/ui.dart';
 import '../../backup/presentation/backup_section.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../reminders/domain/reminder_settings.dart';
@@ -26,103 +26,114 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
+    final theme = Theme.of(context);
     final settings =
         ref.watch(reminderSettingsProvider).value ?? const ReminderSettings();
 
-    return B4Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: Tokens.sectionGap),
-        children: [
-          B4PageTitle(l10n.navSettings),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Tokens.pagePadding),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                B4GroupLabel(l10n.settingsPermissionsHeader),
-                const _PermissionsCard(),
-                B4GroupLabel(l10n.settingsRemindersHeader),
-                B4Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.settingsDefaultOffsets,
-                        style: context.text.bodyLarge.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.settingsDefaultOffsetsHelp,
-                        style: context.text.bodySmall,
-                      ),
-                      const SizedBox(height: 14),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          for (final offset in _offsetChoices)
-                            B4Chip(
-                              label: offsetLabel(l10n, offset),
-                              selected: settings.defaultOffsets.contains(
-                                offset,
-                              ),
-                              onTap: () {
-                                final on = !settings.defaultOffsets.contains(
-                                  offset,
-                                );
-                                final next = ReminderSettings.normalizeOffsets(
-                                  on
-                                      ? [...settings.defaultOffsets, offset]
-                                      : settings.defaultOffsets.where(
-                                          (o) => o != offset,
-                                        ),
-                                );
-                                // Never allow "no reminders at all" by accident.
-                                if (next.isEmpty) return;
-                                _save(
-                                  ref,
-                                  settings.copyWith(defaultOffsets: next),
-                                );
-                              },
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: Tokens.listGap),
-                B4ListGroup(
+    return Scaffold(
+      body: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(
+            Tokens.pagePadding,
+            0,
+            Tokens.pagePadding,
+            Tokens.sectionGap,
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: Tokens.cardGap),
+              child: Text(
+                l10n.navSettings,
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
+            ),
+            _Header(l10n.settingsPermissionsHeader),
+            const _PermissionsCard(),
+            const SizedBox(height: 12),
+            _Header(l10n.settingsRemindersHeader),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    B4ListRow(
-                      icon: RemixIcons.timeLine,
-                      title: l10n.settingsDefaultTime,
-                      subtitle: format.timeOfDay(settings.defaultMinuteOfDay),
-                      showChevron: true,
-                      onTap: () async {
-                        final picked = await showB4TimePicker(
-                          context: context,
-                          title: l10n.settingsDefaultTime,
-                          initialMinuteOfDay: settings.defaultMinuteOfDay,
-                        );
-                        if (picked == null) return;
-                        await _save(
-                          ref,
-                          settings.copyWith(defaultMinuteOfDay: picked),
-                        );
-                      },
+                    Text(
+                      l10n.settingsDefaultOffsets,
+                      style: theme.textTheme.bodyLarge,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      l10n.settingsDefaultOffsetsHelp,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: context.palette.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final offset in _offsetChoices)
+                          FilterChip(
+                            label: Text(offsetLabel(l10n, offset)),
+                            selected: settings.defaultOffsets.contains(offset),
+                            onSelected: (on) {
+                              final next = ReminderSettings.normalizeOffsets(
+                                on
+                                    ? [...settings.defaultOffsets, offset]
+                                    : settings.defaultOffsets.where(
+                                        (o) => o != offset,
+                                      ),
+                              );
+                              // Never allow "no reminders at all" by accident.
+                              if (next.isEmpty) return;
+                              _save(
+                                ref,
+                                settings.copyWith(defaultOffsets: next),
+                              );
+                            },
+                          ),
+                      ],
                     ),
                   ],
                 ),
-                B4GroupLabel(l10n.securityHeader),
-                const SecuritySection(),
-                B4GroupLabel(l10n.backupHeader),
-                const BackupSection(),
-              ],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                leading: const Icon(Icons.schedule_outlined),
+                title: Text(l10n.settingsDefaultTime),
+                subtitle: Text(format.timeOfDay(settings.defaultMinuteOfDay)),
+                onTap: () async {
+                  final minute = settings.defaultMinuteOfDay;
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay(
+                      hour: minute ~/ 60,
+                      minute: minute % 60,
+                    ),
+                  );
+                  if (picked == null) return;
+                  await _save(
+                    ref,
+                    settings.copyWith(
+                      defaultMinuteOfDay: picked.hour * 60 + picked.minute,
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            _Header(l10n.securityHeader),
+            const SecuritySection(),
+            const SizedBox(height: 12),
+            _Header(l10n.backupHeader),
+            const BackupSection(),
+          ],
+        ),
       ),
     );
   }
@@ -144,51 +155,58 @@ class _PermissionsCard extends ConsumerWidget {
       await ref.read(onBillsChangedProvider)();
     }
 
-    return B4ListGroup(
-      children: [
-        if (status != null) ...[
-          _StatusRow(
-            ok: status.notificationsAllowed,
-            okText: l10n.settingsNotificationsAllowed,
-            problemText: l10n.settingsNotificationsBlocked,
-            onFix: () => thenRefresh(permissions.requestNotifications()),
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          if (status != null) ...[
+            _StatusTile(
+              ok: status.notificationsAllowed,
+              okText: l10n.settingsNotificationsAllowed,
+              problemText: l10n.settingsNotificationsBlocked,
+              onFix: () => thenRefresh(permissions.requestNotifications()),
+            ),
+            const Divider(indent: 16),
+            _StatusTile(
+              ok: status.exactAlarmsAllowed,
+              okText: l10n.settingsExactAllowed,
+              problemText: l10n.settingsExactBlocked,
+              onFix: () => thenRefresh(permissions.requestExactAlarms()),
+            ),
+            const Divider(indent: 16),
+          ],
+          ListTile(
+            leading: const Icon(Icons.battery_alert_outlined),
+            title: Text(l10n.batterySettingsTile),
+            subtitle: Text(l10n.batterySettingsTileHelp),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push(Routes.battery),
           ),
-          _StatusRow(
-            ok: status.exactAlarmsAllowed,
-            okText: l10n.settingsExactAllowed,
-            problemText: l10n.settingsExactBlocked,
-            onFix: () => thenRefresh(permissions.requestExactAlarms()),
+          const Divider(indent: 16),
+          ListTile(
+            leading: const Icon(Icons.notifications_active_outlined),
+            title: Text(l10n.settingsTestNotification),
+            subtitle: Text(l10n.settingsTestNotificationHelp),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              final current = await permissions.status();
+              if (!current.notificationsAllowed) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text(l10n.settingsTestNotificationBlocked)),
+                );
+                return;
+              }
+              await ref.read(reminderRuntimeProvider).gateway.showTest();
+            },
           ),
         ],
-        B4ListRow(
-          icon: RemixIcons.battery2ChargeLine,
-          title: l10n.batterySettingsTile,
-          subtitle: l10n.batterySettingsTileHelp,
-          showChevron: true,
-          onTap: () => context.push(Routes.battery),
-        ),
-        B4ListRow(
-          icon: RemixIcons.notification3Line,
-          tone: B4Tone.primary,
-          title: l10n.settingsTestNotification,
-          subtitle: l10n.settingsTestNotificationHelp,
-          onTap: () async {
-            final toast = B4Toast.of(context);
-            final current = await permissions.status();
-            if (!current.notificationsAllowed) {
-              toast.error(l10n.settingsTestNotificationBlocked);
-              return;
-            }
-            await ref.read(reminderRuntimeProvider).gateway.showTest();
-          },
-        ),
-      ],
+      ),
     );
   }
 }
 
-class _StatusRow extends StatelessWidget {
-  const _StatusRow({
+class _StatusTile extends StatelessWidget {
+  const _StatusTile({
     required this.ok,
     required this.okText,
     required this.problemText,
@@ -202,12 +220,34 @@ class _StatusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return B4ListRow(
-      icon: ok ? RemixIcons.checkboxCircleLine : RemixIcons.errorWarningLine,
-      tone: ok ? B4Tone.success : B4Tone.danger,
-      title: ok ? okText : problemText,
-      showChevron: !ok,
+    return ListTile(
+      leading: Icon(
+        ok ? Icons.check_circle_outline : Icons.error_outline,
+        color: ok ? context.palette.primaryText : context.palette.dangerText,
+      ),
+      title: Text(ok ? okText : problemText),
       onTap: ok ? null : onFix,
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 10),
+      child: Semantics(
+        header: true,
+        child: Text(
+          text,
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(color: context.palette.textSecondary),
+        ),
+      ),
     );
   }
 }
