@@ -9,7 +9,8 @@ the app is closed. This document explains those choices.
 ```
 lib/
   main.dart                 start-up: time zone, notifications, database, providers
-  app/                      MaterialApp, theme, routes (go_router)
+  ui/                       the app's own UI kit: tokens, theme, icons, components
+  app/                      WidgetsApp, app frame, shell, routes (go_router)
   core/
     database/               Drift database, tables, converters, generated migrations
     format/                 Rupiah and Indonesian date formatting
@@ -29,9 +30,12 @@ Features: `bills`, `payments`, `reminders`, `home`, `insights` (calendar view an
 statistics), `currency`, `templates`, `backup`, `security`, `calendar` (device calendar
 export), `battery`, `onboarding`, `settings`.
 
-The UI follows [DESIGN.md](DESIGN.md): colours and spacing live in `app/theme.dart`
-(`Palette` theme extension, `Tokens`), and the five tabs are a go_router
-`StatefulShellRoute` (`app/shell.dart`); detail pages are pushed above the bottom navigation.
+The UI follows [DESIGN.md](DESIGN.md). There are no Material or Cupertino widgets: the app
+runs on `WidgetsApp`, and every control comes from `lib/ui/` (colours and spacing in
+`ui/tokens.dart`, read through `context.palette` and `context.text`). A test fails if anything
+in `lib/` imports `material.dart` or `cupertino.dart`. The five tabs are a go_router
+`StatefulShellRoute` (`app/shell.dart`); detail pages are pushed above the bottom navigation
+with the kit's own page transition.
 
 Domain code has no Flutter imports, so the rules are unit-tested without widgets or a device.
 State is Riverpod (no code generation); navigation is go_router.
