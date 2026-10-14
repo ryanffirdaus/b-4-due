@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
-import '../../../app/shell.dart';
-import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../home/presentation/home_screen.dart';
 import '../domain/bill_category.dart';
 import 'bill_labels.dart';
@@ -33,40 +32,18 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
 
   Future<void> _pickCategory() async {
     final l10n = AppLocalizations.of(context);
-    final picked = await showModalBottomSheet<Object>(
+    final picked = await showB4OptionSheet<BillCategory?>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      builder: (context) => SafeArea(
-        child: ListView(
-          shrinkWrap: true,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-              child: Text(
-                l10n.subsFilter,
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.apps_rounded),
-              title: Text(l10n.subsAllCategories),
-              selected: _category == null,
-              onTap: () => Navigator.pop(context, 'all'),
-            ),
-            for (final c in BillCategory.values)
-              ListTile(
-                leading: Icon(c.icon),
-                title: Text(c.label(l10n)),
-                selected: _category == c,
-                onTap: () => Navigator.pop(context, c),
-              ),
-          ],
-        ),
-      ),
+      title: l10n.subsFilter,
+      selected: _category,
+      options: [
+        B4Option(null, l10n.subsAllCategories, icon: RemixIcons.apps2Line),
+        for (final c in BillCategory.values)
+          B4Option(c, c.label(l10n), icon: c.icon),
+      ],
     );
     if (picked == null) return;
-    setState(() => _category = picked is BillCategory ? picked : null);
+    setState(() => _category = picked.value);
   }
 
   @override
@@ -83,97 +60,90 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
           b.category.label(l10n).toLowerCase().contains(query);
     }).toList();
 
-    return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
+    return B4Scaffold(
+      floatingAction: B4TicketButton(
+        icon: RemixIcons.addLine,
+        label: l10n.homeAddBill,
         onPressed: () => context.push(Routes.addBill),
-        icon: const Icon(Icons.add_rounded),
-        label: Text(l10n.homeAddBill),
       ),
-      body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: TabTitle(l10n.navSubscriptions)),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: Tokens.pagePadding,
-                vertical: 8,
-              ),
-              sliver: SliverToBoxAdapter(
-                child: SearchBar(
-                  controller: _query,
-                  hintText: l10n.subsSearchHint,
-                  elevation: const WidgetStatePropertyAll(0),
-                  backgroundColor: WidgetStatePropertyAll(p.surfaceVariant),
-                  shape: const WidgetStatePropertyAll(StadiumBorder()),
-                  leading: const Icon(Icons.search_rounded),
-                  trailing: [
-                    IconButton(
-                      tooltip: l10n.subsFilter,
-                      isSelected: _category != null,
-                      onPressed: _pickCategory,
-                      icon: const Icon(Icons.tune_rounded),
-                      selectedIcon: Icon(
-                        Icons.tune_rounded,
-                        color: p.primaryText,
-                      ),
-                    ),
-                  ],
-                  onChanged: (_) => setState(() {}),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: B4PageTitle(l10n.navSubscriptions)),
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Tokens.pagePadding,
+              vertical: 8,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: B4SearchField(
+                controller: _query,
+                hint: l10n.subsSearchHint,
+                onChanged: (_) => setState(() {}),
+                trailing: B4IconButton(
+                  icon: RemixIcons.equalizer2Line,
+                  label: l10n.subsFilter,
+                  color: _category == null ? null : p.primaryText,
+                  filled: _category != null,
+                  onPressed: _pickCategory,
                 ),
               ),
             ),
-            if (_category != null)
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: Tokens.pagePadding,
-                ),
-                sliver: SliverToBoxAdapter(
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: InputChip(
-                      label: Text(_category!.label(l10n)),
-                      avatar: Icon(_category!.icon, size: 18),
-                      onDeleted: () => setState(() => _category = null),
-                    ),
+          ),
+          if (_category != null)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(
+                Tokens.pagePadding,
+                4,
+                Tokens.pagePadding,
+                4,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: B4FilterTag(
+                    label: _category!.label(l10n),
+                    icon: _category!.icon,
+                    removeLabel: l10n.subsFilterRemove,
+                    onRemove: () => setState(() => _category = null),
                   ),
                 ),
               ),
-            if (bills.isEmpty)
-              const SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(child: EmptyBills()),
-              )
-            else if (visible.isEmpty)
-              SliverPadding(
-                padding: const EdgeInsets.all(Tokens.pagePadding),
-                sliver: SliverToBoxAdapter(
-                  child: Text(
-                    l10n.subsNoResults,
-                    style: Theme.of(context).textTheme.bodyLarge
-                        ?.copyWith(color: p.textSecondary),
+            ),
+          if (bills.isEmpty)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: EmptyBills()),
+            )
+          else if (visible.isEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.all(Tokens.pagePadding),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  l10n.subsNoResults,
+                  style: context.text.bodyLarge.copyWith(
+                    color: p.textSecondary,
                   ),
                 ),
-              )
-            else
-              SliverPadding(
-                // Room for the FAB.
-                padding: const EdgeInsets.fromLTRB(
-                  Tokens.pagePadding,
-                  8,
-                  Tokens.pagePadding,
-                  96,
-                ),
-                sliver: SliverList.separated(
-                  itemCount: visible.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(height: Tokens.listGap),
-                  itemBuilder: (context, i) =>
-                      SubscriptionCard(bill: visible[i], today: today),
-                ),
               ),
-          ],
-        ),
+            )
+          else
+            SliverPadding(
+              // Room for the floating button.
+              padding: const EdgeInsets.fromLTRB(
+                Tokens.pagePadding,
+                8,
+                Tokens.pagePadding,
+                104,
+              ),
+              sliver: SliverList.separated(
+                itemCount: visible.length,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: Tokens.listGap),
+                itemBuilder: (context, i) =>
+                    SubscriptionCard(bill: visible[i], today: today),
+              ),
+            ),
+        ],
       ),
     );
   }

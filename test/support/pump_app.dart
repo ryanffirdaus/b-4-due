@@ -1,9 +1,8 @@
-import 'package:b4due/app/theme.dart';
 import 'package:b4due/core/providers.dart';
 import 'package:b4due/core/time/local_date.dart';
 import 'package:b4due/l10n/generated/app_localizations.dart';
-import 'package:b4due/ui/ui.dart' show B4ThemeScope, B4Toaster;
-import 'package:flutter/material.dart';
+import 'package:b4due/ui/ui.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
@@ -14,8 +13,8 @@ import 'package:intl/date_symbol_data_local.dart';
 const phoneSize = Size(1080, 2400);
 const phonePixelRatio = 2.625;
 
-/// Pumps [child] inside the app theme and localizations, with "today"
-/// pinned to [today] so dates in screenshots never change.
+/// Pumps [child] inside the app's theme, toast host and localizations,
+/// with "today" pinned to [today] so dates in screenshots never change.
 Future<void> pumpScreen(
   WidgetTester tester,
   Widget child, {
@@ -36,17 +35,19 @@ Future<void> pumpScreen(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [clockProvider.overrideWithValue(() => now), ...overrides],
-      child: MaterialApp(
+      child: WidgetsApp(
         debugShowCheckedModeBanner: false,
-        theme: buildAppTheme(brightness),
+        color: Palette.light.primary,
         locale: locale,
         localizationsDelegates: const [
           AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: AppLocalizations.supportedLocales,
+        pageRouteBuilder: <T>(settings, builder) => PageRouteBuilder<T>(
+          settings: settings,
+          pageBuilder: (context, _, _) => builder(context),
+        ),
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context)
               .copyWith(textScaler: TextScaler.linear(textScale)),

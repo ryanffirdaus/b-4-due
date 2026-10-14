@@ -1,17 +1,21 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../app/routes.dart';
-import '../../../app/theme.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../calendar/presentation/calendar_card.dart';
 import '../../payments/domain/pay_bill.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../domain/bill.dart';
+import '../domain/bill_status.dart';
 import 'bill_labels.dart';
+import 'widgets/status_ui.dart';
+import 'widgets/subscription_card.dart';
 
 class BillDetailScreen extends ConsumerWidget {
   const BillDetailScreen({required this.billId, super.key});
@@ -25,8 +29,8 @@ class BillDetailScreen extends ConsumerWidget {
 
     return switch (bill) {
       AsyncData(:final value?) when value.isActive => _DetailBody(bill: value),
-      AsyncData() => Scaffold(
-        appBar: AppBar(),
+      AsyncData() => B4Scaffold(
+        topBar: const B4TopBar(),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -34,11 +38,11 @@ class BillDetailScreen extends ConsumerWidget {
           ),
         ),
       ),
-      AsyncError(:final error) => Scaffold(
-        appBar: AppBar(),
+      AsyncError(:final error) => B4Scaffold(
+        topBar: const B4TopBar(),
         body: Center(child: Text('$error')),
       ),
-      _ => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      _ => const B4Scaffold(body: B4LoadingView()),
     };
   }
 }
@@ -50,37 +54,24 @@ class _DetailBody extends ConsumerWidget {
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
-    final confirmed = await showDialog<bool>(
+    final toast = B4Toast.of(context);
+    final confirmed = await showB4Confirm(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.detailDeleteTitle),
-        content: Text(l10n.detailDeleteBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.actionCancel),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: context.palette.dangerText,
-            ),
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.actionDelete),
-          ),
-        ],
-      ),
+      title: l10n.detailDeleteTitle,
+      body: l10n.detailDeleteBody,
+      confirmLabel: l10n.actionDelete,
+      destructive: true,
     );
-    if (confirmed != true || !context.mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
+    if (!confirmed || !context.mounted) return;
     await ref.read(billServiceProvider).delete(bill.id);
-    messenger.showSnackBar(SnackBar(content: Text(l10n.detailDeleted)));
+    toast.show(l10n.detailDeleted);
     if (context.mounted) context.pop();
   }
 
   Future<void> _markPaid(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final messenger = ScaffoldMessenger.of(context);
+    final toast = B4Toast.of(context);
     final payBill = ref.read(payBillProvider);
     final result = await payBill(bill.id, expectedDueDate: bill.dueDate);
     final message = switch (result.outcome) {
@@ -92,19 +83,16 @@ class _DetailBody extends ConsumerWidget {
       PayOutcome.archived => l10n.detailPaidArchived,
       PayOutcome.alreadyHandled => l10n.detailPaidAlready,
     };
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 6),
-        // Auto-hide even with an undo button (Flutter keeps those by default).
-        persist: false,
-        action: result.outcome == PayOutcome.alreadyHandled
-            ? null
-            : SnackBarAction(
-                label: l10n.actionUndo,
-                onPressed: () => payBill.undo(result),
-              ),
-      ),
+    toast.show(
+      message,
+      kind: result.outcome == PayOutcome.alreadyHandled
+          ? B4ToastKind.info
+          : B4ToastKind.success,
+      duration: const Duration(seconds: 6),
+      actionLabel: result.outcome == PayOutcome.alreadyHandled
+          ? null
+          : l10n.actionUndo,
+      onAction: () => payBill.undo(result),
     );
     // A paid one-off bill is archived; there is nothing left to show.
     if (result.outcome == PayOutcome.archived && context.mounted) context.pop();
@@ -112,102 +100,115 @@ class _DetailBody extends ConsumerWidget {
 
   Future<void> _openLink(BuildContext context, String url) async {
     final l10n = AppLocalizations.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    // Always hand the link to the user's browser: the app itself has no
-    // network access.
+    final toast = B4Toast.of(context);
+    // Always hand the link to the user's browser.
     final ok = await launchUrl(
       Uri.parse(url),
       mode: LaunchMode.externalApplication,
     ).catchError((Object _) => false);
-    if (!ok) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.detailOpenLinkFailed)),
-      );
-    }
+    if (!ok) toast.error(l10n.detailOpenLinkFailed);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
-    final theme = Theme.of(context);
+    final text = context.text;
+    final p = context.palette;
     final today = ref.watch(todayProvider);
     final defaults =
         ref.watch(reminderSettingsProvider).value ?? const ReminderSettings();
     final url = bill.paymentUrl;
-    final days = bill.dueDate.differenceInDays(today);
+    final status = BillStatus.of(bill, today);
+    final price = billPrice(l10n, format, bill);
 
-    return Scaffold(
-      appBar: AppBar(
+    return B4Scaffold(
+      topBar: B4TopBar(
         actions: [
-          IconButton(
-            tooltip: l10n.actionEdit,
-            icon: const Icon(Icons.edit_outlined),
+          B4IconButton(
+            icon: RemixIcons.pencilLine,
+            label: l10n.actionEdit,
             onPressed: () => context.push(Routes.editBill(bill.id)),
           ),
-          IconButton(
-            tooltip: l10n.actionDelete,
-            icon: const Icon(Icons.delete_outline),
+          B4IconButton(
+            icon: RemixIcons.deleteBin6Line,
+            label: l10n.actionDelete,
+            color: p.dangerText,
             onPressed: () => _confirmDelete(context, ref),
           ),
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+        padding: const EdgeInsets.fromLTRB(
+          Tokens.pagePadding,
+          4,
+          Tokens.pagePadding,
+          32,
+        ),
         children: [
           Row(
             children: [
-              Icon(bill.category.icon, color: context.palette.textSecondary),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  bill.category.label(l10n),
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: context.palette.textSecondary,
-                  ),
+              CategoryLogo(bill: bill, size: 56),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(bill.category.label(l10n), style: text.bodySmall),
+                    const SizedBox(height: 2),
+                    Semantics(
+                      header: true,
+                      child: Text(bill.name, style: text.headlineLarge),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(bill.name, style: theme.textTheme.headlineMedium),
-          const SizedBox(height: 4),
-          Text(
-            relativeDueLabel(l10n, bill.dueDate, today),
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: days < 0
-                  ? context.palette.dangerText
-                  : context.palette.primaryText,
+          const SizedBox(height: 20),
+          if (price != null) ...[
+            Text(price, style: text.displayMedium),
+            const SizedBox(height: 8),
+          ],
+          Align(
+            alignment: Alignment.centerLeft,
+            child: StatusChip(
+              status: status,
+              text: relativeDueLabel(l10n, bill.dueDate, today),
             ),
           ),
-          const SizedBox(height: 20),
-          FilledButton.icon(
+          const SizedBox(height: 24),
+          B4Button(
+            icon: RemixIcons.checkLine,
+            label: l10n.detailMarkPaid,
             onPressed: () => _markPaid(context, ref),
-            icon: const Icon(Icons.check),
-            label: Text(l10n.detailMarkPaid),
           ),
-          const SizedBox(height: 16),
-          Card(
+          const SizedBox(height: Tokens.cardGap),
+          B4Card(
+            padding: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _InfoRow(
+                  icon: RemixIcons.calendarEventLine,
                   label: l10n.detailDueDate,
                   value: format.longDateWithDay(bill.dueDate),
                 ),
-                const Divider(indent: 16),
+                const B4Divider(indent: 56),
                 _InfoRow(
+                  icon: RemixIcons.handCoinLine,
                   label: l10n.detailAmount,
-                  value:
-                      billPrice(l10n, format, bill) ?? l10n.detailAmountUnknown,
+                  value: price ?? l10n.detailAmountUnknown,
                 ),
-                const Divider(indent: 16),
+                const B4Divider(indent: 56),
                 _InfoRow(
+                  icon: RemixIcons.refreshLine,
                   label: l10n.detailRecurrence,
                   value: bill.recurrence.label(l10n),
                 ),
-                const Divider(indent: 16),
+                const B4Divider(indent: 56),
                 _InfoRow(
+                  icon: RemixIcons.notification3Line,
                   label: l10n.detailReminders,
                   value: remindersSummary(
                     l10n,
@@ -217,20 +218,24 @@ class _DetailBody extends ConsumerWidget {
                   ),
                 ),
                 if (bill.notes != null) ...[
-                  const Divider(indent: 16),
-                  _InfoRow(label: l10n.detailNotes, value: bill.notes!),
+                  const B4Divider(indent: 56),
+                  _InfoRow(
+                    icon: RemixIcons.fileList3Line,
+                    label: l10n.detailNotes,
+                    value: bill.notes!,
+                  ),
                 ],
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: Tokens.cardGap),
           CalendarCard(bill: bill),
           if (url != null) ...[
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
+            const SizedBox(height: Tokens.cardGap),
+            B4Button.outline(
+              icon: RemixIcons.externalLinkLine,
+              label: l10n.detailOpenPaymentLink,
               onPressed: () => _openLink(context, url),
-              icon: const Icon(Icons.open_in_new),
-              label: Text(l10n.detailOpenPaymentLink),
             ),
           ],
         ],
@@ -239,29 +244,54 @@ class _DetailBody extends ConsumerWidget {
   }
 }
 
+/// Label and value; long-press copies the value (e.g. a customer number in
+/// the notes).
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
+  final IconData icon;
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: context.palette.textSecondary,
+    final l10n = AppLocalizations.of(context);
+    final p = context.palette;
+    return Pressable(
+      onTap: null,
+      onLongPress: () {
+        Clipboard.setData(ClipboardData(text: value));
+        HapticFeedback.lightImpact();
+        B4Toast.of(context).info(l10n.textCopied);
+      },
+      button: false,
+      pressedScale: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, size: 22, color: p.textSecondary),
             ),
-          ),
-          const SizedBox(height: 2),
-          SelectableText(value, style: theme.textTheme.bodyLarge),
-        ],
+            const SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: context.text.bodySmall),
+                  const SizedBox(height: 2),
+                  Text(value, style: context.text.bodyLarge),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
