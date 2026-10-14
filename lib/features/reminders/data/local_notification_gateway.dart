@@ -45,7 +45,7 @@ class LocalNotificationGateway implements NotificationGateway {
       priority: Priority.high,
       category: AndroidNotificationCategory.reminder,
       icon: 'ic_stat_b4due',
-      color: const Color(0xFF459AF8), // Electric Blue, tints the small icon
+      color: const Color(0xFF6D28D9), // Plum, tints the small icon
       actions: withActions
           ? [
               AndroidNotificationAction(
