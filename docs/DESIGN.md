@@ -3,8 +3,7 @@
 Bills are cards in a wallet. Each bill is a coloured **wallet card**, the most urgent one at the
 front; around them the app stays quiet: an ink-and-lavender page (light) or near-black (dark),
 large Sora numbers, full-pill buttons and a floating navigation pill with a round accent "+".
-People choose the theme (Terang / Gelap / Ikuti sistem), the accent colour and each bill's card
-colour.
+People choose the theme (Terang / Gelap / Ikuti sistem) and each bill's card colour.
 
 B4Due draws every control itself: there are **no Material or Cupertino widgets** in `lib/`
 (enforced by `test/ui/no_material_test.dart`). The app runs on `WidgetsApp` and the kit in
@@ -12,8 +11,8 @@ B4Due draws every control itself: there are **no Material or Cupertino widgets**
 
 | File | Contents |
 |---|---|
-| `tokens.dart` | `Palette` (light and dark), `AccentColors` (the six accents), `Palette.walletCards`, `Tokens` (spacing, radii, motion) |
-| `theme.dart` | `AppText` (type scale), `B4ThemeScope` (brightness + accent), `context.palette`, `context.text` |
+| `tokens.dart` | `Palette` (light and dark), `Palette.walletCards`, `Tokens` (spacing, radii, motion) |
+| `theme.dart` | `AppText` (type scale), `B4ThemeScope`, `context.palette`, `context.text` |
 | `icons.dart` | `RemixIcons`: the subset of Remix Icon the app uses |
 | `pressable.dart` | `Pressable`: the tap primitive behind every control |
 | `buttons.dart` | `B4Button` (primary, tonal, outline, ghost; destructive), `B4IconButton`, `B4AddButton` |
@@ -51,18 +50,9 @@ surface.
 
 ### Accent
 
-The accent marks the add button, progress, the on switch and emphasised text. It is chosen in
-Pengaturan → Tampilan from six presets, each tuned per brightness so the fill, the text on it,
-the text version on the page and its tint all reach 4.5:1. There is no free colour picker.
-
-| Accent | Fill | Text on page (light / dark) |
-|---|---|---|
-| Limau (default) | `#B6F36B` | `#2F6B0C` / `#B6F36B` |
-| Langit | `#7CC7FF` | `#0B5A99` / `#7CC7FF` |
-| Koral | `#FF9A85` | `#B23A22` / `#FF9A85` |
-| Ungu | `#C4B1FF` | `#5B3FD0` / `#C4B1FF` |
-| Kuning | `#FFD166` | `#8A5A00` / `#FFD166` |
-| Mint | `#7FE3C3` | `#0E6E52` / `#7FE3C3` |
+One fixed accent, lime: the add button, progress, the on switch and emphasised text. The fill is
+`#B6F36B` with ink text on it; as text on the page it is `#2F6B0C` in light mode and `#B6F36B` in
+dark mode, so every pair reaches 4.5:1.
 
 ### Wallet cards
 
@@ -184,8 +174,8 @@ a raised back button. Sheets slide up with a title and a close button, and can b
 
 ## Accessibility (WCAG AA)
 
-- Every text/background pair the kit draws is checked at 4.5:1 or more in both themes and with
-  every accent, and white text on every wallet card too (`test/ui/palette_contrast_test.dart`).
+- Every text/background pair the kit draws is checked at 4.5:1 or more in both themes, and
+  white text on every wallet card too (`test/ui/palette_contrast_test.dart`).
 - Status text uses darker (light mode) or lighter (dark mode) shades on a tinted chip, or white
   on a translucent badge on a wallet card.
 - Swipe backgrounds use `#067647` (paid) and `#B42318` (delete) behind white icons and text.

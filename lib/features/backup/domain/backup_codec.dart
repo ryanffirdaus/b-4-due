@@ -54,7 +54,7 @@ abstract final class BackupCodec {
   /// Settings that make sense on another phone. App-lock secrets and
   /// onboarding state stay on the device they were created on.
   static bool isPortableSetting(String key) =>
-      key.startsWith('reminder.') || key.startsWith('appearance.');
+      key.startsWith('reminder.') || key == 'appearance.theme';
 
   static String encode(BackupData data) {
     final json = {

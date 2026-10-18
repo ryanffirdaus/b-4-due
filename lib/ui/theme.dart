@@ -112,13 +112,10 @@ extension B4ThemeContext on BuildContext {
   AppText get text => B4Theme.of(this).text;
 }
 
-final _themes = <(Brightness, AccentColors), B4ThemeData>{};
-
-B4ThemeData _themeFor(Brightness brightness, AccentColors accent) =>
-    _themes.putIfAbsent((
-      brightness,
-      accent,
-    ), () => B4ThemeData(Palette.of(brightness).withAccent(accent)));
+final _themes = {
+  Brightness.light: B4ThemeData(Palette.light),
+  Brightness.dark: B4ThemeData(Palette.dark),
+};
 
 /// Installs the theme plus the defaults plain widgets read: text style,
 /// icon colour, text selection colours and scroll behaviour.
@@ -126,19 +123,15 @@ class B4ThemeScope extends StatelessWidget {
   const B4ThemeScope({
     required this.brightness,
     required this.child,
-    this.accent = AccentColors.lime,
     super.key,
   });
 
   final Brightness brightness;
-
-  /// The accent chosen in Pengaturan → Tampilan.
-  final AccentColors accent;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    final data = _themeFor(brightness, accent);
+    final data = _themes[brightness]!;
     final p = data.palette;
     return B4Theme(
       data: data,

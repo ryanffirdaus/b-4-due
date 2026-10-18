@@ -154,52 +154,6 @@ class Palette {
   static Palette of(Brightness brightness) =>
       brightness == Brightness.dark ? dark : light;
 
-  /// This palette with [accent]'s shades for its brightness. Emphasised
-  /// text follows the accent too.
-  Palette withAccent(AccentColors accent) {
-    final a = isDark ? accent.dark : accent.light;
-    return Palette._(
-      brightness: brightness,
-      primary: primary,
-      onPrimary: onPrimary,
-      primaryText: a.text,
-      primarySoft: primarySoft,
-      accent: a.fill,
-      onAccent: a.onFill,
-      accentText: a.text,
-      accentSoft: a.soft,
-      background: background,
-      surface: surface,
-      surfaceVariant: surfaceVariant,
-      outline: outline,
-      outlineStrong: outlineStrong,
-      textPrimary: textPrimary,
-      textSecondary: textSecondary,
-      inverseSurface: inverseSurface,
-      onInverseSurface: onInverseSurface,
-      scrim: scrim,
-      shadow: shadow,
-      success: success,
-      successText: successText,
-      successSoft: successSoft,
-      warning: warning,
-      warningText: warningText,
-      warningSoft: warningSoft,
-      today: today,
-      todayText: todayText,
-      todaySoft: todaySoft,
-      danger: danger,
-      dangerText: dangerText,
-      dangerSoft: dangerSoft,
-      onDanger: onDanger,
-      neutral: neutral,
-      neutralText: neutralText,
-      neutralSoft: neutralSoft,
-      muted: muted,
-      chart: chart,
-    );
-  }
-
   final Brightness brightness;
   bool get isDark => brightness == Brightness.dark;
 
@@ -216,7 +170,7 @@ class Palette {
   /// Quiet fill behind icons and unselected controls.
   final Color primarySoft;
 
-  /// The accent (lime by default): the add button, progress, selection.
+  /// The lime accent: the add button, progress, selection.
   final Color accent;
 
   /// Text and icons on [accent] fills.
@@ -304,144 +258,6 @@ class Palette {
     WalletCardColors(Color(0xFFB0307A), Color(0xFF82205A)),
     WalletCardColors(Color(0xFF13717C), Color(0xFF0C525A)),
   ];
-}
-
-/// One accent's colours for one brightness.
-@immutable
-class AccentShades {
-  const AccentShades({
-    required this.fill,
-    required this.onFill,
-    required this.text,
-    required this.soft,
-  });
-
-  /// Buttons, progress, selection.
-  final Color fill;
-
-  /// Text and icons on [fill].
-  final Color onFill;
-
-  /// The accent as readable text on the page.
-  final Color text;
-
-  /// A tint behind [text].
-  final Color soft;
-}
-
-/// An accent people can pick in Pengaturan → Tampilan. Each one is tuned
-/// per brightness so every pair stays WCAG AA; there is no free colour
-/// picker that could produce unreadable text.
-@immutable
-class AccentColors {
-  const AccentColors(this.name, {required this.light, required this.dark});
-
-  /// Stored value, also the l10n key suffix (`accentLime`, ...).
-  final String name;
-  final AccentShades light;
-  final AccentShades dark;
-
-  static const lime = AccentColors(
-    'lime',
-    light: AccentShades(
-      fill: Color(0xFFB6F36B),
-      onFill: Color(0xFF15121D),
-      text: Color(0xFF2F6B0C),
-      soft: Color(0xFFE4F5CC),
-    ),
-    dark: AccentShades(
-      fill: Color(0xFFB6F36B),
-      onFill: Color(0xFF0E0C14),
-      text: Color(0xFFB6F36B),
-      soft: Color(0xFF26331A),
-    ),
-  );
-
-  static const sky = AccentColors(
-    'sky',
-    light: AccentShades(
-      fill: Color(0xFF7CC7FF),
-      onFill: Color(0xFF0E1A2B),
-      text: Color(0xFF0B5A99),
-      soft: Color(0xFFDCEFFF),
-    ),
-    dark: AccentShades(
-      fill: Color(0xFF7CC7FF),
-      onFill: Color(0xFF0E0C14),
-      text: Color(0xFF7CC7FF),
-      soft: Color(0xFF14283A),
-    ),
-  );
-
-  static const coral = AccentColors(
-    'coral',
-    light: AccentShades(
-      fill: Color(0xFFFF9A85),
-      onFill: Color(0xFF2A0E08),
-      text: Color(0xFFB23A22),
-      soft: Color(0xFFFFE3DC),
-    ),
-    dark: AccentShades(
-      fill: Color(0xFFFF9A85),
-      onFill: Color(0xFF0E0C14),
-      text: Color(0xFFFF9A85),
-      soft: Color(0xFF3A1C16),
-    ),
-  );
-
-  static const violet = AccentColors(
-    'violet',
-    light: AccentShades(
-      fill: Color(0xFFC4B1FF),
-      onFill: Color(0xFF1A1033),
-      text: Color(0xFF5B3FD0),
-      soft: Color(0xFFECE6FF),
-    ),
-    dark: AccentShades(
-      fill: Color(0xFFC4B1FF),
-      onFill: Color(0xFF0E0C14),
-      text: Color(0xFFC4B1FF),
-      soft: Color(0xFF2A2147),
-    ),
-  );
-
-  static const amber = AccentColors(
-    'amber',
-    light: AccentShades(
-      fill: Color(0xFFFFD166),
-      onFill: Color(0xFF2A1E00),
-      text: Color(0xFF8A5A00),
-      soft: Color(0xFFFFF1CC),
-    ),
-    dark: AccentShades(
-      fill: Color(0xFFFFD166),
-      onFill: Color(0xFF0E0C14),
-      text: Color(0xFFFFD166),
-      soft: Color(0xFF3A2E0A),
-    ),
-  );
-
-  static const mint = AccentColors(
-    'mint',
-    light: AccentShades(
-      fill: Color(0xFF7FE3C3),
-      onFill: Color(0xFF062A20),
-      text: Color(0xFF0E6E52),
-      soft: Color(0xFFD8F7EC),
-    ),
-    dark: AccentShades(
-      fill: Color(0xFF7FE3C3),
-      onFill: Color(0xFF0E0C14),
-      text: Color(0xFF7FE3C3),
-      soft: Color(0xFF123329),
-    ),
-  );
-
-  static const all = [lime, sky, coral, violet, amber, mint];
-
-  /// Unknown names fall back to [lime].
-  static AccentColors byName(String? name) =>
-      all.firstWhere((a) => a.name == name, orElse: () => lime);
 }
 
 /// A wallet card's diagonal gradient, top left to bottom right.

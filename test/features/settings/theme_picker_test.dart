@@ -21,7 +21,6 @@ class _Probe extends StatelessWidget {
   Widget build(BuildContext context) => ListView(
     children: [
       Text(context.palette.isDark ? 'tema gelap' : 'tema terang'),
-      Text('aksen ${context.palette.accent.toARGB32().toRadixString(16)}'),
       const ThemePicker(),
     ],
   );
@@ -65,23 +64,6 @@ void main() {
       () => SettingsRepository(db).getThemePreference(),
     );
     expect(stored, ThemePreference.dark);
-  });
-
-  testWidgets('choosing Koral recolours the accent and is stored', (
-    tester,
-  ) async {
-    await pump(tester);
-    expect(find.text('aksen ffb6f36b'), findsOneWidget);
-
-    await tester.ensureVisible(find.bySemanticsLabel('Koral'));
-    await tester.tap(find.bySemanticsLabel('Koral'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('aksen ffff9a85'), findsOneWidget);
-    final stored = await tester.runAsync(
-      () => SettingsRepository(db).getAccent(),
-    );
-    expect(stored, 'coral');
   });
 
   testWidgets('Ikuti sistem follows the phone', (tester) async {

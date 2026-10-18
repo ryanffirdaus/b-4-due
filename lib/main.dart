@@ -20,7 +20,6 @@ import 'features/reminders/reminder_providers.dart';
 import 'features/security/app_lock_controller.dart';
 import 'features/settings/data/settings_repository.dart';
 import 'features/settings/theme_controller.dart';
-import 'ui/tokens.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +34,6 @@ Future<void> main() async {
   final onboarded = await settings.isOnboardingCompleted();
   final lockConfig = await settings.getAppLock();
   final theme = await settings.getThemePreference();
-  final accent = AccentColors.byName(await settings.getAccent());
   final initialLocation = await _initialLocation(runtime);
   final calendar = buildCalendarSync(runtime.database);
 
@@ -46,7 +44,6 @@ Future<void> main() async {
         initialLocationProvider.overrideWithValue(initialLocation),
         initialAppLockConfigProvider.overrideWithValue(lockConfig),
         initialThemePreferenceProvider.overrideWithValue(theme),
-        initialAccentProvider.overrideWithValue(accent),
         notificationResponsesProvider.overrideWithValue(responses.stream),
         databaseProvider.overrideWithValue(runtime.database),
         reminderRuntimeProvider.overrideWithValue(runtime),

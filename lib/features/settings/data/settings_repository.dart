@@ -23,7 +23,6 @@ class SettingsRepository {
   static const _biometricKey = 'lock.biometric';
   static const _calendarKey = 'device.calendarId';
   static const _themeKey = 'appearance.theme';
-  static const _accentKey = 'appearance.accent';
 
   Future<String?> _read(String key) async {
     final row = await (_db.select(
@@ -110,11 +109,6 @@ class SettingsRepository {
 
   Future<void> setThemePreference(ThemePreference preference) =>
       _write(_themeKey, preference.name);
-
-  /// The accent's name (`lime`, `sky`, ...), or null for the default.
-  Future<String?> getAccent() => _read(_accentKey);
-
-  Future<void> setAccent(String name) => _write(_accentKey, name);
 
   /// Raw dump of all settings, used by backups.
   Future<Map<String, String>> exportAll() async {

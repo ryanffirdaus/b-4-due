@@ -209,6 +209,17 @@ void main() {
       await target.close();
     });
 
+    test('an accent from an older file is ignored', () async {
+      final source = await _populated();
+      final json = jsonDecode(
+        await _service(source).exportJson(),
+      ) as Map<String, dynamic>;
+      (json['settings'] as Map<String, dynamic>)['appearance.accent'] = 'coral';
+      final data = BackupCodec.decode(jsonEncode(json));
+      expect(data.settings.containsKey('appearance.accent'), isFalse);
+      await source.close();
+    });
+
     test(
       'the theme travels, but an older file keeps the current one',
       () async {
