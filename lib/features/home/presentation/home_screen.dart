@@ -34,7 +34,7 @@ const _pagePadding = EdgeInsets.fromLTRB(
   Tokens.pagePadding,
   Tokens.cardGap,
   Tokens.pagePadding,
-  Tokens.sectionGap,
+  Tokens.fabClearance,
 );
 
 class HomeScreen extends ConsumerWidget {

@@ -125,7 +125,7 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
                 Tokens.pagePadding,
                 8,
                 Tokens.pagePadding,
-                Tokens.sectionGap,
+                Tokens.fabClearance,
               ),
               sliver: SliverList.separated(
                 itemCount: visible.length,

@@ -6,8 +6,8 @@ import '../ui/ui.dart';
 import 'routes.dart';
 
 /// Bottom navigation (Home, Calendar, Subscriptions, Statistics, Settings)
-/// around the five tab branches, with the add button beside it; each tab
-/// keeps its own navigation stack.
+/// around the five tab branches, with the add button floating above it on
+/// the right; each tab keeps its own navigation stack.
 class AppShell extends StatelessWidget {
   const AppShell({required this.navigationShell, super.key});
 
@@ -19,12 +19,12 @@ class AppShell extends StatelessWidget {
     return B4Scaffold(
       safeTop: false,
       body: navigationShell,
+      floatingAction: B4AddButton(
+        label: l10n.homeAddBill,
+        onPressed: () => context.push(Routes.addBill),
+      ),
       bottomBar: B4BottomNav(
         selectedIndex: navigationShell.currentIndex,
-        trailing: B4AddButton(
-          label: l10n.homeAddBill,
-          onPressed: () => context.push(Routes.addBill),
-        ),
         onSelect: (index) => navigationShell.goBranch(
           index,
           // Tapping the current tab again returns to its first page.
