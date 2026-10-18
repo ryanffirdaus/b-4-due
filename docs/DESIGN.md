@@ -113,9 +113,11 @@ circles, in a bill's card colours where they stand for that bill.
 
 ## Logo
 
-A white calendar card with an ink header and a violet check mark on a violet gradient
-(`tool/generate_icons.py`, the adaptive-icon vectors in `android/app/src/main/res/drawable/`,
-iOS icons and `docs/images/icon-512.png`). The logo is our own drawing; Remix Icon's licence
+A white calendar card with a lime (`#B6F36B`) header and an ink (`#15121D`) check mark on a
+soft ink (`#2A2538`) to ink (`#0E0C14`) gradient (`tool/generate_icons.py`, the adaptive-icon
+vectors in `android/app/src/main/res/drawable/`, iOS icons and `docs/images/icon-512.png`). The
+notification icon is the same mark as a white silhouette, tinted `#2F6B0C`, which also colours
+the phone-calendar events. The logo is our own drawing; Remix Icon's licence
 does not allow its icons as a logo. The splash uses the page background (`#F3F1F7` light,
 `#0E0C14` dark).
 
