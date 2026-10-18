@@ -58,8 +58,19 @@ class _TemplateRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return B4ListRow(
-      icon: template.category.icon,
-      tone: B4Tone.primary,
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          gradient: walletCardColors(null, template.category).gradient,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          template.category.icon,
+          size: 20,
+          color: B4WalletCard.foreground,
+        ),
+      ),
       title: template.name,
       subtitle: template.recurrence.label(l10n),
       onTap: () =>

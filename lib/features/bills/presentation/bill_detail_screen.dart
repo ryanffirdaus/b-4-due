@@ -12,10 +12,7 @@ import '../../calendar/presentation/calendar_card.dart';
 import '../../payments/domain/pay_bill.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../domain/bill.dart';
-import '../domain/bill_status.dart';
 import 'bill_labels.dart';
-import 'widgets/status_ui.dart';
-import 'widgets/subscription_card.dart';
 
 class BillDetailScreen extends ConsumerWidget {
   const BillDetailScreen({required this.billId, super.key});
@@ -119,7 +116,6 @@ class _DetailBody extends ConsumerWidget {
     final defaults =
         ref.watch(reminderSettingsProvider).value ?? const ReminderSettings();
     final url = bill.paymentUrl;
-    final status = BillStatus.of(bill, today);
     final price = billPrice(l10n, format, bill);
 
     return B4Scaffold(
@@ -146,35 +142,51 @@ class _DetailBody extends ConsumerWidget {
           32,
         ),
         children: [
-          Row(
-            children: [
-              CategoryLogo(bill: bill, size: 56),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          B4WalletCard(
+            colors: bill.cardColors,
+            padding: const EdgeInsets.fromLTRB(22, 18, 18, 22),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(bill.category.label(l10n), style: text.bodySmall),
-                    const SizedBox(height: 2),
-                    Semantics(
-                      header: true,
-                      child: Text(bill.name, style: text.headlineLarge),
+                    Icon(bill.category.icon, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        bill.category.label(l10n),
+                        style: text.bodyMedium.copyWith(
+                          color: B4WalletCard.foreground,
+                        ),
+                      ),
                     ),
+                    B4CardBadge(relativeDueLabel(l10n, bill.dueDate, today)),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          if (price != null) ...[
-            Text(price, style: text.displayMedium),
-            const SizedBox(height: 8),
-          ],
-          Align(
-            alignment: Alignment.centerLeft,
-            child: StatusChip(
-              status: status,
-              text: relativeDueLabel(l10n, bill.dueDate, today),
+                const SizedBox(height: 36),
+                Semantics(
+                  header: true,
+                  child: Text(
+                    bill.name,
+                    style: text.headlineLarge.copyWith(
+                      color: B4WalletCard.foreground,
+                    ),
+                  ),
+                ),
+                if (price != null) ...[
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      price,
+                      style: text.displayMedium.copyWith(
+                        color: B4WalletCard.foreground,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 24),

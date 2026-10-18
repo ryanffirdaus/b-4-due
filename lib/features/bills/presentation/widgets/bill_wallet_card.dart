@@ -52,6 +52,7 @@ class BillWalletCard extends ConsumerWidget {
     required this.today,
     this.peeking = false,
     this.raised = false,
+    this.compact = false,
     super.key,
   });
 
@@ -62,8 +63,12 @@ class BillWalletCard extends ConsumerWidget {
   final bool peeking;
   final bool raised;
 
+  /// A shorter card without the note line, for lists.
+  final bool compact;
+
   /// Height of a full card at the default text size.
   static const height = 212.0;
+  static const compactHeight = 160.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,7 +78,8 @@ class BillWalletCard extends ConsumerWidget {
     final colors = bill.cardColors;
     final price = billPrice(l10n, format, bill);
     final due = relativeDueLabel(l10n, bill.dueDate, today);
-    final note = bill.notes?.split('\n').first.trim();
+    final note = compact ? null : bill.notes?.split('\n').first.trim();
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6);
     const white = B4WalletCard.foreground;
     final soft = white.withValues(alpha: 0.86);
 
@@ -98,7 +104,7 @@ class BillWalletCard extends ConsumerWidget {
     return B4WalletCard(
       colors: colors,
       raised: raised,
-      height: height,
+      height: peeking ? null : (compact ? compactHeight : height) * scale,
       semanticLabel: [bill.name, due, ?price].join(', '),
       onTap: () => context.push(Routes.billDetail(bill.id)),
       padding: const EdgeInsets.fromLTRB(20, 16, 16, 18),
