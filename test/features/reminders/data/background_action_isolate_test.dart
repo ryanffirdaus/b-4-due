@@ -17,6 +17,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:sqlite3/sqlite3.dart';
 
 import '../../../support/fixtures.dart';
 
@@ -182,4 +183,22 @@ void main() {
     expect(await _runActionInIsolate(dbPath, 'unknown', payload), 'ignored');
     expect(await DriftPaymentRepository(uiDb).getAll(), isEmpty);
   });
+
+  test('still pays when another connection holds the write lock longer '
+      'than the busy timeout', () async {
+    // E.g. the app restoring a large backup while the reminder fires.
+    final blocker = sqlite3.open(dbPath)..execute('BEGIN IMMEDIATE');
+    final action = _runActionInIsolate(
+      dbPath,
+      ReminderActions.markPaid,
+      payload,
+    );
+    await Future<void>.delayed(const Duration(seconds: 7));
+    blocker
+      ..execute('COMMIT')
+      ..close();
+
+    expect(await action, 'paid');
+    expect(await DriftPaymentRepository(uiDb).getAll(), hasLength(1));
+  }, timeout: const Timeout(Duration(minutes: 1)));
 }
