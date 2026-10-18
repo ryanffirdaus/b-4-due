@@ -19,14 +19,8 @@
   "greetingAfternoon": "Good afternoon",
   "greetingEvening": "Good evening",
   "greetingNight": "Good night",
-  "homeMonthlySpending": "Bills this month",
-  "homeRemaining": "{amount} left",
   "homePaidShort": "{amount} paid",
-  "homeUpcoming": "Upcoming payments",
   "homeSeeAll": "See all",
-  "homeQuickActions": "Quick actions",
-  "quickAdd": "Add",
-  "quickHistory": "History",
   "homeRecentPayments": "Recent payments",
   "homeNoUpcoming": "Nothing due in the next 30 days.",
   "homeNoPayments": "No payments recorded yet.",
@@ -342,5 +336,11 @@
   "cardColorOrange": "Orange",
   "cardColorSlate": "Grey",
   "cardColorMagenta": "Magenta",
-  "cardColorTeal": "Teal"
+  "cardColorTeal": "Teal",
+  "homeLeftThisMonth": "Left to pay this month",
+  "homeOfTotal": "of {amount}",
+  "homeCards": "Bill cards",
+  "homeSeeAllCount": "All ({count})",
+  "cardPay": "Pay",
+  "cardDueOn": "Due {date}"
 }

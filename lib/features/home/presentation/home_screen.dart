@@ -9,7 +9,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../../bills/domain/bill.dart';
 import '../../bills/presentation/bill_labels.dart';
-import '../../bills/presentation/widgets/subscription_card.dart';
+import '../../bills/presentation/widgets/bill_wallet_card.dart';
 import '../../payments/domain/payment.dart';
 import '../domain/home_summary.dart';
 
@@ -27,8 +27,8 @@ final homeSummaryProvider = Provider<AsyncValue<HomeSummary>>((ref) {
       );
 });
 
-/// How many upcoming bills the home screen shows before "Lihat semua".
-const _upcomingLimit = 4;
+/// How many cards the wallet stack shows; the rest are under "Semua (n)".
+const _stackLimit = 4;
 
 const _pagePadding = EdgeInsets.fromLTRB(
   Tokens.pagePadding,
@@ -78,33 +78,45 @@ class _HomeContent extends ConsumerWidget {
       ...summary.dueThisWeek,
       ...summary.later.where((b) => !b.dueDate.isAfter(horizon)),
     ];
+    final allActive =
+        summary.overdue.length +
+        summary.dueThisWeek.length +
+        summary.later.length;
     final recent =
         (ref.watch(paymentHistoryProvider).value ?? const <PaymentEntry>[])
             .take(3)
             .toList();
+    final stack = upcoming.take(_stackLimit).toList();
+    // Large system fonts need a taller card; the peeking strip grows too.
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6);
 
     return ListView(
       padding: _pagePadding,
       children: [
         _Greeting(today: today),
-        const SizedBox(height: Tokens.cardGap),
-        _MonthlySpendingCard(summary: summary, today: today),
-        B4SectionHeader(title: l10n.homeQuickActions),
-        const _QuickActions(),
+        const SizedBox(height: Tokens.sectionGap),
+        _MonthSummary(summary: summary),
         B4SectionHeader(
-          title: l10n.homeUpcoming,
-          actionLabel: upcoming.length > _upcomingLimit
-              ? l10n.homeSeeAll
-              : null,
+          title: l10n.homeCards,
+          actionLabel: l10n.homeSeeAllCount(allActive),
           onAction: () => context.go(Routes.subscriptions),
         ),
-        if (upcoming.isEmpty)
+        if (stack.isEmpty)
           _Hint(l10n.homeNoUpcoming)
         else
-          for (final bill in upcoming.take(_upcomingLimit)) ...[
-            SubscriptionCard(bill: bill, today: today),
-            const SizedBox(height: Tokens.listGap),
-          ],
+          B4WalletStack(
+            cardHeight: BillWalletCard.height * scale,
+            peek: 56 * scale,
+            cards: [
+              for (var i = 0; i < stack.length; i++)
+                BillWalletCard(
+                  bill: stack[i],
+                  today: today,
+                  peeking: i > 0,
+                  raised: i == 0 && stack.length > 1,
+                ),
+            ],
+          ),
         B4SectionHeader(
           title: l10n.homeRecentPayments,
           actionLabel: recent.isEmpty ? null : l10n.homeSeeAll,
@@ -144,16 +156,16 @@ class _Greeting extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Semantics(
-                header: true,
-                child: Text(greeting, style: context.text.displayMedium),
-              ),
-              const SizedBox(height: 4),
               Text(
                 context.formatters.longDateWithDay(today),
-                style: context.text.bodyLarge.copyWith(
+                style: context.text.bodyMedium.copyWith(
                   color: context.palette.textSecondary,
                 ),
+              ),
+              const SizedBox(height: 2),
+              Semantics(
+                header: true,
+                child: Text(greeting, style: context.text.headlineLarge),
               ),
             ],
           ),
@@ -169,12 +181,12 @@ class _Greeting extends ConsumerWidget {
   }
 }
 
-/// Large monthly total with a ring showing how much is already paid.
-class _MonthlySpendingCard extends StatelessWidget {
-  const _MonthlySpendingCard({required this.summary, required this.today});
+/// What is still to pay this month, in large type, over a paid/remaining
+/// bar.
+class _MonthSummary extends StatelessWidget {
+  const _MonthSummary({required this.summary});
 
   final HomeSummary summary;
-  final LocalDate today;
 
   @override
   Widget build(BuildContext context) {
@@ -186,166 +198,47 @@ class _MonthlySpendingCard extends StatelessWidget {
     final paid = summary.monthPaidTotal;
     final remaining = (total - paid).clamp(0, total);
     final progress = total == 0 ? 0.0 : paid / total;
-    final percent = '${(progress * 100).round()}%';
 
-    return B4Card(
-      child: Row(
+    return Semantics(
+      container: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${l10n.homeMonthlySpending} · ${format.monthYear(today)}',
-                  style: text.bodySmall,
-                ),
-                const SizedBox(height: 6),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(format.rupiah(total), style: text.displayLarge),
-                ),
-                const SizedBox(height: 10),
-                _Legend(
-                  color: p.success,
-                  text: l10n.homePaidShort(format.rupiah(paid)),
-                ),
-                const SizedBox(height: 4),
-                _Legend(
-                  color: p.primary,
-                  text: l10n.homeRemaining(format.rupiah(remaining)),
-                ),
-                if (summary.monthUnknownAmountCount > 0) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    l10n.homeMonthUnknownCount(summary.monthUnknownAmountCount),
-                    style: text.bodySmall,
-                  ),
-                ],
-              ],
-            ),
+          Text(
+            l10n.homeLeftThisMonth,
+            style: text.bodyLarge.copyWith(color: p.textSecondary),
           ),
-          const SizedBox(width: 16),
-          // Read as the visible percentage only; the ring is decoration.
-          Semantics(
-            container: true,
-            child: B4ProgressRing(
-              value: progress,
-              color: p.success,
-              trackColor: p.primarySoft,
-              child: Text(percent, style: text.titleSmall),
-            ),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(format.rupiah(remaining), style: text.displayLarge),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Legend extends StatelessWidget {
-  const _Legend({required this.color, required this.text});
-
-  final Color color;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 8),
-        Flexible(child: Text(text, style: context.text.bodyMedium)),
-      ],
-    );
-  }
-}
-
-class _QuickActions extends StatelessWidget {
-  const _QuickActions();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final actions = [
-      (RemixIcons.addLine, l10n.quickAdd, () => context.push(Routes.addBill)),
-      (
-        RemixIcons.calendar2Line,
-        l10n.navCalendar,
-        () => context.go(Routes.calendar),
-      ),
-      (
-        RemixIcons.historyLine,
-        l10n.quickHistory,
-        () => context.push(Routes.history),
-      ),
-      (
-        RemixIcons.pieChart2Line,
-        l10n.navStatistics,
-        () => context.go(Routes.statistics),
-      ),
-    ];
-    // Large system fonts get two per row so labels never break mid-word.
-    final columns = MediaQuery.textScalerOf(context).scale(1) > 1.3 ? 2 : 4;
-    return LayoutBuilder(
-      builder: (context, constraints) => Wrap(
-        children: [
-          for (final (icon, label, onTap) in actions)
-            SizedBox(
-              width: constraints.maxWidth / columns,
-              child: _QuickAction(icon: icon, label: label, onTap: onTap),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final p = context.palette;
-    return Pressable(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(Tokens.controlRadius),
-      pressedOverlay: const Color(0x00000000),
-      pressedScale: 0.94,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: Column(
-          children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: p.surface,
-                borderRadius: BorderRadius.circular(Tokens.controlRadius + 2),
-                border: Border.all(color: p.outline),
+          const SizedBox(height: 14),
+          ExcludeSemantics(child: B4ProgressBar(value: progress)),
+          const SizedBox(height: 8),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 12,
+            children: [
+              Text(
+                l10n.homePaidShort(format.rupiah(paid)),
+                style: text.bodySmall,
               ),
-              child: Icon(icon, color: p.primaryText),
-            ),
-            const SizedBox(height: 8),
+              Text(
+                l10n.homeOfTotal(format.rupiah(total)),
+                style: text.bodySmall,
+              ),
+            ],
+          ),
+          if (summary.monthUnknownAmountCount > 0) ...[
+            const SizedBox(height: 4),
             Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: context.text.labelMedium,
+              l10n.homeMonthUnknownCount(summary.monthUnknownAmountCount),
+              style: text.bodySmall,
             ),
           ],
-        ),
+        ],
       ),
     );
   }
