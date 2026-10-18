@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../app/theme.dart';
 import '../../../core/platform/device_channel.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../ui/ui.dart';
 import '../../reminders/reminder_providers.dart';
 import '../domain/phone_brand.dart';
 
@@ -79,115 +79,95 @@ class _BatteryGuideScreenState extends ConsumerState<BatteryGuideScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final theme = Theme.of(context);
+    final text = context.text;
     final device = ref.read(deviceChannelProvider);
     final brand = ref.watch(phoneBrandProvider).value ?? PhoneBrand.other;
     final unrestricted = ref.watch(batteryUnrestrictedProvider).value;
-    final secondary = theme.textTheme.bodyMedium?.copyWith(
-      color: context.palette.textSecondary,
-    );
 
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.batteryTitle)),
+    return B4Scaffold(
+      topBar: B4TopBar(title: l10n.batteryTitle),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        padding: const EdgeInsets.fromLTRB(
+          Tokens.pagePadding,
+          8,
+          Tokens.pagePadding,
+          32,
+        ),
         children: [
-          Text(l10n.batteryIntro, style: theme.textTheme.bodyLarge),
-          const SizedBox(height: 16),
-          if (unrestricted != null)
-            Card(
-              child: ListTile(
-                leading: Icon(
-                  unrestricted
-                      ? Icons.check_circle_outline
-                      : Icons.error_outline,
-                  color: unrestricted
-                      ? context.palette.primaryText
-                      : context.palette.dangerText,
-                ),
-                title: Text(
-                  unrestricted
-                      ? l10n.batteryStatusOk
-                      : l10n.batteryStatusRestricted,
-                ),
-              ),
+          Text(l10n.batteryIntro, style: text.bodyLarge),
+          const SizedBox(height: Tokens.cardGap),
+          if (unrestricted != null) ...[
+            B4Note(
+              text: unrestricted
+                  ? l10n.batteryStatusOk
+                  : l10n.batteryStatusRestricted,
+              tone: unrestricted ? B4Tone.success : B4Tone.danger,
             ),
-          const SizedBox(height: 12),
+            const SizedBox(height: Tokens.listGap),
+          ],
           if (unrestricted == false) ...[
-            FilledButton.icon(
+            B4Button(
+              icon: RemixIcons.battery2ChargeLine,
+              label: l10n.batteryAllow,
               onPressed: device.requestIgnoreBatteryOptimizations,
-              icon: const Icon(Icons.battery_charging_full),
-              label: Text(l10n.batteryAllow),
             ),
             const SizedBox(height: 8),
           ],
-          OutlinedButton.icon(
+          B4Button.outline(
+            icon: RemixIcons.restartLine,
+            label: l10n.batteryOpenAutostart,
             onPressed: _openAutostart,
-            icon: const Icon(Icons.settings_power),
-            label: Text(l10n.batteryOpenAutostart),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          B4Button.outline(
+            icon: RemixIcons.informationLine,
+            label: l10n.batteryOpenAppInfo,
             onPressed: device.openAppDetails,
-            icon: const Icon(Icons.info_outline),
-            label: Text(l10n.batteryOpenAppInfo),
           ),
-          const SizedBox(height: 24),
-          Semantics(
-            header: true,
-            child: Text(
-              l10n.batteryYourPhone(brand.label(l10n)),
-              style: theme.textTheme.titleMedium,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(brand.steps(l10n), style: theme.textTheme.bodyLarge),
-            ),
-          ),
+          B4GroupLabel(l10n.batteryYourPhone(brand.label(l10n))),
+          B4Card(child: Text(brand.steps(l10n), style: text.bodyLarge)),
           const SizedBox(height: 8),
-          Text(l10n.batteryMenuNote, style: secondary),
-          const SizedBox(height: 24),
-          Semantics(
-            header: true,
-            child: Text(
-              l10n.batteryOtherBrands,
-              style: theme.textTheme.titleMedium,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(l10n.batteryMenuNote, style: text.bodySmall),
+          ),
+          B4GroupLabel(l10n.batteryOtherBrands),
+          B4Card(
+            padding: EdgeInsets.zero,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(Tokens.cardRadius),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final (i, other)
+                      in PhoneBrand.values
+                          .where((b) => b != brand)
+                          .indexed) ...[
+                    if (i > 0) const B4Divider(indent: 16),
+                    B4Expandable(
+                      title: other.label(l10n),
+                      child: Text(other.steps(l10n), style: text.bodyLarge),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 10),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                for (final other in PhoneBrand.values.where((b) => b != brand))
-                  ExpansionTile(
-                    title: Text(other.label(l10n)),
-                    childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    expandedAlignment: Alignment.centerLeft,
-                    children: [
-                      Text(other.steps(l10n), style: theme.textTheme.bodyLarge),
-                    ],
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          TextButton(
+          const SizedBox(height: Tokens.cardGap),
+          B4Button.ghost(
+            icon: RemixIcons.externalLinkLine,
+            label: l10n.batteryMoreInfo,
             onPressed: () => launchUrl(
               Uri.parse('https://dontkillmyapp.com'),
               mode: LaunchMode.externalApplication,
             ),
-            child: Text(l10n.batteryMoreInfo),
           ),
           const SizedBox(height: 8),
-          FilledButton.tonalIcon(
+          B4Button.tonal(
+            icon: RemixIcons.notification3Line,
+            label: l10n.settingsTestNotification,
             onPressed: () =>
                 ref.read(reminderRuntimeProvider).gateway.showTest(),
-            icon: const Icon(Icons.notifications_active_outlined),
-            label: Text(l10n.settingsTestNotification),
           ),
         ],
       ),

@@ -315,5 +315,6 @@
   "pickerTimeTitle": "Choose a time",
   "pickerChoose": "Choose",
   "pickerHour": "Hour",
-  "pickerMinute": "Minute"
+  "pickerMinute": "Minute",
+  "subsFilterRemove": "Remove filter"
 }
