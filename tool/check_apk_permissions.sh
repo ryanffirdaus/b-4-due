@@ -35,18 +35,22 @@ fi
 AAPT2="${AAPT2:-$(command -v aapt2 || ls "${ANDROID_HOME:-$ANDROID_SDK_ROOT}"/build-tools/*/aapt2 2>/dev/null | sort -V | tail -1)}"
 [[ -x "$AAPT2" ]] || { echo "aapt2 not found; set AAPT2" >&2; exit 2; }
 
+# Matches use here-strings, not pipes: with pipefail, `grep -q` exiting on
+# the first match would SIGPIPE the writer and fail the whole pipeline.
+allowed_list=$(printf '%s\n' "${ALLOWED[@]}")
+
 status=0
 for apk in "$@"; do
   perms=$("$AAPT2" dump permissions "$apk" | sed -n "s/^uses-permission: name='\([^']*\)'.*/\1/p" | sort -u)
   echo "== $apk"
   echo "$perms" | sed 's/^/   /'
-  if echo "$perms" | grep -Eq "^${FORBIDDEN_REGEX}$"; then
+  if grep -Eq "^${FORBIDDEN_REGEX}$" <<<"$perms"; then
     echo "ERROR: forbidden permission in $apk:" >&2
-    echo "$perms" | grep -E "^${FORBIDDEN_REGEX}$" >&2
+    grep -E "^${FORBIDDEN_REGEX}$" <<<"$perms" >&2
     status=1
   fi
   for perm in $perms; do
-    if ! printf '%s\n' "${ALLOWED[@]}" | grep -qx "$perm"; then
+    if ! grep -qx -- "$perm" <<<"$allowed_list"; then
       echo "ERROR: unexpected permission $perm in $apk (update the allowlist and PRIVACY.md if intended)" >&2
       status=1
     fi
