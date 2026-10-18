@@ -253,44 +253,101 @@ class _DaySheet extends ConsumerWidget {
         for (final e in entries)
           Padding(
             padding: const EdgeInsets.only(bottom: Tokens.listGap),
-            child: B4Card(
-              padding: const EdgeInsets.all(16),
+            child: _DayEntryCard(
+              entry: e,
+              price: switch (e.bill) {
+                final bill? => billPrice(l10n, format, bill),
+                null => e.amount == null ? null : format.rupiah(e.amount!),
+              },
+              reminders: e.bill != null && e.status != BillStatus.paid
+                  ? l10n.calendarReminderTimes(reminderTimes(e))
+                  : null,
               onTap: e.bill == null
                   ? null
                   : () {
                       Navigator.of(context).pop();
                       context.push(Routes.billDetail(e.billId));
                     },
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(child: Text(e.name, style: text.titleSmall)),
-                      const SizedBox(width: 8),
-                      StatusChip(status: e.status, text: e.status.label(l10n)),
-                    ],
-                  ),
-                  if (e.bill case final bill?
-                      when billPrice(l10n, format, bill) != null) ...[
-                    const SizedBox(height: 6),
-                    Text(billPrice(l10n, format, bill)!, style: text.bodyLarge),
-                  ] else if (e.amount != null) ...[
-                    const SizedBox(height: 6),
-                    Text(format.rupiah(e.amount!), style: text.bodyLarge),
-                  ],
-                  if (e.bill != null && e.status != BillStatus.paid) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      l10n.calendarReminderTimes(reminderTimes(e)),
-                      style: text.bodySmall,
-                    ),
-                  ],
-                ],
-              ),
             ),
           ),
       ],
+    );
+  }
+}
+
+/// One bill on the day sheet as a small wallet card in the bill's colours;
+/// a bill that no longer exists keeps a neutral panel.
+class _DayEntryCard extends StatelessWidget {
+  const _DayEntryCard({
+    required this.entry,
+    required this.price,
+    required this.reminders,
+    required this.onTap,
+  });
+
+  final CalendarEntry entry;
+  final String? price;
+  final String? reminders;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final text = context.text;
+    final bill = entry.bill;
+    const white = B4WalletCard.foreground;
+    final soft = white.withValues(alpha: 0.86);
+    final body = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            if (bill != null) ...[
+              Icon(bill.category.icon, size: 20),
+              const SizedBox(width: 8),
+            ],
+            Expanded(
+              child: Text(
+                entry.name,
+                style: text.titleSmall.copyWith(
+                  color: bill == null ? null : white,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (bill != null)
+              B4CardBadge(entry.status.label(l10n))
+            else
+              StatusChip(status: entry.status, text: entry.status.label(l10n)),
+          ],
+        ),
+        if (price != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            price!,
+            style: text.headlineMedium.copyWith(
+              color: bill == null ? null : white,
+            ),
+          ),
+        ],
+        if (reminders != null) ...[
+          const SizedBox(height: 4),
+          Text(reminders!, style: text.bodySmall.copyWith(color: soft)),
+        ],
+      ],
+    );
+    if (bill == null) {
+      return B4Card(
+        color: context.palette.surfaceVariant,
+        padding: const EdgeInsets.all(16),
+        child: body,
+      );
+    }
+    return B4WalletCard(
+      colors: bill.cardColors,
+      onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(18, 14, 14, 16),
+      child: body,
     );
   }
 }

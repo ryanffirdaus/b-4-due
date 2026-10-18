@@ -180,7 +180,7 @@ class _SheetBody extends StatelessWidget {
                           B4IconButton(
                             icon: RemixIcons.closeLine,
                             label: AppLocalizations.of(context).actionClose,
-                            filled: true,
+                            background: p.surfaceVariant,
                             onPressed: () => Navigator.of(context).maybePop(),
                           ),
                         ],

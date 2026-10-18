@@ -169,6 +169,7 @@ class B4IconButton extends StatelessWidget {
     required this.onPressed,
     this.color,
     this.filled = false,
+    this.background,
     this.size = 24,
     super.key,
   });
@@ -180,6 +181,10 @@ class B4IconButton extends StatelessWidget {
 
   /// A raised circle behind the icon (top-bar actions).
   final bool filled;
+
+  /// A flat circle in this colour instead (e.g. on a sheet, where a raised
+  /// circle would vanish).
+  final Color? background;
   final double size;
 
   @override
@@ -200,8 +205,8 @@ class B4IconButton extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: filled ? p.surface : null,
-            boxShadow: filled && !p.isDark
+            color: background ?? (filled ? p.surface : null),
+            boxShadow: filled && background == null && !p.isDark
                 ? [
                     BoxShadow(
                       color: p.shadow,
