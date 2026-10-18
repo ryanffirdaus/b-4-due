@@ -7,7 +7,6 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../../bills/domain/bill_category.dart';
 import '../../bills/presentation/bill_labels.dart';
-import '../../bills/presentation/widgets/subscription_card.dart';
 import '../../payments/domain/payment.dart';
 import '../domain/insights.dart';
 
@@ -62,19 +61,20 @@ class StatisticsScreen extends ConsumerWidget {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      card(
-                        title: l10n.statsAverage,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              format.rupiah(stats.averageMonthly),
-                              style: text.displayMedium,
-                            ),
-                            Text(l10n.statsAverageHelp, style: text.bodySmall),
-                          ],
+                      Text(
+                        l10n.statsAverage,
+                        style: text.bodyLarge.copyWith(color: p.textSecondary),
+                      ),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          format.rupiah(stats.averageMonthly),
+                          style: text.displayLarge,
                         ),
                       ),
+                      Text(l10n.statsAverageHelp, style: text.bodySmall),
+                      const SizedBox(height: Tokens.sectionGap),
                       card(
                         title: l10n.statsUpcoming,
                         child: Text(
@@ -86,29 +86,47 @@ class StatisticsScreen extends ConsumerWidget {
                         ),
                       ),
                       if (stats.mostExpensive case final top?)
-                        card(
-                          title: l10n.statsMostExpensive,
-                          child: Row(
-                            children: [
-                              CategoryLogo(bill: top, size: 44),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: Tokens.cardGap,
+                          ),
+                          child: B4WalletCard(
+                            colors: top.cardColors,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.statsMostExpensive,
+                                  style: text.bodyMedium.copyWith(
+                                    color: B4WalletCard.foreground,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
                                   children: [
-                                    Text(top.name, style: text.titleSmall),
-                                    Text(
-                                      l10n.statsPerMonth(
-                                        format.rupiah(
-                                          stats.mostExpensiveMonthly,
+                                    Icon(top.category.icon, size: 22),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        top.name,
+                                        style: text.titleMedium.copyWith(
+                                          color: B4WalletCard.foreground,
                                         ),
                                       ),
-                                      style: text.bodyMedium,
                                     ),
                                   ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  l10n.statsPerMonth(
+                                    format.rupiah(stats.mostExpensiveMonthly),
+                                  ),
+                                  style: text.headlineMedium.copyWith(
+                                    color: B4WalletCard.foreground,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       if (stats.byCategory.isNotEmpty)
