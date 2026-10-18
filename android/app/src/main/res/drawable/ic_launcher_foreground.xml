@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Adaptive-icon foreground: a white calendar card with a Midnight Navy
-     header and a blue check mark. tool/generate_icons.py renders the same
+<!-- Adaptive-icon foreground: a white calendar card with an Ink header
+     and a Plum check mark. tool/generate_icons.py renders the same
      geometry as PNG fallbacks; keep both in sync. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -13,7 +13,7 @@
         android:pathData="M38,34 L70,34 Q78,34 78,42 L78,70 Q78,78 70,78 L38,78 Q30,78 30,70 L30,42 Q30,34 38,34 Z" />
     <!-- Header band. -->
     <path
-        android:fillColor="#FF20294C"
+        android:fillColor="#FF1F1A2E"
         android:pathData="M38,34 L70,34 Q78,34 78,42 L78,46 L30,46 L30,42 Q30,34 38,34 Z" />
     <!-- Binder rings. -->
     <path
@@ -21,7 +21,7 @@
         android:pathData="M40.5,28 L43.5,28 Q45,28 45,29.5 L45,38.5 Q45,40 43.5,40 L40.5,40 Q39,40 39,38.5 L39,29.5 Q39,28 40.5,28 Z M64.5,28 L67.5,28 Q69,28 69,29.5 L69,38.5 Q69,40 67.5,40 L64.5,40 Q63,40 63,38.5 L63,29.5 Q63,28 64.5,28 Z" />
     <!-- Check mark. -->
     <path
-        android:strokeColor="#FF1C6DD0"
+        android:strokeColor="#FF6D28D9"
         android:strokeWidth="6"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
