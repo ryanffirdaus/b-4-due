@@ -1,18 +1,24 @@
-# B4Due design system
+# B4Due design system: Dompet
 
-A calm, trustworthy look with one brand colour (Plum), generous spacing and rounded cards.
+Bills are cards in a wallet. Each bill is a coloured **wallet card**, the most urgent one at the
+front; around them the app stays quiet: an ink-and-lavender page (light) or near-black (dark),
+large Sora numbers, full-pill buttons and a floating navigation pill with a round accent "+".
+People choose the theme (Terang / Gelap / Ikuti sistem), the accent colour and each bill's card
+colour.
+
 B4Due draws every control itself: there are **no Material or Cupertino widgets** in `lib/`
 (enforced by `test/ui/no_material_test.dart`). The app runs on `WidgetsApp` and the kit in
 `lib/ui/`:
 
 | File | Contents |
 |---|---|
-| `tokens.dart` | `Palette` (colours, light and dark) and `Tokens` (spacing, radii, motion) |
-| `theme.dart` | `AppText` (type scale), `B4ThemeScope`, `context.palette`, `context.text` |
+| `tokens.dart` | `Palette` (light and dark), `AccentColors` (the six accents), `Palette.walletCards`, `Tokens` (spacing, radii, motion) |
+| `theme.dart` | `AppText` (type scale), `B4ThemeScope` (brightness + accent), `context.palette`, `context.text` |
 | `icons.dart` | `RemixIcons`: the subset of Remix Icon the app uses |
 | `pressable.dart` | `Pressable`: the tap primitive behind every control |
-| `buttons.dart` | `B4Button` (primary, tonal, outline, ghost; destructive), `B4IconButton`, `B4TicketButton` |
-| `surfaces.dart` | `B4Card`, `B4ListGroup`, `B4ListRow`, `B4IconTile`, `B4Note`, `B4EmptyState` |
+| `buttons.dart` | `B4Button` (primary, tonal, outline, ghost; destructive), `B4IconButton`, `B4AddButton` |
+| `wallet.dart` | `B4WalletCard`, `B4WalletStack`, `B4CardBadge`, `B4ProgressBar` |
+| `surfaces.dart` | `B4Card` (panel), `B4ListGroup`, `B4ListRow`, `B4IconTile`, `B4Note`, `B4EmptyState` |
 | `controls.dart` | `B4Switch`, `B4SwitchRow`, `B4Chip`, `B4FilterTag` |
 | `text_field.dart` | `B4TextField`, `B4TextFormField`, `B4SearchField`, selection handles, text menu |
 | `pickers.dart` | `B4FieldButton`, `B4SelectField`, `B4MonthGrid`, date and time pickers |
@@ -21,144 +27,178 @@ B4Due draws every control itself: there are **no Material or Cupertino widgets**
 | `navigation.dart` | page transitions for go_router, `B4Expandable` |
 
 Widgets read colours with `context.palette` and styles with `context.text`, never hard-coded
-values. Import everything with `import '../ui/ui.dart';`.
-
-## Logo
-
-A white calendar card with an Ink (`#1F1A2E`) header and a Plum (`#6D28D9`) check mark, on a
-diagonal Violet (`#8B5CF6`) to deep Plum (`#4C1D95`) gradient. Sources: the adaptive-icon
-vectors in `android/app/src/main/res/drawable/ic_launcher_*.xml` (including a monochrome
-version for themed icons) and `tool/generate_icons.py`, which renders the same geometry as PNG
-for older Android, iOS and `docs/images/icon-512.png`. The notification icon is the same mark
-as a white silhouette, tinted Plum. The splash screen uses the page background (`#F8F6FB`
-light, `#14111C` dark). The logo is our own drawing; Remix Icon's licence does not allow its
-icons as a logo.
+values. Import everything with `import '../ui/ui.dart';`. A bill's card colours come from
+`bill.cardColors` (`lib/features/bills/presentation/bill_labels.dart`).
 
 ## Colour
 
-Plum was chosen because it collides with none of the status colours, so a coloured chip always
-means a state, never the brand. White on Plum is 7.1:1.
+### Page and controls
 
 | Role | Light | Dark | Use |
 |---|---|---|---|
-| Primary (Plum) | `#6D28D9` | `#B197FC` | filled buttons, FAB, selected chips and tabs, today in the calendar |
-| On primary | `#FFFFFF` | `#1A1033` | text and icons on Plum fills |
-| Primary text | `#6D28D9` | `#C4B1FD` | ghost buttons, icons, "≈ Rp …" estimates |
-| Primary soft | `#F0EAFB` | `#2E2547` | icon tiles, sheet close button, toast action |
-| Background | `#F8F6FB` | `#14111C` | page |
-| Surface | `#FFFFFF` | `#1F1A2B` | cards, sheets, dialogs, navigation bar |
-| Surface variant | `#F1EDF7` | `#2A2438` | input fills |
-| Outline / strong | `#E4DEEC` / `#CFC6DC` | `#2E2740` / `#453C5C` | card borders, dividers / outlined buttons, chips |
-| Text / secondary | `#1F1A2E` / `#625B70` | `#EDE9F5` / `#A9A2BA` | |
-| Inverse surface | `#1F1A2E` | `#EDE9F5` | chart tooltips |
+| Primary | `#15121D` (ink) | `#F2EEFA` | main buttons, selected tab capsule, selected chips, today in the calendar |
+| On primary | `#FFFFFF` | `#0E0C14` | text and icons on primary fills |
+| Primary soft | `#E9E5F0` | `#2A2538` | tonal buttons, icon circles |
+| Background | `#F3F1F7` | `#0E0C14` | page, splash |
+| Surface | `#FFFFFF` | `#1C1828` | panels, sheets, dialogs, navigation pill |
+| Surface variant | `#ECE8F2` | `#2A2538` | inputs, unselected chips, switch track |
+| Outline / strong | `#E4DFEC` / `#CBC4D8` | `#2A2538` / `#433B57` | dividers / outlined buttons |
+| Text / secondary | `#15121D` / `#5E5870` | `#F2EEFA` / `#A9A2BA` | |
+| Inverse surface | `#15121D` | `#F2EEFA` | toasts, chart tooltips |
 
-Charts use `Palette.chart`: Plum first, then sky, teal, amber, magenta, lavender, blue and grey.
+Panels have no outline: light mode lifts them with a soft shadow, dark mode with a lighter
+surface.
+
+### Accent
+
+The accent marks the add button, progress, the on switch and emphasised text. It is chosen in
+Pengaturan → Tampilan from six presets, each tuned per brightness so the fill, the text on it,
+the text version on the page and its tint all reach 4.5:1. There is no free colour picker.
+
+| Accent | Fill | Text on page (light / dark) |
+|---|---|---|
+| Limau (default) | `#B6F36B` | `#2F6B0C` / `#B6F36B` |
+| Langit | `#7CC7FF` | `#0B5A99` / `#7CC7FF` |
+| Koral | `#FF9A85` | `#B23A22` / `#FF9A85` |
+| Ungu | `#C4B1FF` | `#5B3FD0` / `#C4B1FF` |
+| Kuning | `#FFD166` | `#8A5A00` / `#FFD166` |
+| Mint | `#7FE3C3` | `#0E6E52` / `#7FE3C3` |
+
+### Wallet cards
+
+Eight diagonal gradients, the same in both themes, all with white text at 4.5:1 or more:
+violet, green, red, blue, orange, slate, magenta and teal (`Palette.walletCards`). A bill uses
+the colour chosen in its form (Warna kartu), or its category's: Listrik orange, Air and
+Pendidikan blue, Internet teal, Pulsa and Langganan violet, BPJS red, Pajak kendaraan and Lainnya
+slate, Cicilan magenta, Asuransi and Rumah green.
 
 ### Status
 
-Each bill has one status (`BillStatus`), shown as a coloured dot (calendar) and a chip with a
-dot and a label (cards). Colour is never the only signal: the chip always carries text such as
-"Terlambat 2 hari" or "Hari ini". **Mendatang** (upcoming) is deliberately neutral, so only
-states that need action are coloured.
+Each bill has one status (`BillStatus`), shown as a coloured dot (calendar), a translucent
+badge on its wallet card ("TERLAMBAT 2 HARI", "HARI INI") and a tinted chip elsewhere. Colour is
+never the only signal: the text always says what the status is. **Mendatang** (upcoming) is
+deliberately neutral, so only states that need action are coloured.
 
 | Status | Dot | Text / chip (light) | Text / chip (dark) |
 |---|---|---|---|
 | Lunas (paid) | `#17B26A` | `#067647` on `#DCFAE6` | `#47CD89` on `#0E3123` |
-| Mendatang (upcoming, > 3 days) | `#8E87A0` | `#524B63` on `#EFECF4` | `#BDB6CC` on `#2A2438` |
+| Mendatang (upcoming, > 3 days) | `#8E87A0` | `#524B63` on `#ECE8F2` | `#BDB6CC` on `#2A2538` |
 | Segera (due within 3 days) | `#F79009` | `#B54708` on `#FEF0C7` | `#FDB022` on `#3A2A08` |
 | Hari ini (today) | `#EF6820` | `#B93815` on `#FDEAD7` | `#FF9C66` on `#3D2113` |
 | Terlambat (overdue) | `#F04438` | `#B42318` on `#FEE4E2` | `#F97066` on `#3D1916` |
 | Dihapus (cancelled) | `#A39CB4` | – | – |
 
+Charts use `Palette.chart`: violet, green, red, blue, orange, magenta, teal and grey in light
+mode; lime first and lighter shades in dark mode.
+
 ## Typography
 
-Inter (bundled, SIL OFL 1.1) with tabular figures, so amounts and dates line up. Display 36/30
-bold for the monthly total and page titles, headline 24/20 semibold, title 18/16, body 16/14,
-labels 14. **Nothing is smaller than 14sp**, and every screen is checked at 160 % system font
-size (golden test `home_large_text.png`). Bottom-navigation labels scale down only when a label
-is too wide for its slot.
+[Sora](https://github.com/sora-xor/sora-font) (SIL OFL 1.1), vendored as static weights 400 to
+800 cut from the variable font, with tabular figures so amounts line up. Sora has no "≈", so
+`tool/add_sora_glyphs.py` adds one built from Sora's tilde, and `test/ui/font_coverage_test.dart`
+checks every weight can draw every character in the UI text.
+
+Display 38/30 extra-bold for the month's remaining total and page titles, headline 24/20 bold,
+title 18/16, body 16/14, labels 14. **Nothing is smaller than 14sp**, and every screen is
+checked at 160 % system font size (golden test `home_large_text.png`); wallet cards grow with
+the text.
 
 ## Icons
 
 [Remix Icon](https://remixicon.com) **v4.8.0**, the last release under the Apache License 2.0
 (later releases use a custom licence). The font is vendored in `assets/fonts/RemixIcon.ttf`
 with its licence beside it; release builds tree-shake it to the glyphs in
-`lib/ui/icons.dart`. Line icons everywhere; filled icons only for the selected tab.
+`lib/ui/icons.dart`. Line icons everywhere; filled icons only for the selected tab. Icons sit on
+circles, in a bill's card colours where they stand for that bill.
+
+## Logo
+
+A white calendar card with an ink header and a violet check mark on a violet gradient
+(`tool/generate_icons.py`, the adaptive-icon vectors in `android/app/src/main/res/drawable/`,
+iOS icons and `docs/images/icon-512.png`). The logo is our own drawing; Remix Icon's licence
+does not allow its icons as a logo. The splash uses the page background (`#F3F1F7` light,
+`#0E0C14` dark).
 
 ## Shape, spacing and motion
 
 | Token | Value |
 |---|---|
-| Page padding | 20 |
-| Section gap / card gap / list gap | 24 / 16 / 12 |
-| Card radius | 20 |
-| Button and input radius, height | 16, 56 (compact 44) |
-| Chip radius, height | 12, 40 |
-| Dialog radius | 24 |
-| Bottom sheet radius | 28 |
-| Bottom navigation | floating dock, radius 24, 12 from the sides |
+| Page padding | 22 |
+| Section gap / card gap / list gap | 28 / 16 / 12 |
+| Wallet card and panel radius | 22 |
+| Buttons | full pill (radius 28), height 56 (compact 44) |
+| Inputs | radius 18, height 56; search is a pill |
+| Chips | pill, height 40 |
+| Dialog / sheet radius | 28 / 30 |
+| Navigation pill | height 60, radius 30, 14 from the sides |
 | Touch target | at least 48 |
-| Motion | 200 ms (280 ms for sheets and page pushes), ease-out cubic |
+| Motion | 200 ms (300 ms for sheets and page pushes), ease-out cubic |
 
 Pressed controls scale down slightly (to 98 %, icon buttons 92 %) and tint, instead of a ripple.
-Cards have a 1px outline; light mode adds a soft shadow, dark mode relies on the outline.
 
 ## Navigation
 
-Five tabs: **Beranda**, **Kalender**, **Langganan**, **Statistik**, **Pengaturan**. The tabs sit in
-a dock floating above the page edge; the active tab gets a Plum marker hanging from the dock's
-top edge (like the tab on a calendar divider) above a filled icon. Each tab keeps its own scroll position. Detail pages
-(bill detail, form, history, PIN, battery guide) slide in above the tabs with a back button.
-Sheets slide up from the bottom with a title and a close button, and can also be dragged
-down to close.
+Five tabs: **Beranda**, **Kalender**, **Langganan**, **Statistik**, **Pengaturan**, as icons in a
+pill floating above the page; the active tab is a filled capsule that also shows its label when
+it fits (every tab keeps its spoken label). Beside the pill, the round accent **+** adds a bill
+from any tab. Each tab keeps its own scroll position. Detail pages slide in above the tabs with
+a raised back button. Sheets slide up with a title and a close button, and can be dragged down.
+
+## Screens
+
+- **Beranda**: the date and greeting, then **Sisa tagihan bulan ini** in large type over a
+  paid/remaining bar, then **Kartu tagihan**: the upcoming bills as a wallet stack. The front
+  card shows the status badge, the first line of the notes (often the customer number; hidden
+  when empty), the due date, the price and **Bayar** (with Batalkan); the cards behind show
+  their name and countdown. "Semua (n)" opens Langganan.
+- **Langganan**: search pill, category filter, and every bill as a compact wallet card with
+  Bayar. Swipe right marks paid (with undo), swipe left deletes (asks first).
+- **Detail tagihan**: a large wallet card (category, countdown, name, price), Sudah dibayar, then
+  a panel of details; long-press a row to copy its value.
+- **Form**: filled inputs with the label above; **Warna kartu** offers Otomatis plus the eight
+  card colours.
+- **Kalender**: month grid in a panel with status dots; a day opens a sheet of small wallet
+  cards with their reminder times.
+- **Statistik**: the monthly average in large type, the coming 30 days, the most expensive bill
+  as its wallet card, and the category and monthly charts.
+- **Pengaturan → Tampilan**: Tema (Terang / Gelap / Ikuti sistem, each with a preview) and
+  Warna aksen. Both apply at once, are read before the first frame and travel in backups.
 
 ## Components
 
-- **Subscription card**: category tile, name and category, price (foreign currency shows
-  "US$20,00 ≈ Rp 357.611"), status chip and due date. Swipe right: mark as paid (with undo).
-  Swipe left: delete (asks first).
-- **Monthly spending card**: this month's total, paid versus remaining, and a progress ring
-  (decorative; screen readers read the percentage once).
-- **Add button** (`B4TicketButton`): shaped like a bill ticket, with an icon stub, a dashed
-  perforation and notches top and bottom, then the label "Tambah tagihan".
-- **Switch**: a squircle track with a square knob that keeps its size; position and fill tell
-  the state, no icon in the knob.
-- **Chips**: a leading ring, hollow when off and filled when on, so the choice reads without
-  colour; selected chips are filled Plum, unselected ones a soft fill without a border.
-- **Text fields**: label above the field, Plum focus border, error message with an icon below.
-  Long-press opens the app's own Potong / Salin / Tempel / Pilih semua menu, a light card with
-  Plum labels.
-- **Pickers**: dropdowns are sheets listing the options; the date picker is a month grid of
-  rounded-square days with a tappable title for jumping years; the time picker has hour and
-  minute steppers (minutes in steps of five) plus quick times 07.00, 09.00, 12.00, 17.00 and
-  20.00. Screen readers adjust the steppers with swipe up/down.
-- **Dialogs**: an icon tile (red for destructive actions), title, text, and two buttons of equal
-  width: outlined cancel and filled confirm.
-- **Toast**: replaces snackbars. A light card with a status-coloured edge and icon tile at the
-  top of the screen (never under the keyboard, navigation bar or add button), optional action
-  such as "Batalkan", swipe up to dismiss.
-- **Loading**: three Plum dots pulsing in turn.
-- **PIN pad**: rounded-square keys, not the round keys of a system lock screen.
-- **Empty state**: illustration tile, title, one sentence, one primary action.
-- **Detail rows**: long-press copies the value (handy for a customer number in the notes).
+- **Switch**: a pill track that fills with the accent, with a dark knob that keeps its size.
+- **Chips**: pills with a leading ring, hollow when off and filled when on, so the choice reads
+  without colour; selected chips are filled with the primary colour.
+- **Text fields**: label above, ink focus border, error message with an icon below. Long-press
+  opens the app's own Potong / Salin / Tempel / Pilih semua menu.
+- **Pickers**: dropdowns are sheets; the date picker is a month grid of rounded-square days; the
+  time picker has hour and minute steppers plus quick times 07.00, 09.00, 12.00, 17.00 and
+  20.00.
+- **Dialogs**: an icon circle (red for destructive actions), title, text and two equal pills.
+- **Toast**: an inverted pill that drops in at the top with a status circle and an optional
+  accent action such as "Batalkan"; swipe up to dismiss.
+- **Loading**: three dots pulsing in turn.
+- **PIN pad**: raised rounded-square keys, not the round keys of a system lock screen.
 
 ## Accessibility (WCAG AA)
 
-- Every text/background pair the kit draws is checked at 4.5:1 or more, in both themes
-  (`test/ui/palette_contrast_test.dart`).
-- Status dots use the bright shades; status text uses darker (light mode) or lighter (dark mode)
-  shades on a tinted chip to reach 4.5:1.
+- Every text/background pair the kit draws is checked at 4.5:1 or more in both themes and with
+  every accent, and white text on every wallet card too (`test/ui/palette_contrast_test.dart`).
+- Status text uses darker (light mode) or lighter (dark mode) shades on a tinted chip, or white
+  on a translucent badge on a wallet card.
 - Swipe backgrounds use `#067647` (paid) and `#B42318` (delete) behind white icons and text.
-- Icon-only buttons always have a spoken label; switches and selected chips report their state.
+- Icon-only buttons and navigation tabs always have a spoken label; switches and selected chips
+  report their state.
 - Minimum text size is 14sp. Touch targets are at least 48dp.
 
 ## Not the platform look
 
 Being drawn by the app is not enough; controls must not *look* like Android (Material) or iOS
-defaults either. So there is no ripple, no pill navigation indicator, no thumb-growing switch,
-no extended FAB, no check-mark filter chips, no drag handle on sheets, no right-aligned text
-buttons in dialogs, no dark snackbar, no spinning arc, no wheel or clock time picker, and no
-round calendar-day or PIN keys. New components follow the same rule.
+defaults either. So there is no ripple, no M3 navigation bar with a pill behind a labelled icon,
+no thumb-growing switch, no extended FAB, no check-mark filter chips, no outlined white cards,
+no drag handle on sheets, no right-aligned text buttons in dialogs, no dark snackbar at the
+bottom, no spinning arc, no wheel or clock time picker, and no round calendar-day or PIN keys.
+New components follow the same rule.
 
 The only system UI left is what Android itself draws and the app cannot replace: the
 fingerprint prompt, the file picker for backups, the share sheet and notifications.
@@ -169,4 +209,5 @@ fingerprint prompt, the file picker for backups, the share sheet and notificatio
   the notification opens the bill).
 - Swipe left deletes (with confirmation) instead of archiving; one-off bills are archived
   automatically when paid.
-- Service logos and payment-method fields are not included; cards show a category icon.
+- Service logos and payment-method fields are not included; cards show a category icon and
+  colour.
