@@ -2,5 +2,5 @@
 <resources>
     <!-- Window and splash background; matches Palette.light.background in
          lib/ui/tokens.dart. values-night holds the dark variant. -->
-    <color name="b4due_background">#F8F6FB</color>
+    <color name="b4due_background">#F3F1F7</color>
 </resources>
