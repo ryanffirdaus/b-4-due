@@ -480,6 +480,10 @@ abstract final class Tokens {
   static const dockRadius = 30.0;
   static const dockHeight = 60.0;
 
+  /// Bottom space a tab's list leaves so its last item can scroll clear of
+  /// the floating add button.
+  static const fabClearance = 84.0;
+
   static const controlHeight = 56.0;
   static const compactControlHeight = 44.0;
 

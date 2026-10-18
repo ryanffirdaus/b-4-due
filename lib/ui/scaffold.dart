@@ -69,24 +69,33 @@ class B4Scaffold extends StatelessWidget {
               children: [
                 ?topBar,
                 Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      bottom: bottomBar == null ? keyboard : 0,
-                    ),
-                    child: content,
+                  // The floating action sits over the content, just above
+                  // the bottom bar.
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            bottom: bottomBar == null ? keyboard : 0,
+                          ),
+                          child: content,
+                        ),
+                      ),
+                      if (floatingAction != null &&
+                          (bottomBar == null || keyboard == 0))
+                        Positioned(
+                          right: Tokens.pagePadding,
+                          bottom: bottomBar == null
+                              ? Tokens.cardGap + media.padding.bottom + keyboard
+                              : 4,
+                          child: floatingAction!,
+                        ),
+                    ],
                   ),
                 ),
                 if (bottomBar != null && keyboard == 0) bottomBar!,
               ],
             ),
-            if (floatingAction != null)
-              Positioned(
-                right: Tokens.pagePadding,
-                bottom:
-                    Tokens.cardGap +
-                    (bottomBar == null ? media.padding.bottom + keyboard : 0),
-                child: floatingAction!,
-              ),
           ],
         ),
       ),
@@ -223,24 +232,20 @@ class B4NavItem {
   final String label;
 }
 
-/// Bottom navigation: a floating pill of tab icons with the add button
-/// beside it. The active tab is a filled capsule that also shows its label
-/// when there is room; every tab keeps its spoken label.
+/// Bottom navigation: a floating pill of tab icons. The active tab is a
+/// filled capsule that also shows its label when there is room; every tab
+/// keeps its spoken label.
 class B4BottomNav extends StatelessWidget {
   const B4BottomNav({
     required this.items,
     required this.selectedIndex,
     required this.onSelect,
-    this.trailing,
     super.key,
   });
 
   final List<B4NavItem> items;
   final int selectedIndex;
   final ValueChanged<int> onSelect;
-
-  /// Usually a [B4AddButton].
-  final Widget? trailing;
 
   static const _iconSlot = 46.0;
   static const _capsulePadding = 14.0;
@@ -317,7 +322,6 @@ class B4BottomNav extends StatelessWidget {
               ),
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
         ],
       ),
     );

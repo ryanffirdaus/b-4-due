@@ -45,7 +45,7 @@ class StatisticsScreen extends ConsumerWidget {
 
     return B4Scaffold(
       body: ListView(
-        padding: const EdgeInsets.only(bottom: Tokens.sectionGap),
+        padding: const EdgeInsets.only(bottom: Tokens.fabClearance),
         children: [
           B4PageTitle(l10n.navStatistics),
           Padding(
