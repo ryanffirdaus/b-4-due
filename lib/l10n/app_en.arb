@@ -316,5 +316,12 @@
   "pickerChoose": "Choose",
   "pickerHour": "Hour",
   "pickerMinute": "Minute",
-  "subsFilterRemove": "Remove filter"
+  "subsFilterRemove": "Remove filter",
+
+  "settingsAppearanceHeader": "Appearance",
+  "settingsTheme": "Theme",
+  "settingsThemeHelp": "Choose light, dark, or follow your phone.",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "Follow system"
 }

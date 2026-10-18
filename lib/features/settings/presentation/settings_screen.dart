@@ -11,6 +11,7 @@ import '../../bills/presentation/bill_labels.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../../reminders/reminder_providers.dart';
 import '../../security/presentation/security_section.dart';
+import 'theme_picker.dart';
 
 const _offsetChoices = [30, 14, 7, 3, 2, 1, 0];
 
@@ -41,6 +42,8 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 B4GroupLabel(l10n.settingsPermissionsHeader),
                 const _PermissionsCard(),
+                B4GroupLabel(l10n.settingsAppearanceHeader),
+                const ThemePicker(),
                 B4GroupLabel(l10n.settingsRemindersHeader),
                 B4Card(
                   child: Column(

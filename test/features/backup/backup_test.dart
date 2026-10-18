@@ -16,6 +16,7 @@ import 'package:b4due/features/reminders/domain/reminder_settings.dart';
 import 'package:b4due/features/security/domain/app_lock.dart';
 import 'package:b4due/features/security/domain/pin_hasher.dart';
 import 'package:b4due/features/settings/data/settings_repository.dart';
+import 'package:b4due/features/settings/domain/theme_preference.dart';
 import 'package:b4due/l10n/generated/app_localizations.dart';
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
@@ -201,6 +202,48 @@ void main() {
       await source.close();
       await target.close();
     });
+
+    test(
+      'the theme travels, but an older file keeps the current one',
+      () async {
+        final source = await _populated();
+        await SettingsRepository(source)
+            .setThemePreference(ThemePreference.dark);
+        final json = await _service(source).exportJson();
+        expect(
+          BackupCodec.decode(json).settings['appearance.theme'],
+          ThemePreference.dark.name,
+        );
+
+        final target = await _populated();
+        await _service(target).restore(BackupCodec.decode(json));
+        expect(
+          await SettingsRepository(target).getThemePreference(),
+          ThemePreference.dark,
+        );
+
+        // A backup made before themes existed leaves the choice alone.
+        final older = BackupCodec.decode(json);
+        final withoutTheme = BackupData(
+          bills: older.bills,
+          payments: older.payments,
+          settings: {
+            for (final e in older.settings.entries)
+              if (e.key != 'appearance.theme') e.key: e.value,
+          },
+          exportedAt: older.exportedAt,
+        );
+        await SettingsRepository(target)
+            .setThemePreference(ThemePreference.light);
+        await _service(target).restore(withoutTheme);
+        expect(
+          await SettingsRepository(target).getThemePreference(),
+          ThemePreference.light,
+        );
+        await source.close();
+        await target.close();
+      },
+    );
   });
 
   group('BackupCodec.decode rejects bad files', () {

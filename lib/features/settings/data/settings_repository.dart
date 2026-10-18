@@ -6,6 +6,7 @@ import '../../../core/database/app_database.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../../security/domain/app_lock.dart';
 import '../../security/domain/pin_hasher.dart';
+import '../domain/theme_preference.dart';
 
 /// Typed access to the key/value `app_settings` table.
 class SettingsRepository {
@@ -21,6 +22,7 @@ class SettingsRepository {
   static const _pinIterationsKey = 'lock.pinIterations';
   static const _biometricKey = 'lock.biometric';
   static const _calendarKey = 'device.calendarId';
+  static const _themeKey = 'appearance.theme';
 
   Future<String?> _read(String key) async {
     final row = await (_db.select(
@@ -101,6 +103,12 @@ class SettingsRepository {
   Future<String?> getCalendarId() => _read(_calendarKey);
 
   Future<void> setCalendarId(String id) => _write(_calendarKey, id);
+
+  Future<ThemePreference> getThemePreference() async =>
+      ThemePreference.parse(await _read(_themeKey));
+
+  Future<void> setThemePreference(ThemePreference preference) =>
+      _write(_themeKey, preference.name);
 
   /// Raw dump of all settings, used by backups.
   Future<Map<String, String>> exportAll() async {
