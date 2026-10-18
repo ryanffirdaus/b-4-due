@@ -113,11 +113,16 @@ circles, in a bill's card colours where they stand for that bill.
 
 ## Logo
 
-A white calendar card with a lime (`#B6F36B`) header and an ink (`#15121D`) check mark on a
-soft ink (`#2A2538`) to ink (`#0E0C14`) gradient (`tool/generate_icons.py`, the adaptive-icon
-vectors in `android/app/src/main/res/drawable/`, iOS icons and `docs/images/icon-512.png`). The
-notification icon is the same mark as a white silhouette, tinted `#2F6B0C`, which also colours
-the phone-calendar events. The logo is our own drawing; Remix Icon's licence
+The mark is the month summary from Beranda: a lifted dark panel (`#29233A`) holding a "$" in
+Sora ExtraBold, a lime (`#B6F36B`) progress bar over a grey track and a lime check dot, on a soft
+ink (`#2A2538`) to ink (`#0E0C14`) gradient. It stays inside the 72dp circle launchers may mask
+an adaptive icon to. The themed (monochrome) icon and the notification icon are its silhouette:
+the panel outline, the "$", the bar and the dot; notifications and phone-calendar events are
+tinted `#2F6B0C`.
+
+`tool/generate_icons.py` is the only source: it writes the adaptive foreground, background,
+monochrome and status-bar vector drawables and renders the PNG fallbacks, the iOS icons and
+`docs/images/icon-512.png` from one geometry. The logo is our own drawing; Remix Icon's licence
 does not allow its icons as a logo. The splash uses the page background (`#F3F1F7` light,
 `#0E0C14` dark).
 
