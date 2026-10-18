@@ -52,8 +52,99 @@ class ThemePicker extends ConsumerWidget {
               ],
             ],
           ),
+          const SizedBox(height: Tokens.sectionGap),
+          Text(
+            l10n.settingsAccent,
+            style: context.text.bodyLarge.copyWith(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 4),
+          Text(l10n.settingsAccentHelp, style: context.text.bodySmall),
+          const SizedBox(height: 14),
+          const _AccentRow(),
         ],
       ),
+    );
+  }
+}
+
+/// One swatch per accent; the chosen one gets a ring and a check.
+class _AccentRow extends ConsumerWidget {
+  const _AccentRow();
+
+  static String _label(AppLocalizations l10n, AccentColors accent) =>
+      switch (accent.name) {
+        'sky' => l10n.accentSky,
+        'coral' => l10n.accentCoral,
+        'violet' => l10n.accentViolet,
+        'amber' => l10n.accentAmber,
+        'mint' => l10n.accentMint,
+        _ => l10n.accentLime,
+      };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final p = context.palette;
+    final current = ref.watch(accentProvider);
+    return Wrap(
+      spacing: 6,
+      runSpacing: 10,
+      children: [
+        for (final accent in AccentColors.all)
+          Pressable(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ref.read(accentProvider.notifier).set(accent);
+            },
+            selected: accent == current,
+            semanticLabel: _label(l10n, accent),
+            excludeChildSemantics: true,
+            borderRadius: BorderRadius.circular(16),
+            pressedScale: 0.92,
+            child: SizedBox(
+              width: 64,
+              child: Column(
+                children: [
+                  AnimatedContainer(
+                    duration: Tokens.motion,
+                    width: 48,
+                    height: 48,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: accent == current
+                            ? p.textPrimary
+                            : const Color(0x00000000),
+                        width: 2.5,
+                      ),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: (p.isDark ? accent.dark : accent.light).fill,
+                      ),
+                      child: accent == current
+                          ? Icon(
+                              RemixIcons.checkLine,
+                              size: 20,
+                              color: (p.isDark ? accent.dark : accent.light)
+                                  .onFill,
+                            )
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _label(l10n, accent),
+                    textAlign: TextAlign.center,
+                    style: context.text.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

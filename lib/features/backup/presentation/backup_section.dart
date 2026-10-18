@@ -98,6 +98,7 @@ class BackupSection extends ConsumerWidget {
     if (!confirmed) return;
     final orphanEvents = await service.restore(data);
     await ref.read(themePreferenceProvider.notifier).reload();
+    await ref.read(accentProvider.notifier).reload();
     final calendar = ref.read(calendarGatewayProvider);
     for (final eventId in orphanEvents) {
       await calendar.deleteEvent(eventId);

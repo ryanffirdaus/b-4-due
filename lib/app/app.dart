@@ -130,6 +130,7 @@ class B4AppFrame extends ConsumerWidget {
     };
     return B4ThemeScope(
       brightness: brightness ?? chosen,
+      accent: ref.watch(accentProvider),
       child: AppLockGate(child: B4Toaster(child: child)),
     );
   }
