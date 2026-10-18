@@ -121,12 +121,11 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
             )
           else
             SliverPadding(
-              // Room for the floating button.
               padding: const EdgeInsets.fromLTRB(
                 Tokens.pagePadding,
                 8,
                 Tokens.pagePadding,
-                104,
+                Tokens.sectionGap,
               ),
               sliver: SliverList.separated(
                 itemCount: visible.length,
