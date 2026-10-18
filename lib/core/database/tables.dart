@@ -45,6 +45,10 @@ class Bills extends Table {
   /// Price in the currency's minor units; null for rupiah bills. Added in v4.
   IntColumn get originalAmountMinor => integer().nullable()();
 
+  /// Index into the wallet-card colours; null follows the category.
+  /// Added in v5.
+  IntColumn get cardColor => integer().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }

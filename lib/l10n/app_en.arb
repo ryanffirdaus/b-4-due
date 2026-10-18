@@ -331,5 +331,16 @@
   "accentCoral": "Coral",
   "accentViolet": "Violet",
   "accentAmber": "Amber",
-  "accentMint": "Mint"
+  "accentMint": "Mint",
+  "formCardColor": "Card colour",
+  "formCardColorAuto": "Automatic",
+  "formCardColorAutoHelp": "Follows the category",
+  "cardColorViolet": "Violet",
+  "cardColorGreen": "Green",
+  "cardColorRed": "Red",
+  "cardColorBlue": "Blue",
+  "cardColorOrange": "Orange",
+  "cardColorSlate": "Grey",
+  "cardColorMagenta": "Magenta",
+  "cardColorTeal": "Teal"
 }

@@ -41,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   /// A transaction that takes SQLite's write lock before running [action].
   ///
@@ -74,6 +74,9 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(schema.bills, schema.bills.currency);
         await m.addColumn(schema.bills, schema.bills.originalAmountMinor);
         await m.createTable(schema.cachedRates);
+      },
+      from4To5: (m, schema) async {
+        await m.addColumn(schema.bills, schema.bills.cardColor);
       },
     ),
     beforeOpen: (details) async {
