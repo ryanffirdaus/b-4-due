@@ -21,6 +21,7 @@ class BillDraft {
     this.amountIsEstimate = false,
     this.currency = idr,
     this.originalAmountMinor,
+    this.cardColor,
     this.reminderOffsets,
     this.reminderMinuteOfDay,
     this.notes,
@@ -36,6 +37,7 @@ class BillDraft {
     amountIsEstimate: bill.amountIsEstimate,
     currency: bill.currency,
     originalAmountMinor: bill.originalAmountMinor,
+    cardColor: bill.cardColor,
     reminderOffsets: bill.reminderOffsets,
     reminderMinuteOfDay: bill.reminderMinuteOfDay,
     notes: bill.notes,
@@ -56,6 +58,9 @@ class BillDraft {
 
   /// Price in [currency]'s minor units, for foreign-currency bills.
   final int? originalAmountMinor;
+
+  /// Chosen wallet-card colour; null follows the category.
+  final int? cardColor;
   final List<int>? reminderOffsets;
   final int? reminderMinuteOfDay;
   final String? notes;

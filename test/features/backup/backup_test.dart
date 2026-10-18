@@ -45,6 +45,7 @@ Future<AppDatabase> _populated() async {
       notes: () => 'ID pelanggan 5412 "rumah"; lantai 2',
       paymentUrl: () => 'https://example.org/bayar?id=1',
       snoozedUntil: () => DateTime.utc(2026, 8, 21, 2),
+      cardColor: () => 4,
     ),
   );
   await bills.save(
@@ -166,6 +167,11 @@ void main() {
       expect(pln.reminderMinuteOfDay, 19 * 60);
       expect(pln.notes, 'ID pelanggan 5412 "rumah"; lantai 2');
       expect(pln.snoozedUntil, DateTime.utc(2026, 8, 21, 2));
+      expect(pln.cardColor, 4);
+      expect(
+        data.bills.firstWhere((b) => b.name == 'Perpanjang STNK').cardColor,
+        isNull,
+      );
       final stnk = data.bills.firstWhere((b) => b.name == 'Perpanjang STNK');
       expect(stnk.dueDate, LocalDate(2028, 2, 29));
       expect(stnk.recurrence, const Recurrence.every5Years());

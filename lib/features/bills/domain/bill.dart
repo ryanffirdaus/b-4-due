@@ -24,6 +24,7 @@ class Bill {
     this.amountIsEstimate = false,
     this.currency = idr,
     this.originalAmountMinor,
+    this.cardColor,
     this.reminderOffsets,
     this.reminderMinuteOfDay,
     this.notes,
@@ -50,6 +51,10 @@ class Bill {
   final int? originalAmountMinor;
 
   bool get isForeign => currency != idr;
+
+  /// Which wallet-card colour to show (an index into the app's card
+  /// colours); null follows the category.
+  final int? cardColor;
 
   final LocalDate dueDate;
 
@@ -93,6 +98,7 @@ class Bill {
     bool? amountIsEstimate,
     Currency? currency,
     int? Function()? originalAmountMinor,
+    int? Function()? cardColor,
     LocalDate? dueDate,
     int? anchorDay,
     Recurrence? recurrence,
@@ -115,6 +121,7 @@ class Bill {
       originalAmountMinor: originalAmountMinor != null
           ? originalAmountMinor()
           : this.originalAmountMinor,
+      cardColor: cardColor != null ? cardColor() : this.cardColor,
       dueDate: dueDate ?? this.dueDate,
       anchorDay: anchorDay ?? this.anchorDay,
       recurrence: recurrence ?? this.recurrence,

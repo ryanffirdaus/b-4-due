@@ -45,6 +45,7 @@ void main() {
       reminderMinuteOfDay: 19 * 60 + 30,
       notes: 'Bawa STNK',
       paymentUrl: 'https://example.org/bayar',
+      cardColor: 6,
       createdAt: now,
       updatedAt: now,
     );
@@ -62,6 +63,7 @@ void main() {
     expect(loaded.reminderMinuteOfDay, 19 * 60 + 30);
     expect(loaded.notes, 'Bawa STNK');
     expect(loaded.paymentUrl, 'https://example.org/bayar');
+    expect(loaded.cardColor, 6);
     expect(loaded.createdAt.isAtSameMomentAs(now), isTrue);
   });
 

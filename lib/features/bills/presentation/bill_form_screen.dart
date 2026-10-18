@@ -20,6 +20,7 @@ import '../domain/bill_category.dart';
 import '../domain/bill_draft.dart';
 import '../domain/recurrence.dart';
 import 'bill_labels.dart';
+import 'widgets/card_color_picker.dart';
 
 /// Offsets offered as chips when a bill has its own reminder schedule.
 const _offsetChoices = [30, 14, 7, 3, 2, 1, 0];
@@ -49,6 +50,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
   late RecurrenceType _recurrenceType;
   late bool _amountIsEstimate;
   late Currency _currency;
+  int? _cardColor;
 
   /// null = use app defaults.
   List<int>? _offsets;
@@ -85,6 +87,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
         bill?.dueDate ?? template?.suggestedDueDate(today) ?? today.addDays(7);
     _amountIsEstimate = bill?.amountIsEstimate ?? false;
     _currency = bill?.currency ?? template?.currency ?? idr;
+    _cardColor = bill?.cardColor;
     if (_currency != idr) _ensureRates();
     _offsets = bill?.reminderOffsets;
     _minuteOfDay = bill?.reminderMinuteOfDay;
@@ -161,6 +164,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     amountIsEstimate: _amountIsEstimate,
     currency: _currency,
     originalAmountMinor: _currency == idr ? null : _originalMinor(),
+    cardColor: _cardColor,
     reminderOffsets: _offsets,
     reminderMinuteOfDay: _offsets == null ? null : _minuteOfDay,
     notes: _notes.text,
@@ -260,6 +264,12 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                   B4Option(c, c.label(l10n), icon: c.icon),
               ],
               onChanged: (value) => setState(() => _category = value),
+            ),
+            const _Gap(),
+            CardColorPicker(
+              value: _cardColor,
+              category: _category,
+              onChanged: (value) => setState(() => _cardColor = value),
             ),
             const _Gap(),
             Row(

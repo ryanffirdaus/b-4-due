@@ -24,6 +24,23 @@ extension BillCategoryUi on BillCategory {
     BillCategory.other => RemixIcons.fileList3Line,
   };
 
+  /// Index into [Palette.walletCards] used when a bill has no colour of
+  /// its own.
+  int get defaultCardColor => switch (this) {
+    BillCategory.electricity => 4,
+    BillCategory.water => 3,
+    BillCategory.internet => 7,
+    BillCategory.phone => 0,
+    BillCategory.health => 2,
+    BillCategory.vehicleTax => 5,
+    BillCategory.installment => 6,
+    BillCategory.insurance => 1,
+    BillCategory.subscription => 0,
+    BillCategory.housing => 1,
+    BillCategory.education => 3,
+    BillCategory.other => 5,
+  };
+
   String label(AppLocalizations l10n) => switch (this) {
     BillCategory.electricity => l10n.categoryElectricity,
     BillCategory.water => l10n.categoryWater,
@@ -92,3 +109,29 @@ String? billPrice(AppLocalizations l10n, Formatters format, Bill bill) =>
       isEstimate: bill.amountIsEstimate,
       estimateLabel: l10n.detailAmountEstimate,
     );
+
+/// The wallet-card colours at [index], or the [category]'s own when the
+/// index is null or out of range.
+WalletCardColors walletCardColors(int? index, BillCategory category) {
+  const cards = Palette.walletCards;
+  final i = index != null && index >= 0 && index < cards.length
+      ? index
+      : category.defaultCardColor;
+  return cards[i];
+}
+
+extension BillCardColors on Bill {
+  WalletCardColors get cardColors => walletCardColors(cardColor, category);
+}
+
+/// Spoken names of [Palette.walletCards], in order.
+List<String> cardColorNames(AppLocalizations l10n) => [
+  l10n.cardColorViolet,
+  l10n.cardColorGreen,
+  l10n.cardColorRed,
+  l10n.cardColorBlue,
+  l10n.cardColorOrange,
+  l10n.cardColorSlate,
+  l10n.cardColorMagenta,
+  l10n.cardColorTeal,
+];

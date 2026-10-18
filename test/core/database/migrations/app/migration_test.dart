@@ -11,6 +11,7 @@ import 'generated/schema_v1.dart' as v1;
 import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
+import 'generated/schema_v5.dart' as v5;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -134,6 +135,40 @@ void main() {
         expect(migrated.currency, 'IDR');
         expect(migrated.originalAmountMinor, isNull);
         expect(await newDb.select(newDb.cachedRates).get(), isEmpty);
+      },
+    );
+  });
+
+  test('v4 to v5 keeps bills and leaves their card colour to the '
+      'category', () async {
+    const bill = v4.BillsData(
+      id: '0b9f6a52-4d0b-4c1e-9c41-2f6d0b6f7a04',
+      name: 'Claude Pro',
+      category: 'subscription',
+      amount: 357611,
+      amountIsEstimate: 0,
+      dueDate: '2026-08-12',
+      anchorDay: 12,
+      recurrence: 'monthly',
+      intervalMonths: 1,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      currency: 'USD',
+      originalAmountMinor: 2000,
+    );
+    await verifier.testWithDataIntegrity(
+      oldVersion: 4,
+      newVersion: 5,
+      createOld: v4.DatabaseAtV4.new,
+      createNew: v5.DatabaseAtV5.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) => batch.insert(oldDb.bills, bill),
+      validateItems: (newDb) async {
+        final migrated = (await newDb.select(newDb.bills).get()).single;
+        expect(migrated.name, 'Claude Pro');
+        expect(migrated.currency, 'USD');
+        expect(migrated.originalAmountMinor, 2000);
+        expect(migrated.cardColor, isNull);
       },
     );
   });

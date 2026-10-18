@@ -359,5 +359,16 @@
   "accentCoral": "Koral",
   "accentViolet": "Ungu",
   "accentAmber": "Kuning",
-  "accentMint": "Mint"
+  "accentMint": "Mint",
+  "formCardColor": "Warna kartu",
+  "formCardColorAuto": "Otomatis",
+  "formCardColorAutoHelp": "Ikut kategori",
+  "cardColorViolet": "Ungu",
+  "cardColorGreen": "Hijau",
+  "cardColorRed": "Merah",
+  "cardColorBlue": "Biru",
+  "cardColorOrange": "Oranye",
+  "cardColorSlate": "Abu-abu",
+  "cardColorMagenta": "Magenta",
+  "cardColorTeal": "Toska"
 }
