@@ -153,6 +153,8 @@ a raised back button. Sheets slide up with a title and a close button, and can b
   card shows the status badge, the first line of the notes (often the customer number; hidden
   when empty), the due date, the price and **Bayar** (with Batalkan); the cards behind show
   their name and countdown. "Semua (n)" opens Langganan.
+- **Anggaran**: with a monthly budget set (Pengaturan → Anggaran), Beranda adds a line under the
+  month summary: the room left under it, or a red note when this month's bills go over it.
 - **Langganan**: search pill, category filter, and every bill as a compact wallet card with
   Bayar. Swipe right marks paid (with undo), swipe left deletes (asks first).
 - **Detail tagihan**: a large wallet card (category, countdown, name, price), Sudah dibayar, then

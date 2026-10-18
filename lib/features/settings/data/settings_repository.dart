@@ -23,6 +23,7 @@ class SettingsRepository {
   static const _biometricKey = 'lock.biometric';
   static const _calendarKey = 'device.calendarId';
   static const _themeKey = 'appearance.theme';
+  static const _budgetKey = 'budget.monthly';
   static const _accentKey = 'appearance.accent';
 
   Future<String?> _read(String key) async {
@@ -110,6 +111,28 @@ class SettingsRepository {
 
   Future<void> setThemePreference(ThemePreference preference) =>
       _write(_themeKey, preference.name);
+
+  /// The monthly budget in rupiah, or null when none is set.
+  Stream<int?> watchMonthlyBudget() => _watch(_budgetKey).map(_parseBudget);
+
+  Future<int?> getMonthlyBudget() async =>
+      _parseBudget(await _read(_budgetKey));
+
+  /// Null removes the budget.
+  Future<void> setMonthlyBudget(int? rupiah) async {
+    if (rupiah == null) {
+      await (_db.delete(
+        _db.appSettings,
+      )..where((s) => s.key.equals(_budgetKey))).go();
+      return;
+    }
+    await _write(_budgetKey, rupiah.toString());
+  }
+
+  static int? _parseBudget(String? value) {
+    final parsed = int.tryParse(value ?? '');
+    return parsed != null && parsed > 0 ? parsed : null;
+  }
 
   /// The accent's name (`lime`, `sky`, ...), or null for the default.
   Future<String?> getAccent() => _read(_accentKey);

@@ -10,6 +10,7 @@ import '../../../ui/ui.dart';
 import '../../bills/domain/bill.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../bills/presentation/widgets/bill_wallet_card.dart';
+import '../../budget/domain/budget_status.dart';
 import '../../payments/domain/payment.dart';
 import '../domain/home_summary.dart';
 
@@ -95,7 +96,10 @@ class _HomeContent extends ConsumerWidget {
       children: [
         _Greeting(today: today),
         const SizedBox(height: Tokens.sectionGap),
-        _MonthSummary(summary: summary),
+        _MonthSummary(
+          summary: summary,
+          budget: ref.watch(monthlyBudgetProvider).value,
+        ),
         B4SectionHeader(
           title: l10n.homeCards,
           actionLabel: l10n.homeSeeAllCount(allActive),
@@ -184,9 +188,12 @@ class _Greeting extends ConsumerWidget {
 /// What is still to pay this month, in large type, over a paid/remaining
 /// bar.
 class _MonthSummary extends StatelessWidget {
-  const _MonthSummary({required this.summary});
+  const _MonthSummary({required this.summary, this.budget});
 
   final HomeSummary summary;
+
+  /// The monthly budget from Pengaturan, if one is set.
+  final int? budget;
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +238,12 @@ class _MonthSummary extends StatelessWidget {
               ),
             ],
           ),
+          if (budget case final budget?) ...[
+            const SizedBox(height: 10),
+            _BudgetLine(
+              status: BudgetStatus(budget: budget, planned: total),
+            ),
+          ],
           if (summary.monthUnknownAmountCount > 0) ...[
             const SizedBox(height: 4),
             Text(
@@ -240,6 +253,33 @@ class _MonthSummary extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Room left under the monthly budget, or a warning when this month's bills
+/// go over it.
+class _BudgetLine extends StatelessWidget {
+  const _BudgetLine({required this.status});
+
+  final BudgetStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final format = context.formatters;
+    if (status.isOver) {
+      return B4Note(
+        tone: B4Tone.danger,
+        text: l10n.homeBudgetOver(format.rupiah(status.difference)),
+      );
+    }
+    return Text(
+      l10n.homeBudgetRoom(
+        format.rupiah(status.budget),
+        format.rupiah(status.difference),
+      ),
+      style: context.text.bodySmall,
     );
   }
 }

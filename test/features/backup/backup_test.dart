@@ -213,6 +213,19 @@ void main() {
       await target.close();
     });
 
+    test('the monthly budget travels', () async {
+      final source = await _populated();
+      await SettingsRepository(source).setMonthlyBudget(3000000);
+      final json = await _service(source).exportJson();
+      expect(BackupCodec.decode(json).settings['budget.monthly'], '3000000');
+
+      final target = await _populated();
+      await _service(target).restore(BackupCodec.decode(json));
+      expect(await SettingsRepository(target).getMonthlyBudget(), 3000000);
+      await source.close();
+      await target.close();
+    });
+
     test(
       'the theme travels, but an older file keeps the current one',
       () async {

@@ -384,5 +384,16 @@
   "detailInstallments": "Cicilan",
   "detailInstallmentsValue": "Angsuran {number} dari {total} · sisa {left}",
   "@detailInstallmentsValue": {"placeholders": {"number": {"type": "int"}, "total": {"type": "int"}, "left": {"type": "int"}}},
-  "detailPaidInstallmentsDone": "Dicatat. Cicilan ini sudah lunas semua, selamat!"
+  "detailPaidInstallmentsDone": "Dicatat. Cicilan ini sudah lunas semua, selamat!",
+  "settingsBudgetHeader": "Anggaran",
+  "settingsBudget": "Anggaran bulanan",
+  "settingsBudgetNone": "Belum diatur",
+  "settingsBudgetHelp": "Batas total tagihan dalam sebulan. Beranda memberi tahu bila terlampaui.",
+  "settingsBudgetAmount": "Nominal (Rp)",
+  "settingsBudgetError": "Isi nominal lebih dari 0.",
+  "settingsBudgetRemove": "Hapus anggaran",
+  "homeBudgetRoom": "Anggaran {budget} · masih ada ruang {room}",
+  "@homeBudgetRoom": {"placeholders": {"budget": {"type": "String"}, "room": {"type": "String"}}},
+  "homeBudgetOver": "Melebihi anggaran {amount}",
+  "@homeBudgetOver": {"placeholders": {"amount": {"type": "String"}}}
 }

@@ -96,6 +96,7 @@ List<PaymentEntry> demoPayments() => [
 List<Override> demoOverrides({
   List<Bill>? bills,
   List<PaymentEntry>? payments,
+  int? budget,
 }) {
   final history = payments ?? demoPayments();
   return [
@@ -113,5 +114,6 @@ List<Override> demoOverrides({
       const AsyncData(ReminderSettings()),
     ),
     exchangeRatesProvider.overrideWithValue(AsyncData(goldenRates)),
+    monthlyBudgetProvider.overrideWithValue(AsyncData(budget)),
   ];
 }
