@@ -159,6 +159,9 @@ a raised back button. Sheets slide up with a title and a close button, and can b
   a panel of details; long-press a row to copy its value.
 - **Form**: filled inputs with the label above; **Warna kartu** offers Otomatis plus the eight
   card colours.
+  Repeating bills can switch on **Cicilan dengan tenor** (number of payments and the current
+  one); cards then show "Angsuran 13 dari 60" in place of the note line, the detail page the
+  payments left, and paying the last one finishes the bill.
 - **Kalender**: month grid in a panel with status dots; a day opens a sheet of small wallet
   cards with their reminder times.
 - **Statistik**: the monthly average in large type, the coming 30 days, the most expensive bill

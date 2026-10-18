@@ -29,6 +29,8 @@ Future<void> markBillPaid(
   toast.show(
     switch (result.outcome) {
       PayOutcome.paid => l10n.detailPaidNext(format.longDate(next!)),
+      PayOutcome.archived when bill.hasInstallments =>
+        l10n.detailPaidInstallmentsDone,
       PayOutcome.archived => l10n.detailPaidArchived,
       PayOutcome.alreadyHandled => l10n.detailPaidAlready,
     },
@@ -78,7 +80,12 @@ class BillWalletCard extends ConsumerWidget {
     final colors = bill.cardColors;
     final price = billPrice(l10n, format, bill);
     final due = relativeDueLabel(l10n, bill.dueDate, today);
-    final note = compact ? null : bill.notes?.split('\n').first.trim();
+    // The instalment count wins over the note line; lists show only it.
+    final note = bill.hasInstallments
+        ? l10n.cardInstallment(bill.installmentNumber!, bill.installmentTotal!)
+        : compact
+        ? null
+        : bill.notes?.split('\n').first.trim();
     final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.6);
     const white = B4WalletCard.foreground;
     final soft = white.withValues(alpha: 0.86);

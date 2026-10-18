@@ -235,6 +235,28 @@ class $BillsTable extends Bills with TableInfo<$BillsTable, BillRow> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _installmentTotalMeta = const VerificationMeta(
+    'installmentTotal',
+  );
+  @override
+  late final GeneratedColumn<int> installmentTotal = GeneratedColumn<int>(
+    'installment_total',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _installmentNumberMeta = const VerificationMeta(
+    'installmentNumber',
+  );
+  @override
+  late final GeneratedColumn<int> installmentNumber = GeneratedColumn<int>(
+    'installment_number',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -258,6 +280,8 @@ class $BillsTable extends Bills with TableInfo<$BillsTable, BillRow> {
     currency,
     originalAmountMinor,
     cardColor,
+    installmentTotal,
+    installmentNumber,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -395,6 +419,24 @@ class $BillsTable extends Bills with TableInfo<$BillsTable, BillRow> {
         cardColor.isAcceptableOrUnknown(data['card_color']!, _cardColorMeta),
       );
     }
+    if (data.containsKey('installment_total')) {
+      context.handle(
+        _installmentTotalMeta,
+        installmentTotal.isAcceptableOrUnknown(
+          data['installment_total']!,
+          _installmentTotalMeta,
+        ),
+      );
+    }
+    if (data.containsKey('installment_number')) {
+      context.handle(
+        _installmentNumberMeta,
+        installmentNumber.isAcceptableOrUnknown(
+          data['installment_number']!,
+          _installmentNumberMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -496,6 +538,14 @@ class $BillsTable extends Bills with TableInfo<$BillsTable, BillRow> {
         DriftSqlType.int,
         data['${effectivePrefix}card_color'],
       ),
+      installmentTotal: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}installment_total'],
+      ),
+      installmentNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}installment_number'],
+      ),
     );
   }
 
@@ -555,6 +605,11 @@ class BillRow extends DataClass implements Insertable<BillRow> {
   /// Index into the wallet-card colours; null follows the category.
   /// Added in v5.
   final int? cardColor;
+
+  /// Instalment plan: how many payments in total, and which one is due now
+  /// (1-based). Both null for an open-ended bill. Added in v6.
+  final int? installmentTotal;
+  final int? installmentNumber;
   const BillRow({
     required this.id,
     required this.name,
@@ -577,6 +632,8 @@ class BillRow extends DataClass implements Insertable<BillRow> {
     required this.currency,
     this.originalAmountMinor,
     this.cardColor,
+    this.installmentTotal,
+    this.installmentNumber,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -636,6 +693,12 @@ class BillRow extends DataClass implements Insertable<BillRow> {
     if (!nullToAbsent || cardColor != null) {
       map['card_color'] = Variable<int>(cardColor);
     }
+    if (!nullToAbsent || installmentTotal != null) {
+      map['installment_total'] = Variable<int>(installmentTotal);
+    }
+    if (!nullToAbsent || installmentNumber != null) {
+      map['installment_number'] = Variable<int>(installmentNumber);
+    }
     return map;
   }
 
@@ -682,6 +745,12 @@ class BillRow extends DataClass implements Insertable<BillRow> {
       cardColor: cardColor == null && nullToAbsent
           ? const Value.absent()
           : Value(cardColor),
+      installmentTotal: installmentTotal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(installmentTotal),
+      installmentNumber: installmentNumber == null && nullToAbsent
+          ? const Value.absent()
+          : Value(installmentNumber),
     );
   }
 
@@ -718,6 +787,8 @@ class BillRow extends DataClass implements Insertable<BillRow> {
         json['originalAmountMinor'],
       ),
       cardColor: serializer.fromJson<int?>(json['cardColor']),
+      installmentTotal: serializer.fromJson<int?>(json['installmentTotal']),
+      installmentNumber: serializer.fromJson<int?>(json['installmentNumber']),
     );
   }
   @override
@@ -747,6 +818,8 @@ class BillRow extends DataClass implements Insertable<BillRow> {
       'currency': serializer.toJson<String>(currency),
       'originalAmountMinor': serializer.toJson<int?>(originalAmountMinor),
       'cardColor': serializer.toJson<int?>(cardColor),
+      'installmentTotal': serializer.toJson<int?>(installmentTotal),
+      'installmentNumber': serializer.toJson<int?>(installmentNumber),
     };
   }
 
@@ -772,6 +845,8 @@ class BillRow extends DataClass implements Insertable<BillRow> {
     String? currency,
     Value<int?> originalAmountMinor = const Value.absent(),
     Value<int?> cardColor = const Value.absent(),
+    Value<int?> installmentTotal = const Value.absent(),
+    Value<int?> installmentNumber = const Value.absent(),
   }) => BillRow(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -800,6 +875,12 @@ class BillRow extends DataClass implements Insertable<BillRow> {
         ? originalAmountMinor.value
         : this.originalAmountMinor,
     cardColor: cardColor.present ? cardColor.value : this.cardColor,
+    installmentTotal: installmentTotal.present
+        ? installmentTotal.value
+        : this.installmentTotal,
+    installmentNumber: installmentNumber.present
+        ? installmentNumber.value
+        : this.installmentNumber,
   );
   BillRow copyWithCompanion(BillsCompanion data) {
     return BillRow(
@@ -842,6 +923,12 @@ class BillRow extends DataClass implements Insertable<BillRow> {
           ? data.originalAmountMinor.value
           : this.originalAmountMinor,
       cardColor: data.cardColor.present ? data.cardColor.value : this.cardColor,
+      installmentTotal: data.installmentTotal.present
+          ? data.installmentTotal.value
+          : this.installmentTotal,
+      installmentNumber: data.installmentNumber.present
+          ? data.installmentNumber.value
+          : this.installmentNumber,
     );
   }
 
@@ -868,7 +955,9 @@ class BillRow extends DataClass implements Insertable<BillRow> {
           ..write('snoozedUntil: $snoozedUntil, ')
           ..write('currency: $currency, ')
           ..write('originalAmountMinor: $originalAmountMinor, ')
-          ..write('cardColor: $cardColor')
+          ..write('cardColor: $cardColor, ')
+          ..write('installmentTotal: $installmentTotal, ')
+          ..write('installmentNumber: $installmentNumber')
           ..write(')'))
         .toString();
   }
@@ -896,6 +985,8 @@ class BillRow extends DataClass implements Insertable<BillRow> {
     currency,
     originalAmountMinor,
     cardColor,
+    installmentTotal,
+    installmentNumber,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -921,7 +1012,9 @@ class BillRow extends DataClass implements Insertable<BillRow> {
           other.snoozedUntil == this.snoozedUntil &&
           other.currency == this.currency &&
           other.originalAmountMinor == this.originalAmountMinor &&
-          other.cardColor == this.cardColor);
+          other.cardColor == this.cardColor &&
+          other.installmentTotal == this.installmentTotal &&
+          other.installmentNumber == this.installmentNumber);
 }
 
 class BillsCompanion extends UpdateCompanion<BillRow> {
@@ -946,6 +1039,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
   final Value<String> currency;
   final Value<int?> originalAmountMinor;
   final Value<int?> cardColor;
+  final Value<int?> installmentTotal;
+  final Value<int?> installmentNumber;
   final Value<int> rowid;
   const BillsCompanion({
     this.id = const Value.absent(),
@@ -969,6 +1064,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
     this.currency = const Value.absent(),
     this.originalAmountMinor = const Value.absent(),
     this.cardColor = const Value.absent(),
+    this.installmentTotal = const Value.absent(),
+    this.installmentNumber = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BillsCompanion.insert({
@@ -993,6 +1090,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
     this.currency = const Value.absent(),
     this.originalAmountMinor = const Value.absent(),
     this.cardColor = const Value.absent(),
+    this.installmentTotal = const Value.absent(),
+    this.installmentNumber = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        name = Value(name),
@@ -1024,6 +1123,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
     Expression<String>? currency,
     Expression<int>? originalAmountMinor,
     Expression<int>? cardColor,
+    Expression<int>? installmentTotal,
+    Expression<int>? installmentNumber,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1050,6 +1151,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
       if (originalAmountMinor != null)
         'original_amount_minor': originalAmountMinor,
       if (cardColor != null) 'card_color': cardColor,
+      if (installmentTotal != null) 'installment_total': installmentTotal,
+      if (installmentNumber != null) 'installment_number': installmentNumber,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1076,6 +1179,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
     Value<String>? currency,
     Value<int?>? originalAmountMinor,
     Value<int?>? cardColor,
+    Value<int?>? installmentTotal,
+    Value<int?>? installmentNumber,
     Value<int>? rowid,
   }) {
     return BillsCompanion(
@@ -1100,6 +1205,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
       currency: currency ?? this.currency,
       originalAmountMinor: originalAmountMinor ?? this.originalAmountMinor,
       cardColor: cardColor ?? this.cardColor,
+      installmentTotal: installmentTotal ?? this.installmentTotal,
+      installmentNumber: installmentNumber ?? this.installmentNumber,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1178,6 +1285,12 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
     if (cardColor.present) {
       map['card_color'] = Variable<int>(cardColor.value);
     }
+    if (installmentTotal.present) {
+      map['installment_total'] = Variable<int>(installmentTotal.value);
+    }
+    if (installmentNumber.present) {
+      map['installment_number'] = Variable<int>(installmentNumber.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1208,6 +1321,8 @@ class BillsCompanion extends UpdateCompanion<BillRow> {
           ..write('currency: $currency, ')
           ..write('originalAmountMinor: $originalAmountMinor, ')
           ..write('cardColor: $cardColor, ')
+          ..write('installmentTotal: $installmentTotal, ')
+          ..write('installmentNumber: $installmentNumber, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2590,6 +2705,8 @@ typedef $$BillsTableCreateCompanionBuilder = BillsCompanion Function({
   Value<String> currency,
   Value<int?> originalAmountMinor,
   Value<int?> cardColor,
+  Value<int?> installmentTotal,
+  Value<int?> installmentNumber,
   Value<int> rowid,
 });
 typedef $$BillsTableUpdateCompanionBuilder = BillsCompanion Function({
@@ -2614,6 +2731,8 @@ typedef $$BillsTableUpdateCompanionBuilder = BillsCompanion Function({
   Value<String> currency,
   Value<int?> originalAmountMinor,
   Value<int?> cardColor,
+  Value<int?> installmentTotal,
+  Value<int?> installmentNumber,
   Value<int> rowid,
 });
 
@@ -2772,6 +2891,16 @@ class $$BillsTableFilterComposer extends Composer<_$AppDatabase, $BillsTable> {
 
   ColumnFilters<int> get cardColor => $composableBuilder(
     column: $table.cardColor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get installmentTotal => $composableBuilder(
+    column: $table.installmentTotal,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get installmentNumber => $composableBuilder(
+    column: $table.installmentNumber,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2939,6 +3068,16 @@ class $$BillsTableOrderingComposer
     column: $table.cardColor,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get installmentTotal => $composableBuilder(
+    column: $table.installmentTotal,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get installmentNumber => $composableBuilder(
+    column: $table.installmentNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$BillsTableAnnotationComposer
@@ -3032,6 +3171,16 @@ class $$BillsTableAnnotationComposer
 
   GeneratedColumn<int> get cardColor =>
       $composableBuilder(column: $table.cardColor, builder: (column) => column);
+
+  GeneratedColumn<int> get installmentTotal => $composableBuilder(
+    column: $table.installmentTotal,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get installmentNumber => $composableBuilder(
+    column: $table.installmentNumber,
+    builder: (column) => column,
+  );
 
   Expression<T> paymentsRefs<T extends Object>(
     Expression<T> Function($$PaymentsTableAnnotationComposer a) f,
@@ -3133,6 +3282,8 @@ class $$BillsTableTableManager
                 Value<String> currency = const Value.absent(),
                 Value<int?> originalAmountMinor = const Value.absent(),
                 Value<int?> cardColor = const Value.absent(),
+                Value<int?> installmentTotal = const Value.absent(),
+                Value<int?> installmentNumber = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BillsCompanion(
                 id: id,
@@ -3156,6 +3307,8 @@ class $$BillsTableTableManager
                 currency: currency,
                 originalAmountMinor: originalAmountMinor,
                 cardColor: cardColor,
+                installmentTotal: installmentTotal,
+                installmentNumber: installmentNumber,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3181,6 +3334,8 @@ class $$BillsTableTableManager
                 Value<String> currency = const Value.absent(),
                 Value<int?> originalAmountMinor = const Value.absent(),
                 Value<int?> cardColor = const Value.absent(),
+                Value<int?> installmentTotal = const Value.absent(),
+                Value<int?> installmentNumber = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BillsCompanion.insert(
                 id: id,
@@ -3204,6 +3359,8 @@ class $$BillsTableTableManager
                 currency: currency,
                 originalAmountMinor: originalAmountMinor,
                 cardColor: cardColor,
+                installmentTotal: installmentTotal,
+                installmentNumber: installmentNumber,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -49,6 +49,11 @@ class Bills extends Table {
   /// Added in v5.
   IntColumn get cardColor => integer().nullable()();
 
+  /// Instalment plan: how many payments in total, and which one is due now
+  /// (1-based). Both null for an open-ended bill. Added in v6.
+  IntColumn get installmentTotal => integer().nullable()();
+  IntColumn get installmentNumber => integer().nullable()();
+
   @override
   Set<Column<Object>> get primaryKey => {id};
 }

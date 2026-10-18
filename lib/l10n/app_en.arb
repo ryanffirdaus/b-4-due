@@ -342,5 +342,15 @@
   "homeCards": "Bill cards",
   "homeSeeAllCount": "All ({count})",
   "cardPay": "Pay",
-  "cardDueOn": "Due {date}"
+  "cardDueOn": "Due {date}",
+  "formInstallments": "Instalment plan",
+  "formInstallmentsHelp": "Stops by itself after the last payment.",
+  "formInstallmentTotal": "Number of payments",
+  "formInstallmentNumber": "Current payment no.",
+  "formErrorInstallmentTotal": "Enter 1 to 600.",
+  "formErrorInstallmentNumber": "Enter 1 up to the number of payments.",
+  "cardInstallment": "Payment {number} of {total}",
+  "detailInstallments": "Instalments",
+  "detailInstallmentsValue": "Payment {number} of {total} · {left} left",
+  "detailPaidInstallmentsDone": "Recorded. This plan is fully paid, congratulations!"
 }

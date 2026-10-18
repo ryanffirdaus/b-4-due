@@ -27,6 +27,7 @@ fictional data is in [`demo/contoh-cadangan.json`](../demo/contoh-cadangan.json)
 | `currency` | string | optional, ISO 4217 code, default `IDR`; unknown codes become `IDR` |
 | `originalAmountMinor` | int \| null | optional; the price in `currency` minor units (e.g. 2000 = US$20.00); null for `IDR` |
 | `cardColor` | int \| null | optional; wallet-card colour, 0 to 7; null or absent follows the category |
+| `installmentTotal`, `installmentNumber` | int \| null | optional; an instalment plan: payments in total and the one due now (1-based); both null or absent for an open-ended bill |
 | `dueDate` | string | current unpaid due date, `yyyy-MM-dd` |
 | `anchorDay` | int | 1-31, the day of month the user chose |
 | `recurrence` | string | `once`, `monthly`, `yearly`, `every5Years`, `everyNMonths` |

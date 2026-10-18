@@ -44,6 +44,8 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
   late final TextEditingController _notes;
   late final TextEditingController _url;
   late final TextEditingController _months;
+  late final TextEditingController _installmentTotal;
+  late final TextEditingController _installmentNumber;
 
   late BillCategory _category;
   late LocalDate _dueDate;
@@ -51,6 +53,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
   late bool _amountIsEstimate;
   late Currency _currency;
   int? _cardColor;
+  late bool _installments;
 
   /// null = use app defaults.
   List<int>? _offsets;
@@ -88,6 +91,13 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     _amountIsEstimate = bill?.amountIsEstimate ?? false;
     _currency = bill?.currency ?? template?.currency ?? idr;
     _cardColor = bill?.cardColor;
+    _installments = bill?.hasInstallments ?? false;
+    _installmentTotal = TextEditingController(
+      text: bill?.installmentTotal?.toString() ?? '',
+    );
+    _installmentNumber = TextEditingController(
+      text: bill?.installmentNumber?.toString() ?? '1',
+    );
     if (_currency != idr) _ensureRates();
     _offsets = bill?.reminderOffsets;
     _minuteOfDay = bill?.reminderMinuteOfDay;
@@ -116,6 +126,8 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     _notes.dispose();
     _url.dispose();
     _months.dispose();
+    _installmentTotal.dispose();
+    _installmentNumber.dispose();
     super.dispose();
   }
 
@@ -165,11 +177,31 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     currency: _currency,
     originalAmountMinor: _currency == idr ? null : _originalMinor(),
     cardColor: _cardColor,
+    installmentTotal: _hasPlan ? _planTotal() : null,
+    installmentNumber: _hasPlan ? _planNumber() : null,
     reminderOffsets: _offsets,
     reminderMinuteOfDay: _offsets == null ? null : _minuteOfDay,
     notes: _notes.text,
     paymentUrl: _url.text.trim().isEmpty ? null : _url.text,
   );
+
+  /// An instalment plan only applies to repeating bills.
+  bool get _hasPlan => _installments && _recurrenceType != RecurrenceType.once;
+
+  int? _planTotal() {
+    final total = int.tryParse(_installmentTotal.text.trim());
+    return total != null && total >= 1 && total <= BillDraft.maxInstallments
+        ? total
+        : null;
+  }
+
+  int? _planNumber() {
+    final number = int.tryParse(_installmentNumber.text.trim());
+    final total = _planTotal();
+    return number != null && number >= 1 && (total == null || number <= total)
+        ? number
+        : null;
+  }
 
   Future<void> _save() async {
     if (_saving || !_formKey.currentState!.validate()) return;
@@ -368,6 +400,56 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                 validator: (_) =>
                     _customRecurrence() == null ? l10n.formErrorMonths : null,
               ),
+            ],
+            if (_recurrenceType != RecurrenceType.once) ...[
+              const _Gap(),
+              B4Card(
+                padding: EdgeInsets.zero,
+                child: B4SwitchRow(
+                  icon: RemixIcons.bankCardLine,
+                  title: l10n.formInstallments,
+                  subtitle: l10n.formInstallmentsHelp,
+                  value: _installments,
+                  onChanged: (on) => setState(() => _installments = on),
+                ),
+              ),
+              if (_installments) ...[
+                const _Gap(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: B4TextFormField(
+                        controller: _installmentTotal,
+                        label: l10n.formInstallmentTotal,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(3),
+                        ],
+                        validator: (_) => _planTotal() == null
+                            ? l10n.formErrorInstallmentTotal
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: B4TextFormField(
+                        controller: _installmentNumber,
+                        label: l10n.formInstallmentNumber,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(3),
+                        ],
+                        validator: (_) => _planNumber() == null
+                            ? l10n.formErrorInstallmentNumber
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
             const _Gap(),
             _SectionLabel(l10n.formReminders),

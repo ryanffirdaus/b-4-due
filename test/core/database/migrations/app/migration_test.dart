@@ -12,6 +12,7 @@ import 'generated/schema_v2.dart' as v2;
 import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
+import 'generated/schema_v6.dart' as v6;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -169,6 +170,39 @@ void main() {
         expect(migrated.currency, 'USD');
         expect(migrated.originalAmountMinor, 2000);
         expect(migrated.cardColor, isNull);
+      },
+    );
+  });
+
+  test('v5 to v6 keeps bills open-ended, with no instalment plan', () async {
+    const bill = v5.BillsData(
+      id: '0b9f6a52-4d0b-4c1e-9c41-2f6d0b6f7a05',
+      name: 'KPR',
+      category: 'installment',
+      amount: 4250000,
+      amountIsEstimate: 0,
+      dueDate: '2026-08-25',
+      anchorDay: 25,
+      recurrence: 'monthly',
+      intervalMonths: 1,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      currency: 'IDR',
+      cardColor: 6,
+    );
+    await verifier.testWithDataIntegrity(
+      oldVersion: 5,
+      newVersion: 6,
+      createOld: v5.DatabaseAtV5.new,
+      createNew: v6.DatabaseAtV6.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) => batch.insert(oldDb.bills, bill),
+      validateItems: (newDb) async {
+        final migrated = (await newDb.select(newDb.bills).get()).single;
+        expect(migrated.name, 'KPR');
+        expect(migrated.cardColor, 6);
+        expect(migrated.installmentTotal, isNull);
+        expect(migrated.installmentNumber, isNull);
       },
     );
   });
