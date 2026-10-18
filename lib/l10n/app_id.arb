@@ -344,5 +344,12 @@
   "pickerChoose": "Pilih",
   "pickerHour": "Jam",
   "pickerMinute": "Menit",
-  "subsFilterRemove": "Hapus filter"
+  "subsFilterRemove": "Hapus filter",
+
+  "settingsAppearanceHeader": "Tampilan",
+  "settingsTheme": "Tema",
+  "settingsThemeHelp": "Pilih tampilan terang, gelap, atau ikut pengaturan HP.",
+  "themeLight": "Terang",
+  "themeDark": "Gelap",
+  "themeSystem": "Ikuti sistem"
 }

@@ -12,6 +12,8 @@ import '../features/reminders/domain/reminder_payload.dart';
 import '../features/reminders/reminder_providers.dart';
 import '../features/security/app_lock_controller.dart';
 import '../features/security/presentation/app_lock_gate.dart';
+import '../features/settings/domain/theme_preference.dart';
+import '../features/settings/theme_controller.dart';
 import '../l10n/generated/app_localizations.dart';
 import '../ui/ui.dart';
 import 'router.dart';
@@ -107,22 +109,27 @@ class _B4DueAppState extends ConsumerState<B4DueApp>
   }
 }
 
-/// Everything above the Navigator: theme (following the system's light or
-/// dark mode), the app lock, and the toast host. The lock covers every
-/// route, including ones opened from a notification, and keeps them alive
-/// underneath; toasts appear below the lock.
-class B4AppFrame extends StatelessWidget {
+/// Everything above the Navigator: theme (the user's choice, or the
+/// system's light or dark mode), the app lock, and the toast host. The lock
+/// covers every route, including ones opened from a notification, and keeps
+/// them alive underneath; toasts appear below the lock.
+class B4AppFrame extends ConsumerWidget {
   const B4AppFrame({required this.child, this.brightness, super.key});
 
   final Widget child;
 
-  /// Overrides the system setting (tests, screenshots).
+  /// Overrides the theme setting (tests, screenshots).
   final Brightness? brightness;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final chosen = switch (ref.watch(themePreferenceProvider)) {
+      ThemePreference.light => Brightness.light,
+      ThemePreference.dark => Brightness.dark,
+      ThemePreference.system => MediaQuery.platformBrightnessOf(context),
+    };
     return B4ThemeScope(
-      brightness: brightness ?? MediaQuery.platformBrightnessOf(context),
+      brightness: brightness ?? chosen,
       child: AppLockGate(child: B4Toaster(child: child)),
     );
   }

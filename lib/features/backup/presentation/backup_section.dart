@@ -14,6 +14,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../calendar/calendar_providers.dart';
+import '../../settings/theme_controller.dart';
 import '../data/backup_service.dart';
 import '../domain/backup_codec.dart';
 import 'csv_export.dart';
@@ -96,6 +97,7 @@ class BackupSection extends ConsumerWidget {
     );
     if (!confirmed) return;
     final orphanEvents = await service.restore(data);
+    await ref.read(themePreferenceProvider.notifier).reload();
     final calendar = ref.read(calendarGatewayProvider);
     for (final eventId in orphanEvents) {
       await calendar.deleteEvent(eventId);
