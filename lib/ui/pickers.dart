@@ -35,7 +35,7 @@ class B4FieldButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final radius = BorderRadius.circular(Tokens.controlRadius);
+    final radius = BorderRadius.circular(Tokens.inputRadius);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,

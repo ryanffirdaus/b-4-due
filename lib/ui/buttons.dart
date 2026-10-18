@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'feedback.dart';
+import 'icons.dart';
 import 'pressable.dart';
 import 'theme.dart';
 import 'tokens.dart';
@@ -89,7 +90,7 @@ class B4Button extends StatelessWidget {
       ),
       B4ButtonVariant.tonal => (
         destructive ? p.dangerSoft : p.primarySoft,
-        accent,
+        destructive ? p.dangerText : p.textPrimary,
         null,
       ),
       B4ButtonVariant.outline => (p.surface, accent, p.outlineStrong),
@@ -177,14 +178,14 @@ class B4IconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Color? color;
 
-  /// Plum-tinted circle behind the icon.
+  /// A raised circle behind the icon (top-bar actions).
   final bool filled;
   final double size;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final fg = color ?? (filled ? p.primaryText : p.textPrimary);
+    final fg = color ?? p.textPrimary;
     return DisabledOpacity(
       enabled: onPressed != null,
       child: Pressable(
@@ -199,7 +200,16 @@ class B4IconButton extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: filled ? p.primarySoft : null,
+            color: filled ? p.surface : null,
+            boxShadow: filled && !p.isDark
+                ? [
+                    BoxShadow(
+                      color: p.shadow,
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
           ),
           child: Icon(icon, size: size, color: fg),
         ),
@@ -208,132 +218,43 @@ class B4IconButton extends StatelessWidget {
   }
 }
 
-/// The floating "add a bill" action, shaped like a bill ticket: an icon
-/// stub, a perforation with notches top and bottom, then the label.
-class B4TicketButton extends StatelessWidget {
-  const B4TicketButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    super.key,
-  });
+/// The round accent "+" that sits beside the navigation pill: the one way
+/// to add a bill from every tab.
+class B4AddButton extends StatelessWidget {
+  const B4AddButton({required this.label, required this.onPressed, super.key});
 
-  final IconData icon;
+  /// Spoken by screen readers ("Tambah tagihan").
   final String label;
   final VoidCallback onPressed;
 
-  static const _stubWidth = 52.0;
+  static const size = 60.0;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    const shape = _TicketBorder(stubWidth: _stubWidth);
     return Pressable(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(Tokens.controlRadius),
+      semanticLabel: label,
+      excludeChildSemantics: true,
+      borderRadius: BorderRadius.circular(size / 2),
+      pressedScale: 0.9,
       pressedOverlay: const Color(0x14000000),
       child: Container(
-        height: Tokens.controlHeight,
-        decoration: ShapeDecoration(
-          color: p.primary,
-          shape: shape,
-          shadows: [
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: p.accent,
+          boxShadow: [
             BoxShadow(
-              color: p.primary.withValues(alpha: p.isDark ? 0.25 : 0.35),
+              color: p.accent.withValues(alpha: p.isDark ? 0.18 : 0.45),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: CustomPaint(
-          painter: _PerforationPainter(
-            x: _stubWidth,
-            color: p.onPrimary.withValues(alpha: 0.5),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: _stubWidth,
-                child: Icon(icon, color: p.onPrimary, size: 24),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 22, 0),
-                child: Text(
-                  label,
-                  style: context.text.labelLarge.copyWith(color: p.onPrimary),
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: Icon(RemixIcons.addLine, color: p.onAccent, size: 28),
       ),
     );
   }
-}
-
-/// A rounded rectangle with a semicircular notch in the top and bottom
-/// edges at [stubWidth], where a ticket would tear.
-class _TicketBorder extends ShapeBorder {
-  const _TicketBorder({required this.stubWidth});
-
-  final double stubWidth;
-
-  static const _radius = Tokens.controlRadius;
-  static const _notch = 6.0;
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.zero;
-
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
-      getOuterPath(rect, textDirection: textDirection);
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    final body = Path()
-      ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(_radius)));
-    final x = rect.left + stubWidth;
-    final notches = Path()
-      ..addOval(Rect.fromCircle(center: Offset(x, rect.top), radius: _notch))
-      ..addOval(
-        Rect.fromCircle(center: Offset(x, rect.bottom), radius: _notch),
-      );
-    return Path.combine(PathOperation.difference, body, notches);
-  }
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {}
-
-  @override
-  ShapeBorder scale(double t) => this;
-}
-
-/// Dashed vertical line between the notches of a [_TicketBorder].
-class _PerforationPainter extends CustomPainter {
-  const _PerforationPainter({required this.x, required this.color});
-
-  final double x;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1.5
-      ..strokeCap = StrokeCap.round;
-    const dash = 3.0;
-    const gap = 4.0;
-    for (
-      var y = _TicketBorder._notch + 4;
-      y < size.height - _TicketBorder._notch - 4;
-      y += dash + gap
-    ) {
-      canvas.drawLine(Offset(x, y), Offset(x, y + dash), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_PerforationPainter old) =>
-      old.x != x || old.color != color;
 }

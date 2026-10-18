@@ -117,7 +117,7 @@ class _B4TextFieldState extends State<B4TextField> {
       ),
       decoration: BoxDecoration(
         color: p.surfaceVariant,
-        borderRadius: BorderRadius.circular(Tokens.controlRadius),
+        borderRadius: BorderRadius.circular(Tokens.inputRadius),
         border: border,
       ),
       child: Row(

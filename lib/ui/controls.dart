@@ -7,9 +7,8 @@ import 'surfaces.dart';
 import 'theme.dart';
 import 'tokens.dart';
 
-/// On/off toggle: a squircle track with a square knob that slides across.
-/// The knob keeps its size and carries no icon; position and fill tell the
-/// state.
+/// On/off toggle: a pill track that fills with the accent, with a dark knob
+/// that slides across and keeps its size; position and fill tell the state.
 class B4Switch extends StatelessWidget {
   const B4Switch({
     required this.value,
@@ -40,8 +39,8 @@ class B4Switch extends StatelessWidget {
         button: false,
         toggled: value,
         semanticLabel: semanticLabel,
-        borderRadius: BorderRadius.circular(10),
-        pressedScale: 0.96,
+        borderRadius: BorderRadius.circular(16),
+        pressedScale: 0.94,
         child: SizedBox(
           width: 54,
           height: Tokens.minTouch,
@@ -50,15 +49,11 @@ class B4Switch extends StatelessWidget {
               duration: Tokens.motion,
               curve: Tokens.curve,
               width: 54,
-              height: 30,
-              padding: const EdgeInsets.all(3),
+              height: 32,
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
-                color: value ? p.primary : p.surfaceVariant,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: value ? p.primary : p.outlineStrong,
-                  width: 1.5,
-                ),
+                color: value ? p.accent : p.surfaceVariant,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: AnimatedAlign(
                 duration: Tokens.motion,
@@ -66,11 +61,11 @@ class B4Switch extends StatelessWidget {
                 alignment: value ? Alignment.centerRight : Alignment.centerLeft,
                 child: AnimatedContainer(
                   duration: Tokens.motion,
-                  width: 21,
-                  height: 21,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(7),
-                    color: value ? p.onPrimary : p.textSecondary,
+                    shape: BoxShape.circle,
+                    color: value ? p.onAccent : p.textSecondary,
                   ),
                 ),
               ),
@@ -128,7 +123,7 @@ class B4SwitchRow extends StatelessWidget {
 
 /// Selectable chip with a leading ring: hollow when off, filled when on, so
 /// the choice reads without relying on colour. Selected chips are filled
-/// Plum; unselected ones sit on a soft fill without a border.
+/// ink (light) or near-white (dark); unselected ones sit on a soft fill.
 class B4Chip extends StatelessWidget {
   const B4Chip({
     required this.label,

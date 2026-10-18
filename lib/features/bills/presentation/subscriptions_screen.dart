@@ -1,8 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/routes.dart';
 import '../../../core/providers.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
@@ -61,11 +59,6 @@ class _SubscriptionsScreenState extends ConsumerState<SubscriptionsScreen> {
     }).toList();
 
     return B4Scaffold(
-      floatingAction: B4TicketButton(
-        icon: RemixIcons.addLine,
-        label: l10n.homeAddBill,
-        onPressed: () => context.push(Routes.addBill),
-      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: B4PageTitle(l10n.navSubscriptions)),

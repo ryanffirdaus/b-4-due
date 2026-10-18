@@ -5,7 +5,8 @@ import 'pressable.dart';
 import 'theme.dart';
 import 'tokens.dart';
 
-/// Rounded surface for grouped content. With [onTap] the whole card is a
+/// A rounded panel for grouped content: no outline, a soft shadow in light
+/// mode, a lifted surface in dark mode. With [onTap] the whole panel is a
 /// button.
 class B4Card extends StatelessWidget {
   const B4Card({
@@ -34,15 +35,13 @@ class B4Card extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? p.surface,
         borderRadius: radius,
-        border: Border.all(color: p.outline),
         boxShadow: p.isDark
             ? null
             : [
                 BoxShadow(
                   color: p.shadow,
-                  blurRadius: 14,
-                  spreadRadius: -2,
-                  offset: const Offset(0, 3),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
               ],
       ),
@@ -145,9 +144,9 @@ class B4ListRow extends StatelessWidget {
     final p = context.palette;
     final text = context.text;
     final (Color iconFg, Color iconBg) = switch (tone) {
-      B4Tone.normal when selected => (p.primaryText, p.primarySoft),
-      B4Tone.normal => (p.textSecondary, p.surfaceVariant),
-      B4Tone.primary => (p.primaryText, p.primarySoft),
+      B4Tone.normal when selected => (p.onAccent, p.accent),
+      B4Tone.normal => (p.textPrimary, p.surfaceVariant),
+      B4Tone.primary => (p.accentText, p.accentSoft),
       B4Tone.success => (p.successText, p.successSoft),
       B4Tone.danger => (p.dangerText, p.dangerSoft),
     };
@@ -155,7 +154,7 @@ class B4ListRow extends StatelessWidget {
     final row = Container(
       constraints: const BoxConstraints(minHeight: 64),
       padding: padding,
-      color: selected ? p.primarySoft.withValues(alpha: 0.6) : null,
+      color: selected ? p.accentSoft : null,
       child: Row(
         children: [
           if (leading != null) ...[
@@ -216,7 +215,7 @@ class B4ListRow extends StatelessWidget {
   }
 }
 
-/// Rounded square holding an icon (category "logo", list row icon).
+/// A circle holding an icon (category "logo", list row icon).
 class B4IconTile extends StatelessWidget {
   const B4IconTile({
     required this.icon,
@@ -239,7 +238,7 @@ class B4IconTile extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         color: background ?? p.primarySoft,
-        borderRadius: BorderRadius.circular(size * 0.3),
+        shape: BoxShape.circle,
       ),
       child: Icon(icon, color: color ?? p.primaryText, size: size * 0.5),
     );
@@ -279,7 +278,7 @@ class B4Note extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(Tokens.controlRadius),
+        borderRadius: BorderRadius.circular(Tokens.inputRadius),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,10 +346,10 @@ class B4EmptyState extends StatelessWidget {
           width: 112,
           height: 112,
           decoration: BoxDecoration(
-            color: p.primarySoft,
-            borderRadius: BorderRadius.circular(36),
+            color: p.accentSoft,
+            shape: BoxShape.circle,
           ),
-          child: Icon(icon, size: 52, color: p.primaryText),
+          child: Icon(icon, size: 52, color: p.accentText),
         ),
         const SizedBox(height: Tokens.sectionGap),
         Text(

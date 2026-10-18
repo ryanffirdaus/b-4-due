@@ -16,3 +16,4 @@ export 'surfaces.dart';
 export 'text_field.dart';
 export 'theme.dart';
 export 'tokens.dart';
+export 'wallet.dart';

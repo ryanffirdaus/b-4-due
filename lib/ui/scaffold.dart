@@ -119,6 +119,7 @@ class B4TopBar extends StatelessWidget {
               B4IconButton(
                 icon: RemixIcons.arrowLeftLine,
                 label: l10n.actionBack,
+                filled: true,
                 onPressed: onBack ?? () => Navigator.of(context).maybePop(),
               )
             else
@@ -222,14 +223,15 @@ class B4NavItem {
   final String label;
 }
 
-/// Bottom navigation: a dock floating above the page edge. The active tab
-/// gets a Plum marker hanging from the dock's top edge, like the tab on a
-/// calendar divider, above a filled icon.
+/// Bottom navigation: a floating pill of tab icons with the add button
+/// beside it. The active tab is a filled capsule that also shows its label
+/// when there is room; every tab keeps its spoken label.
 class B4BottomNav extends StatelessWidget {
   const B4BottomNav({
     required this.items,
     required this.selectedIndex,
     required this.onSelect,
+    this.trailing,
     super.key,
   });
 
@@ -237,44 +239,86 @@ class B4BottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelect;
 
+  /// Usually a [B4AddButton].
+  final Widget? trailing;
+
+  static const _iconSlot = 46.0;
+  static const _capsulePadding = 14.0;
+  static const _iconSize = 22.0;
+  static const _labelGap = 6.0;
+
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
     final bottom = MediaQuery.paddingOf(context).bottom;
+    final labelStyle = context.text.labelMedium.copyWith(
+      color: p.onPrimary,
+      fontWeight: FontWeight.w700,
+    );
+    final scaler = MediaQuery.textScalerOf(context);
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(12, 4, 12, 10 + bottom),
-      child: Container(
-        decoration: BoxDecoration(
-          color: p.surface,
-          borderRadius: BorderRadius.circular(Tokens.dockRadius),
-          border: Border.all(color: p.outline),
-          boxShadow: p.isDark
-              ? null
-              : [
-                  BoxShadow(
-                    color: p.shadow,
-                    blurRadius: 24,
-                    spreadRadius: -4,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-        ),
-        padding: const EdgeInsets.fromLTRB(6, 0, 6, 6),
-        child: Row(
-          children: [
-            for (var i = 0; i < items.length; i++)
-              Expanded(
-                child: _NavButton(
-                  item: items[i],
-                  selected: i == selectedIndex,
-                  onTap: () {
-                    if (i != selectedIndex) HapticFeedback.selectionClick();
-                    onSelect(i);
-                  },
-                ),
+      padding: EdgeInsets.fromLTRB(14, 6, 14, 12 + bottom),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: Tokens.dockHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              decoration: BoxDecoration(
+                color: p.surface,
+                borderRadius: BorderRadius.circular(Tokens.dockRadius),
+                boxShadow: p.isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: p.shadow,
+                          blurRadius: 24,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
               ),
-          ],
-        ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Room left for the active label once every icon fits.
+                  final room =
+                      constraints.maxWidth -
+                      items.length * _iconSlot -
+                      2 * _capsulePadding -
+                      _labelGap;
+                  final label = items[selectedIndex].label;
+                  final painter = TextPainter(
+                    text: TextSpan(text: label, style: labelStyle),
+                    textDirection: TextDirection.ltr,
+                    textScaler: scaler,
+                    maxLines: 1,
+                  )..layout();
+                  final showLabel = painter.width <= room;
+                  painter.dispose();
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      for (var i = 0; i < items.length; i++)
+                        _NavButton(
+                          item: items[i],
+                          selected: i == selectedIndex,
+                          showLabel: showLabel,
+                          labelStyle: labelStyle,
+                          onTap: () {
+                            if (i != selectedIndex) {
+                              HapticFeedback.selectionClick();
+                            }
+                            onSelect(i);
+                          },
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          if (trailing != null) ...[const SizedBox(width: 10), trailing!],
+        ],
       ),
     );
   }
@@ -284,60 +328,54 @@ class _NavButton extends StatelessWidget {
   const _NavButton({
     required this.item,
     required this.selected,
+    required this.showLabel,
+    required this.labelStyle,
     required this.onTap,
   });
 
   final B4NavItem item;
   final bool selected;
+  final bool showLabel;
+  final TextStyle labelStyle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final fg = selected ? p.primaryText : p.textSecondary;
+    final expanded = selected && showLabel;
     return Pressable(
       onTap: onTap,
       selected: selected,
       semanticLabel: item.label,
       excludeChildSemantics: true,
-      borderRadius: BorderRadius.circular(16),
-      pressedScale: 0.94,
+      borderRadius: BorderRadius.circular(24),
+      pressedScale: 0.92,
       pressedOverlay: const Color(0x00000000),
-      child: SizedBox(
-        height: 62,
-        child: Column(
+      child: AnimatedContainer(
+        duration: Tokens.motion,
+        curve: Tokens.curve,
+        height: Tokens.minTouch,
+        constraints: const BoxConstraints(minWidth: B4BottomNav._iconSlot),
+        padding: EdgeInsets.symmetric(
+          horizontal: expanded ? B4BottomNav._capsulePadding : 0,
+        ),
+        decoration: BoxDecoration(
+          color: selected ? p.primary : const Color(0x00000000),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // The tab marker, flush with the dock's top edge.
-            AnimatedContainer(
-              duration: Tokens.motion,
-              curve: Tokens.curve,
-              width: selected ? 28 : 0,
-              height: 4,
-              decoration: BoxDecoration(
-                color: p.primary,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(3),
-                ),
-              ),
+            Icon(
+              selected ? item.activeIcon : item.icon,
+              size: B4BottomNav._iconSize,
+              color: selected ? p.onPrimary : p.textSecondary,
             ),
-            const Spacer(),
-            Icon(selected ? item.activeIcon : item.icon, color: fg, size: 24),
-            const SizedBox(height: 4),
-            // 14sp like all text; only a label too wide for its slot is
-            // scaled down, so it is never cut off.
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(
-                item.label,
-                maxLines: 1,
-                textScaler: MediaQuery.textScalerOf(context)
-                    .clamp(maxScaleFactor: 1.3),
-                style: context.text.labelMedium.copyWith(
-                  color: fg,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              ),
-            ),
+            if (expanded) ...[
+              const SizedBox(width: B4BottomNav._labelGap),
+              Text(item.label, maxLines: 1, style: labelStyle),
+            ],
           ],
         ),
       ),

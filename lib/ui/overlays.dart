@@ -538,21 +538,17 @@ class _ToastCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    final (IconData icon, Color accent, Color soft) = switch (data.kind) {
-      B4ToastKind.success => (
-        RemixIcons.checkboxCircleLine,
-        p.successText,
-        p.successSoft,
-      ),
+    final (IconData icon, Color badge, Color onBadge) = switch (data.kind) {
+      B4ToastKind.success => (RemixIcons.checkLine, p.accent, p.onAccent),
       B4ToastKind.info => (
         RemixIcons.informationLine,
-        p.primaryText,
-        p.primarySoft,
+        p.onInverseSurface.withValues(alpha: 0.16),
+        p.onInverseSurface,
       ),
       B4ToastKind.error => (
         RemixIcons.errorWarningLine,
-        p.dangerText,
-        p.dangerSoft,
+        p.danger,
+        const Color(0xFF15121D),
       ),
     };
     return Center(
@@ -566,87 +562,84 @@ class _ToastCard extends StatelessWidget {
           child: Semantics(
             liveRegion: true,
             container: true,
-            // A light card with a status-coloured edge and icon tile, so it
-            // reads as part of the app rather than a system snackbar.
+            // An inverted pill that drops from the top, like a wallet
+            // notification, rather than a system snackbar.
             child: Container(
-              clipBehavior: Clip.antiAlias,
+              constraints: const BoxConstraints(minHeight: 60),
+              padding: EdgeInsets.fromLTRB(
+                8,
+                6,
+                data.actionLabel == null ? 20 : 6,
+                6,
+              ),
               decoration: BoxDecoration(
-                color: p.surface,
-                borderRadius: BorderRadius.circular(Tokens.controlRadius),
-                border: Border.all(color: p.outline),
-                boxShadow: [
+                color: p.inverseSurface,
+                borderRadius: BorderRadius.circular(Tokens.dockRadius),
+                boxShadow: const [
                   BoxShadow(
-                    color: p.isDark
-                        ? const Color(0x66000000)
-                        : const Color(0x261F1A2E),
+                    color: Color(0x40000000),
                     blurRadius: 24,
-                    offset: const Offset(0, 8),
+                    offset: Offset(0, 10),
                   ),
                 ],
               ),
-              child: IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(width: 4, color: accent),
-                    Expanded(child: _content(context, icon, accent, soft)),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: badge,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 22, color: onBadge),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        data.message,
+                        style: context.text.bodyMedium.copyWith(
+                          color: p.onInverseSurface,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (data.actionLabel != null) ...[
+                    const SizedBox(width: 8),
+                    Pressable(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        onAction();
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          minHeight: Tokens.minTouch,
+                        ),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        decoration: BoxDecoration(
+                          color: p.accent,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Text(
+                          data.actionLabel!,
+                          style: context.text.labelMedium.copyWith(
+                            color: p.onAccent,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
-                ),
+                ],
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _content(
-    BuildContext context,
-    IconData icon,
-    Color accent,
-    Color soft,
-  ) {
-    final p = context.palette;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 62),
-      padding: EdgeInsets.fromLTRB(10, 8, data.actionLabel == null ? 16 : 8, 8),
-      child: Row(
-        children: [
-          B4IconTile(icon: icon, color: accent, background: soft, size: 36),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Text(data.message, style: context.text.bodyMedium),
-            ),
-          ),
-          if (data.actionLabel != null) ...[
-            const SizedBox(width: 8),
-            Pressable(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                onAction();
-              },
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                constraints: const BoxConstraints(minHeight: Tokens.minTouch),
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: p.primarySoft,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  data.actionLabel!,
-                  style: context.text.labelMedium.copyWith(
-                    color: p.primaryText,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }
