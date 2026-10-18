@@ -52,10 +52,10 @@ fictional data is in [`demo/contoh-cadangan.json`](../demo/contoh-cadangan.json)
 ## Settings
 
 Only portable keys are exported: `reminder.offsets` (JSON array as a string),
-`reminder.minuteOfDay`, `appearance.theme` (`system`, `light` or `dark`) and
-`appearance.accent` (`lime`, `sky`, `coral`, `violet`, `amber` or `mint`). App-lock data
+`reminder.minuteOfDay` and `appearance.theme` (`system`, `light` or `dark`). App-lock data
 (`lock.*`), onboarding state and the chosen calendar stay on the device. On restore, reminder
-settings are replaced; the theme and accent change only when the file contains them.
+settings are replaced; the theme changes only when the file contains one. An `appearance.accent` key
+from older files is ignored.
 
 ## Compatibility rules
 
