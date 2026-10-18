@@ -323,5 +323,13 @@
   "settingsThemeHelp": "Choose light, dark, or follow your phone.",
   "themeLight": "Light",
   "themeDark": "Dark",
-  "themeSystem": "Follow system"
+  "themeSystem": "Follow system",
+  "settingsAccent": "Accent colour",
+  "settingsAccentHelp": "Used for the add button, progress and selections.",
+  "accentLime": "Lime",
+  "accentSky": "Sky",
+  "accentCoral": "Coral",
+  "accentViolet": "Violet",
+  "accentAmber": "Amber",
+  "accentMint": "Mint"
 }

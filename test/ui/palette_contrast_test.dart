@@ -58,6 +58,25 @@ void main() {
     });
   }
 
+  for (final accent in AccentColors.all) {
+    for (final (name, base) in [
+      ('light', Palette.light),
+      ('dark', Palette.dark),
+    ]) {
+      test('${accent.name} accent is AA in $name', () {
+        final p = base.withAccent(accent);
+        expect(contrast(p.onAccent, p.accent), greaterThanOrEqualTo(4.5));
+        expect(contrast(p.accentText, p.background), greaterThanOrEqualTo(4.5));
+        expect(contrast(p.accentText, p.surface), greaterThanOrEqualTo(4.5));
+        expect(contrast(p.accentText, p.accentSoft), greaterThanOrEqualTo(4.5));
+        expect(
+          contrast(p.primaryText, p.primarySoft),
+          greaterThanOrEqualTo(4.5),
+        );
+      });
+    }
+  }
+
   test('white text on every wallet card is AA', () {
     const white = Color(0xFFFFFFFF);
     for (final card in Palette.walletCards) {

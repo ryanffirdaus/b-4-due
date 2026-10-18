@@ -351,5 +351,13 @@
   "settingsThemeHelp": "Pilih tampilan terang, gelap, atau ikut pengaturan HP.",
   "themeLight": "Terang",
   "themeDark": "Gelap",
-  "themeSystem": "Ikuti sistem"
+  "themeSystem": "Ikuti sistem",
+  "settingsAccent": "Warna aksen",
+  "settingsAccentHelp": "Untuk tombol tambah, progres, dan pilihan.",
+  "accentLime": "Limau",
+  "accentSky": "Langit",
+  "accentCoral": "Koral",
+  "accentViolet": "Ungu",
+  "accentAmber": "Kuning",
+  "accentMint": "Mint"
 }
