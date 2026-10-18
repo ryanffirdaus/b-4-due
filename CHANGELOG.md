@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.2.0](https://github.com/ryanffirdaus/b-4-due/compare/v0.1.0...v0.2.0) (2026-10-18)
+
+
+### Features
+
+* **bills:** let people choose each bill's card colour ([#71](https://github.com/ryanffirdaus/b-4-due/issues/71)) ([9b857ac](https://github.com/ryanffirdaus/b-4-due/commit/9b857ac20e199e8decdd1288e1232be2b68024a1))
+* **icon:** redraw the logo in the Dompet colours ([#81](https://github.com/ryanffirdaus/b-4-due/issues/81)) ([df352fa](https://github.com/ryanffirdaus/b-4-due/commit/df352fa484321d046a85381a6b8d30bff98c4ce0))
+* **settings:** let people choose a light, dark or system theme ([#58](https://github.com/ryanffirdaus/b-4-due/issues/58)) ([5677dbd](https://github.com/ryanffirdaus/b-4-due/commit/5677dbd5effecbfbb05cbdbb4cd758e3438a5630))
+* **settings:** let people pick the accent colour ([#69](https://github.com/ryanffirdaus/b-4-due/issues/69)) ([7c932e9](https://github.com/ryanffirdaus/b-4-due/commit/7c932e950120743e40698b4f0a2ac405f889099c))
+* **ui:** float the add button above the navigation on the right ([#80](https://github.com/ryanffirdaus/b-4-due/issues/80)) ([33228a8](https://github.com/ryanffirdaus/b-4-due/commit/33228a85afd1da25849a221d3a0fcd31c80da9f5))
+* **ui:** give the UI kit the Dompet look ([#70](https://github.com/ryanffirdaus/b-4-due/issues/70)) ([615552e](https://github.com/ryanffirdaus/b-4-due/commit/615552e01b5d08c42d4171f527678752c503ed61))
+* **ui:** switch to the Dompet palette and the Sora typeface ([#68](https://github.com/ryanffirdaus/b-4-due/issues/68)) ([faedbc7](https://github.com/ryanffirdaus/b-4-due/commit/faedbc76531584591e0a5fd5db5a82dbc7abbefb))
+
+
+### Bug Fixes
+
+* **fonts:** draw ≈ in foreign prices with Sora ([#74](https://github.com/ryanffirdaus/b-4-due/issues/74)) ([03c7818](https://github.com/ryanffirdaus/b-4-due/commit/03c78189ccac92f8559ecf0af6c737d920a10f6b))
+
+
+### Documentation
+
+* **design:** document the Dompet design system ([#77](https://github.com/ryanffirdaus/b-4-due/issues/77)) ([9cbe063](https://github.com/ryanffirdaus/b-4-due/commit/9cbe0639201935c7a986894a9bdfcfc8e717a60e))
+
 ## 0.1.0 (2026-10-18)
 
 
