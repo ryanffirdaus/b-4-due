@@ -24,10 +24,14 @@ Map<String, (Color, Color)> _pairs(Palette p) => {
   'secondary text on surface': (p.textSecondary, p.surface),
   'secondary text on input': (p.textSecondary, p.surfaceVariant),
   'text on input': (p.textPrimary, p.surfaceVariant),
-  'button label on Plum': (p.onPrimary, p.primary),
-  'Plum text on background': (p.primaryText, p.background),
-  'Plum text on surface': (p.primaryText, p.surface),
-  'Plum text on Plum tint': (p.primaryText, p.primarySoft),
+  'label on the main button': (p.onPrimary, p.primary),
+  'emphasised text on background': (p.primaryText, p.background),
+  'emphasised text on surface': (p.primaryText, p.surface),
+  'emphasised text on soft fill': (p.primaryText, p.primarySoft),
+  'label on the accent': (p.onAccent, p.accent),
+  'accent text on background': (p.accentText, p.background),
+  'accent text on surface': (p.accentText, p.surface),
+  'accent text on accent tint': (p.accentText, p.accentSoft),
   'chart tooltip': (p.onInverseSurface, p.inverseSurface),
   'destructive button label': (p.onDanger, p.dangerText),
   'danger text on surface': (p.dangerText, p.surface),
@@ -53,6 +57,14 @@ void main() {
       }
     });
   }
+
+  test('white text on every wallet card is AA', () {
+    const white = Color(0xFFFFFFFF);
+    for (final card in Palette.walletCards) {
+      expect(contrast(white, card.start), greaterThanOrEqualTo(4.5));
+      expect(contrast(white, card.end), greaterThanOrEqualTo(4.5));
+    }
+  });
 
   test('swipe backgrounds keep white text AA', () {
     const white = Color(0xFFFFFFFF);

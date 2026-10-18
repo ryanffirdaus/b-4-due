@@ -73,16 +73,17 @@ flutter:
   generate: true
 
   fonts:
-    - family: Inter
+    - family: Sora
       fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Inter-Medium.ttf
+        - asset: assets/fonts/Sora-Regular.ttf
+        - asset: assets/fonts/Sora-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
+        - asset: assets/fonts/Sora-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
+        - asset: assets/fonts/Sora-Bold.ttf
           weight: 700
+        - asset: assets/fonts/Sora-ExtraBold.ttf
+          weight: 800
     - family: RemixIcon
       fonts:
         - asset: assets/fonts/RemixIcon.ttf

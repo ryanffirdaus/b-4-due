@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 
 import 'tokens.dart';
 
-/// The type scale (Inter). Nothing is smaller than 14sp.
+/// The type scale (Sora). Nothing is smaller than 14sp.
 @immutable
 class AppText {
   factory AppText(Palette p) {
@@ -15,7 +15,7 @@ class AppText {
       double spacing = 0,
       Color? color,
     }) => TextStyle(
-      fontFamily: 'Inter',
+      fontFamily: 'Sora',
       fontSize: size,
       height: height / size,
       fontWeight: weight,
@@ -27,12 +27,12 @@ class AppText {
     );
 
     return AppText._(
-      displayLarge: style(36, 44, FontWeight.w700, spacing: -0.6),
-      displayMedium: style(30, 38, FontWeight.w700, spacing: -0.4),
-      headlineLarge: style(24, 32, FontWeight.w600, spacing: -0.2),
-      headlineMedium: style(20, 28, FontWeight.w600, spacing: -0.1),
-      titleMedium: style(18, 26, FontWeight.w500),
-      titleSmall: style(16, 24, FontWeight.w600),
+      displayLarge: style(38, 46, FontWeight.w800, spacing: -1.4),
+      displayMedium: style(30, 38, FontWeight.w800, spacing: -1),
+      headlineLarge: style(24, 32, FontWeight.w700, spacing: -0.5),
+      headlineMedium: style(20, 28, FontWeight.w700, spacing: -0.3),
+      titleMedium: style(18, 26, FontWeight.w600, spacing: -0.2),
+      titleSmall: style(16, 24, FontWeight.w700),
       bodyLarge: style(16, 24, FontWeight.w400),
       bodyMedium: style(14, 20, FontWeight.w400),
       bodySmall: style(14, 20, FontWeight.w400, color: p.textSecondary),

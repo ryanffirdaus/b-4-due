@@ -238,7 +238,7 @@ Lihat juga [CONTRIBUTING.md](CONTRIBUTING.md) dan [ROADMAP.md](ROADMAP.md).
 
 ## Lisensi
 
-[MIT](LICENSE). Font [Inter](https://github.com/rsms/inter) berlisensi SIL OFL 1.1. Ikon [Remix Icon](https://remixicon.com) v4.8.0 berlisensi Apache 2.0. Kurs dari [Frankfurter](https://frankfurter.dev) (data Bank Sentral Eropa).
+[MIT](LICENSE). Font [Sora](https://github.com/sora-xor/sora-font) berlisensi SIL OFL 1.1. Ikon [Remix Icon](https://remixicon.com) v4.8.0 berlisensi Apache 2.0. Kurs dari [Frankfurter](https://frankfurter.dev) (data Bank Sentral Eropa).
 
 ---
 
