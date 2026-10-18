@@ -12,6 +12,7 @@ import 'core/providers.dart';
 import 'features/calendar/data/calendar_wiring.dart';
 import 'features/calendar/domain/calendar_sync.dart';
 import 'features/currency/data/exchange_rate_data.dart';
+import 'features/home_widget/data/home_widget_gateway.dart';
 import 'features/onboarding/onboarding_controller.dart';
 import 'features/reminders/data/background_sync.dart';
 import 'features/reminders/data/reminder_runtime.dart';
@@ -51,7 +52,7 @@ Future<void> main() async {
         databaseProvider.overrideWithValue(runtime.database),
         reminderRuntimeProvider.overrideWithValue(runtime),
         onBillsChangedProvider.overrideWithValue(() async {
-          await runtime.sync.sync();
+          await runtime.syncAll();
           await calendar.reconcile();
         }),
       ],
@@ -68,11 +69,12 @@ Future<void> main() async {
 Future<String> _initialLocation(ReminderRuntime runtime) async {
   final launch = await runtime.plugin.getNotificationAppLaunchDetails();
   final response = launch?.notificationResponse;
-  if (launch?.didNotificationLaunchApp != true || response == null) {
-    return Routes.home;
+  if (launch?.didNotificationLaunchApp == true && response != null) {
+    final payload = ReminderPayload.tryParse(response.payload);
+    if (payload != null) return Routes.billDetail(payload.billId);
   }
-  final payload = ReminderPayload.tryParse(response.payload);
-  return payload == null ? Routes.home : Routes.billDetail(payload.billId);
+  final widgetBill = WidgetLinks.billId(await launchedFromHomeWidget());
+  return widgetBill == null ? Routes.home : Routes.billDetail(widgetBill);
 }
 
 Future<void> _afterLaunch(
@@ -80,14 +82,14 @@ Future<void> _afterLaunch(
   CalendarSync calendar,
 ) async {
   try {
-    final result = await runtime.sync.sync();
+    final result = await runtime.syncAll();
     debugPrint('Reminder sync on launch: $result');
     // Replaces events of bills paid from a notification while closed.
     await calendar.reconcile();
     // Today's exchange rates for foreign-currency bills (no-op if fresh).
     final rates = buildExchangeRateService(
       runtime.database,
-      onChanged: () async => runtime.sync.sync(),
+      onChanged: () async => runtime.syncAll(),
     );
     debugPrint('Exchange rates: ${await rates.refreshIfStale()}');
     await registerBackgroundSync();

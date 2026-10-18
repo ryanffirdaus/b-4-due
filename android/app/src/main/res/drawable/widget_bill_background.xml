@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The next bill on the widget: a lifted surface (Palette.dark.surface). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FF1C1828" />
+    <corners android:radius="16dp" />
+</shape>

@@ -163,6 +163,10 @@ a raised back button. Sheets slide up with a title and a close button, and can b
   cards with their reminder times.
 - **Statistik**: the monthly average in large type, the coming 30 days, the most expensive bill
   as its wallet card, and the category and monthly charts.
+- **Home-screen widget** (Android, 4×2, resizable): the Dompet ink panel with what is left this
+  month, the paid bar and the most urgent bill (name, countdown in lime or red when overdue,
+  price). A tap opens that bill. The app pushes fresh values on every change and from the
+  periodic sync (`lib/features/home_widget/`, `BillWidgetProvider.kt`).
 - **Pengaturan → Tampilan**: Tema (Terang / Gelap / Ikuti sistem, each with a preview) and
   Warna aksen. Both apply at once, are read before the first frame and travel in backups.
 

@@ -6,8 +6,10 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../../core/database/app_database.dart';
+import '../../../core/time/local_date.dart';
 import '../../../core/time/timezone_setup.dart';
 import '../../bills/data/drift_bill_repository.dart';
+import '../../home_widget/data/home_widget_gateway.dart';
 import '../../payments/data/drift_payment_repository.dart';
 import '../../payments/domain/pay_bill.dart';
 import '../../settings/data/settings_repository.dart';
@@ -27,6 +29,8 @@ class ReminderRuntime {
     this.gateway,
     this.sync,
     this.actions,
+    this._widget,
+    this._clock,
   );
 
   final AppDatabase database;
@@ -34,6 +38,17 @@ class ReminderRuntime {
   final LocalNotificationGateway gateway;
   final ReminderSync sync;
   final NotificationActionHandler actions;
+  final HomeWidgetGateway _widget;
+  final DateTime Function() _clock;
+
+  /// Reschedules the reminders and refreshes the home-screen widget. Call
+  /// this whenever bills or payments change, and from the periodic task so
+  /// the widget's countdown stays right.
+  Future<ReminderSyncResult> syncAll() async {
+    final result = await sync.sync();
+    await _widget.refresh(database, LocalDate.fromDateTime(_clock()));
+    return result;
+  }
 
   /// [database] defaults to the shared on-device database.
   ///
@@ -66,7 +81,12 @@ class ReminderRuntime {
       now: () => tz.TZDateTime.from(clock(), tz.local),
       policy: currentSchedulePolicy(),
     );
-    Future<void> resync() async => sync.sync();
+    final widget = HomeWidgetGateway(l10n);
+    Future<void> resync() async {
+      await sync.sync();
+      await widget.refresh(db, LocalDate.fromDateTime(clock()));
+    }
+
     final actions = NotificationActionHandler(
       payBill: PayBill(
         bills: bills,
@@ -77,7 +97,7 @@ class ReminderRuntime {
       ),
       snooze: SnoozeBill(bills: bills, clock: clock, onChanged: resync),
     );
-    return ReminderRuntime._(db, plugin, gateway, sync, actions);
+    return ReminderRuntime._(db, plugin, gateway, sync, actions, widget, clock);
   }
 }
 

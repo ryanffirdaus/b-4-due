@@ -97,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen>
 
   Future<void> _finish() async {
     // Reminders may have been planned before permissions were granted.
-    await ref.read(reminderRuntimeProvider).sync.sync();
+    await ref.read(reminderRuntimeProvider).syncAll();
     await ref.read(onboardingCompletedProvider.notifier).complete();
   }
 

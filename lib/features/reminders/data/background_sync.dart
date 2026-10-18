@@ -16,11 +16,11 @@ void backgroundTaskDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     try {
       final runtime = await ReminderRuntime.create();
-      final result = await runtime.sync.sync();
+      final result = await runtime.syncAll();
       debugPrint('Background reminder sync: $result');
       final rates = buildExchangeRateService(
         runtime.database,
-        onChanged: () async => runtime.sync.sync(),
+        onChanged: () async => runtime.syncAll(),
       );
       debugPrint('Background exchange rates: ${await rates.refreshIfStale()}');
       await runtime.database.close();

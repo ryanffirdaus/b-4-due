@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/platform/device_channel.dart';
 import '../core/providers.dart';
 import '../features/currency/currency_providers.dart';
+import '../features/home_widget/data/home_widget_gateway.dart';
 import '../features/reminders/domain/reminder_payload.dart';
 import '../features/reminders/reminder_providers.dart';
 import '../features/security/app_lock_controller.dart';
@@ -29,6 +30,7 @@ class B4DueApp extends ConsumerStatefulWidget {
 class _B4DueAppState extends ConsumerState<B4DueApp>
     with WidgetsBindingObserver {
   StreamSubscription<NotificationResponse>? _responses;
+  StreamSubscription<Uri?>? _widgetTaps;
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _B4DueAppState extends ConsumerState<B4DueApp>
     _responses = ref
         .read(notificationResponsesProvider)
         .listen(_onNotificationResponse);
+    _widgetTaps = homeWidgetTaps().listen(_onWidgetTap);
     // With the app lock on, keep content out of the recent-apps preview.
     ref.listenManual(
       appLockConfigProvider.select((c) => c.enabled),
@@ -50,6 +53,7 @@ class _B4DueAppState extends ConsumerState<B4DueApp>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _responses?.cancel();
+    _widgetTaps?.cancel();
     super.dispose();
   }
 
@@ -67,6 +71,17 @@ class _B4DueAppState extends ConsumerState<B4DueApp>
     final payload = ReminderPayload.tryParse(response.payload);
     if (payload == null) return;
     unawaited(ref.read(routerProvider).push(Routes.billDetail(payload.billId)));
+  }
+
+  /// A tap on the home-screen widget opens its bill, or Beranda.
+  void _onWidgetTap(Uri? link) {
+    final router = ref.read(routerProvider);
+    final billId = WidgetLinks.billId(link);
+    if (billId == null) {
+      router.go(Routes.home);
+    } else {
+      unawaited(router.push(Routes.billDetail(billId)));
+    }
   }
 
   @override

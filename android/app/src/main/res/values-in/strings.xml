@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">Sisa tagihan bulan ini dan tagihan terdekat</string>
+    <string name="widget_title_placeholder">Sisa tagihan bulan ini</string>
+</resources>
