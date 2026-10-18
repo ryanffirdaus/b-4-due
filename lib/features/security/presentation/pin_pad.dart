@@ -184,7 +184,15 @@ class _Key extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(Tokens.cardRadius),
             color: p.surface,
-            border: Border.all(color: p.outline),
+            boxShadow: p.isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: p.shadow,
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
           ),
           child: Text(
             label,

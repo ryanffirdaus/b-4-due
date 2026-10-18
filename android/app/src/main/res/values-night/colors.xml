@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Matches Palette.dark.background in lib/ui/tokens.dart. -->
-    <color name="b4due_background">#14111C</color>
+    <color name="b4due_background">#0E0C14</color>
 </resources>

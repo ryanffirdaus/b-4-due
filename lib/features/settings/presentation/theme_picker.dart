@@ -15,6 +15,7 @@ class ThemePicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final current = ref.watch(themePreferenceProvider);
+    final accent = ref.watch(accentProvider);
     final options = [
       (ThemePreference.light, l10n.themeLight),
       (ThemePreference.dark, l10n.themeDark),
@@ -39,6 +40,7 @@ class ThemePicker extends ConsumerWidget {
                 Expanded(
                   child: _ThemeOption(
                     preference: options[i].$1,
+                    accent: accent,
                     label: options[i].$2,
                     selected: current == options[i].$1,
                     onTap: () {
@@ -152,12 +154,14 @@ class _AccentRow extends ConsumerWidget {
 class _ThemeOption extends StatelessWidget {
   const _ThemeOption({
     required this.preference,
+    required this.accent,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
   final ThemePreference preference;
+  final AccentColors accent;
   final String label;
   final bool selected;
   final VoidCallback onTap;
@@ -188,12 +192,16 @@ class _ThemeOption extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(Tokens.controlRadius - 4),
               child: switch (preference) {
-                ThemePreference.light => const _Preview(Palette.light),
-                ThemePreference.dark => const _Preview(Palette.dark),
-                ThemePreference.system => const Row(
+                ThemePreference.light => _Preview(
+                  Palette.light.withAccent(accent),
+                ),
+                ThemePreference.dark => _Preview(
+                  Palette.dark.withAccent(accent),
+                ),
+                ThemePreference.system => Row(
                   children: [
-                    Expanded(child: _Preview(Palette.light)),
-                    Expanded(child: _Preview(Palette.dark)),
+                    Expanded(child: _Preview(Palette.light.withAccent(accent))),
+                    Expanded(child: _Preview(Palette.dark.withAccent(accent))),
                   ],
                 ),
               },
@@ -248,7 +256,7 @@ class _Preview extends StatelessWidget {
               width: 14,
               height: 14,
               decoration: BoxDecoration(
-                color: palette.primary,
+                color: palette.accent,
                 shape: BoxShape.circle,
               ),
             ),
