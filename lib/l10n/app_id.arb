@@ -372,5 +372,17 @@
   "@homeSeeAllCount": {"placeholders": {"count": {"type": "int"}}},
   "cardPay": "Bayar",
   "cardDueOn": "Jatuh tempo {date}",
-  "@cardDueOn": {"placeholders": {"date": {"type": "String"}}}
+  "@cardDueOn": {"placeholders": {"date": {"type": "String"}}},
+  "formInstallments": "Cicilan dengan tenor",
+  "formInstallmentsHelp": "Berhenti otomatis setelah angsuran terakhir.",
+  "formInstallmentTotal": "Jumlah angsuran",
+  "formInstallmentNumber": "Angsuran ke-",
+  "formErrorInstallmentTotal": "Isi 1 sampai 600.",
+  "formErrorInstallmentNumber": "Isi 1 sampai jumlah angsuran.",
+  "cardInstallment": "Angsuran {number} dari {total}",
+  "@cardInstallment": {"placeholders": {"number": {"type": "int"}, "total": {"type": "int"}}},
+  "detailInstallments": "Cicilan",
+  "detailInstallmentsValue": "Angsuran {number} dari {total} · sisa {left}",
+  "@detailInstallmentsValue": {"placeholders": {"number": {"type": "int"}, "total": {"type": "int"}, "left": {"type": "int"}}},
+  "detailPaidInstallmentsDone": "Dicatat. Cicilan ini sudah lunas semua, selamat!"
 }

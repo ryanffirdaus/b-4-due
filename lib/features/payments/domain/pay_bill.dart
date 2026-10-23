@@ -75,13 +75,19 @@ class PayBill {
       );
       await _payments.add(payment);
 
-      final next = bill.recurrence.nextDueDate(
-        bill.dueDate,
-        anchorDay: bill.anchorDay,
-      );
+      // The last instalment finishes the plan like a one-off bill.
+      final next = bill.isLastInstallment
+          ? null
+          : bill.recurrence.nextDueDate(
+              bill.dueDate,
+              anchorDay: bill.anchorDay,
+            );
       final updated = bill.copyWith(
         dueDate: next,
         archivedAt: next == null ? () => now : null,
+        installmentNumber: bill.hasInstallments && next != null
+            ? () => bill.installmentNumber! + 1
+            : null,
         snoozedUntil: () => null,
         updatedAt: now,
       );

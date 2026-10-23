@@ -74,6 +74,52 @@ void main() {
     expect(await bills.getActive(), isEmpty);
   });
 
+  group('instalment plan', () {
+    Future<void> saveKpr({required int number, int total = 60}) => bills.save(
+      testBill('kpr', due: LocalDate(2026, 8, 25), amount: 4250000).copyWith(
+        installmentTotal: () => total,
+        installmentNumber: () => number,
+      ),
+    );
+
+    test('paying moves to the next instalment', () async {
+      await saveKpr(number: 13);
+
+      final result = await payBill('kpr');
+
+      expect(result.outcome, PayOutcome.paid);
+      final bill = (await bills.findById('kpr'))!;
+      expect(bill.installmentNumber, 14);
+      expect(bill.installmentsLeft, 47);
+      expect(bill.dueDate, LocalDate(2026, 9, 25));
+      expect(bill.isActive, isTrue);
+    });
+
+    test('the last instalment finishes the plan', () async {
+      await saveKpr(number: 60);
+
+      final result = await payBill('kpr');
+
+      expect(result.outcome, PayOutcome.archived);
+      final bill = (await bills.findById('kpr'))!;
+      expect(bill.isArchived, isTrue);
+      expect(bill.installmentNumber, 60);
+      expect(await payments.getAll(), hasLength(1));
+    });
+
+    test('undo puts the instalment number back', () async {
+      await saveKpr(number: 13);
+
+      final result = await payBill('kpr');
+      await payBill.undo(result);
+
+      final bill = (await bills.findById('kpr'))!;
+      expect(bill.installmentNumber, 13);
+      expect(bill.dueDate, LocalDate(2026, 8, 25));
+      expect(await payments.getAll(), isEmpty);
+    });
+  });
+
   test('paying twice for the same period records one payment', () async {
     await bills.save(testBill('pln', due: LocalDate(2026, 8, 20)));
 

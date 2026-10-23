@@ -25,6 +25,8 @@ class Bill {
     this.currency = idr,
     this.originalAmountMinor,
     this.cardColor,
+    this.installmentTotal,
+    this.installmentNumber,
     this.reminderOffsets,
     this.reminderMinuteOfDay,
     this.notes,
@@ -55,6 +57,23 @@ class Bill {
   /// Which wallet-card colour to show (an index into the app's card
   /// colours); null follows the category.
   final int? cardColor;
+
+  /// Instalment plan: the number of payments in total, and which one is
+  /// due now (1-based). Both null for an open-ended bill.
+  final int? installmentTotal;
+  final int? installmentNumber;
+
+  bool get hasInstallments =>
+      installmentTotal != null && installmentNumber != null;
+
+  /// Payments still to make, the current one included.
+  int? get installmentsLeft => hasInstallments
+      ? (installmentTotal! - installmentNumber! + 1).clamp(0, installmentTotal!)
+      : null;
+
+  /// Paying this one finishes the plan.
+  bool get isLastInstallment =>
+      hasInstallments && installmentNumber! >= installmentTotal!;
 
   final LocalDate dueDate;
 
@@ -99,6 +118,8 @@ class Bill {
     Currency? currency,
     int? Function()? originalAmountMinor,
     int? Function()? cardColor,
+    int? Function()? installmentTotal,
+    int? Function()? installmentNumber,
     LocalDate? dueDate,
     int? anchorDay,
     Recurrence? recurrence,
@@ -122,6 +143,12 @@ class Bill {
           ? originalAmountMinor()
           : this.originalAmountMinor,
       cardColor: cardColor != null ? cardColor() : this.cardColor,
+      installmentTotal: installmentTotal != null
+          ? installmentTotal()
+          : this.installmentTotal,
+      installmentNumber: installmentNumber != null
+          ? installmentNumber()
+          : this.installmentNumber,
       dueDate: dueDate ?? this.dueDate,
       anchorDay: anchorDay ?? this.anchorDay,
       recurrence: recurrence ?? this.recurrence,

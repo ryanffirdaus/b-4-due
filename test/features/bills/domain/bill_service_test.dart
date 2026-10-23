@@ -103,6 +103,50 @@ void main() {
     expect(changeCount, 2);
   });
 
+  group('instalment plan validation', () {
+    BillDraft plan({
+      int? total,
+      int? number,
+      Recurrence recurrence = const Recurrence.monthly(),
+    }) => BillDraft(
+      name: 'KPR',
+      category: BillCategory.installment,
+      dueDate: LocalDate(2026, 8, 25),
+      recurrence: recurrence,
+      installmentTotal: total,
+      installmentNumber: number,
+    );
+
+    test('accepts no plan, or a number within the total', () {
+      expect(plan().validate(), isEmpty);
+      expect(plan(total: 60, number: 1).validate(), isEmpty);
+      expect(plan(total: 60, number: 60).validate(), isEmpty);
+    });
+
+    test('rejects half a plan, numbers out of range and one-off bills', () {
+      const error = BillDraftError.installmentsInvalid;
+      expect(plan(total: 60).validate(), contains(error));
+      expect(plan(total: 60, number: 0).validate(), contains(error));
+      expect(plan(total: 60, number: 61).validate(), contains(error));
+      expect(plan(total: 0, number: 0).validate(), contains(error));
+      expect(
+        plan(
+          total: 3,
+          number: 1,
+          recurrence: const Recurrence.once(),
+        ).validate(),
+        contains(error),
+      );
+    });
+
+    test('create and update keep the plan', () async {
+      final bill = await service.create(plan(total: 60, number: 13));
+      expect((await repo.findById(bill.id))!.installmentNumber, 13);
+      await service.update(bill, plan());
+      expect((await repo.findById(bill.id))!.hasInstallments, isFalse);
+    });
+  });
+
   group('BillDraft.normalizePaymentUrl', () {
     test('accepts web addresses', () {
       expect(

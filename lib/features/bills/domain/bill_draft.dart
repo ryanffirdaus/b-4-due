@@ -7,7 +7,13 @@ import 'bill_category.dart';
 import 'recurrence.dart';
 
 /// Problems the form can report. Mapped to localized text in the UI.
-enum BillDraftError { nameEmpty, nameTooLong, amountNegative, invalidUrl }
+enum BillDraftError {
+  nameEmpty,
+  nameTooLong,
+  amountNegative,
+  invalidUrl,
+  installmentsInvalid,
+}
 
 /// What the bill form edits: a [Bill] minus identity and bookkeeping.
 @immutable
@@ -22,6 +28,8 @@ class BillDraft {
     this.currency = idr,
     this.originalAmountMinor,
     this.cardColor,
+    this.installmentTotal,
+    this.installmentNumber,
     this.reminderOffsets,
     this.reminderMinuteOfDay,
     this.notes,
@@ -38,6 +46,8 @@ class BillDraft {
     currency: bill.currency,
     originalAmountMinor: bill.originalAmountMinor,
     cardColor: bill.cardColor,
+    installmentTotal: bill.installmentTotal,
+    installmentNumber: bill.installmentNumber,
     reminderOffsets: bill.reminderOffsets,
     reminderMinuteOfDay: bill.reminderMinuteOfDay,
     notes: bill.notes,
@@ -61,6 +71,12 @@ class BillDraft {
 
   /// Chosen wallet-card colour; null follows the category.
   final int? cardColor;
+
+  /// Instalment plan; both null, or both set with 1 <= number <= total.
+  final int? installmentTotal;
+  final int? installmentNumber;
+
+  static const maxInstallments = 600;
   final List<int>? reminderOffsets;
   final int? reminderMinuteOfDay;
   final String? notes;
@@ -74,11 +90,24 @@ class BillDraft {
       if (trimmed.length > maxNameLength) BillDraftError.nameTooLong,
       if ((amount ?? 0) < 0 || (originalAmountMinor ?? 0) < 0)
         BillDraftError.amountNegative,
+      if (!_installmentsValid) BillDraftError.installmentsInvalid,
       if (paymentUrl != null &&
           paymentUrl!.trim().isNotEmpty &&
           normalizePaymentUrl(paymentUrl!) == null)
         BillDraftError.invalidUrl,
     };
+  }
+
+  bool get _installmentsValid {
+    final total = installmentTotal;
+    final number = installmentNumber;
+    if (total == null && number == null) return true;
+    if (total == null || number == null) return false;
+    return recurrence.type != RecurrenceType.once &&
+        total >= 1 &&
+        total <= maxInstallments &&
+        number >= 1 &&
+        number <= total;
   }
 
   /// Accepts "bayar.example.com/x" or a full http(s) URL; returns the URL to

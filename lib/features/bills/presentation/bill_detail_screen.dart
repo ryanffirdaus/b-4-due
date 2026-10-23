@@ -77,6 +77,8 @@ class _DetailBody extends ConsumerWidget {
           bill.recurrence.nextDueDate(bill.dueDate, anchorDay: bill.anchorDay)!,
         ),
       ),
+      PayOutcome.archived when bill.hasInstallments =>
+        l10n.detailPaidInstallmentsDone,
       PayOutcome.archived => l10n.detailPaidArchived,
       PayOutcome.alreadyHandled => l10n.detailPaidAlready,
     };
@@ -218,6 +220,18 @@ class _DetailBody extends ConsumerWidget {
                   label: l10n.detailRecurrence,
                   value: bill.recurrence.label(l10n),
                 ),
+                if (bill.hasInstallments) ...[
+                  const B4Divider(indent: 56),
+                  _InfoRow(
+                    icon: RemixIcons.bankCardLine,
+                    label: l10n.detailInstallments,
+                    value: l10n.detailInstallmentsValue(
+                      bill.installmentNumber!,
+                      bill.installmentTotal!,
+                      bill.installmentsLeft!,
+                    ),
+                  ),
+                ],
                 const B4Divider(indent: 56),
                 _InfoRow(
                   icon: RemixIcons.notification3Line,
