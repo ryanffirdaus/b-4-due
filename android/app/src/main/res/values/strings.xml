@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Home-screen widget, shown in the widget picker before the app has
+         filled it. English is the fallback; values-in holds Indonesian. -->
+    <string name="widget_description">Bills left this month and the next one due</string>
+    <string name="widget_title_placeholder">Left to pay this month</string>
+</resources>
