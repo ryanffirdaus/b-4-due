@@ -352,5 +352,14 @@
   "cardInstallment": "Payment {number} of {total}",
   "detailInstallments": "Instalments",
   "detailInstallmentsValue": "Payment {number} of {total} · {left} left",
-  "detailPaidInstallmentsDone": "Recorded. This plan is fully paid, congratulations!"
+  "detailPaidInstallmentsDone": "Recorded. This plan is fully paid, congratulations!",
+  "settingsBudgetHeader": "Budget",
+  "settingsBudget": "Monthly budget",
+  "settingsBudgetNone": "Not set",
+  "settingsBudgetHelp": "A limit for all bills in a month. Home shows a warning when your bills go over it.",
+  "settingsBudgetAmount": "Amount (Rp)",
+  "settingsBudgetError": "Enter an amount above 0.",
+  "settingsBudgetRemove": "Remove budget",
+  "homeBudgetRoom": "Budget {budget} · {room} to spare",
+  "homeBudgetOver": "Over budget by {amount}"
 }

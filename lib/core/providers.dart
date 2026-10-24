@@ -61,6 +61,11 @@ final reminderSettingsProvider = StreamProvider<ReminderSettings>(
   (ref) => ref.watch(settingsRepositoryProvider).watchReminderSettings(),
 );
 
+/// The monthly budget in rupiah, or null when none is set.
+final monthlyBudgetProvider = StreamProvider<int?>(
+  (ref) => ref.watch(settingsRepositoryProvider).watchMonthlyBudget(),
+);
+
 final paymentRepositoryProvider = Provider<PaymentRepository>(
   (ref) => DriftPaymentRepository(ref.watch(databaseProvider)),
 );
