@@ -50,11 +50,44 @@ class AppDatabase extends _$AppDatabase {
   /// between, because WAL cannot upgrade a stale read snapshot; the busy
   /// timeout does not help there. Writing first makes concurrent writers
   /// (UI, notification action isolate, background sync) queue instead.
-  Future<T> writeTransaction<T>(Future<T> Function() action) {
-    return transaction(() async {
-      await customStatement('DELETE FROM app_settings WHERE 0');
-      return action();
-    });
+  ///
+  /// Taking the lock can still fail with SQLITE_BUSY before anything is
+  /// written: when another connection holds it for longer than the busy
+  /// timeout (a slow device, a large restore), and on platforms whose
+  /// SQLite build does not actually sleep in its busy handler (measured on
+  /// Linux: it gives up after ~65 ms instead of 5 s). So the transaction is
+  /// retried here with real pauses for up to [busyRetryWindow], and a
+  /// "Sudah dibayar" tap from a notification is never lost to a busy
+  /// database.
+  Future<T> writeTransaction<T>(Future<T> Function() action) async {
+    final waited = Stopwatch()..start();
+    for (var attempt = 0; ; attempt++) {
+      try {
+        return await transaction(() async {
+          await customStatement('DELETE FROM app_settings WHERE 0');
+          return action();
+        });
+      } on Object catch (e) {
+        if (!_isBusy(e) || waited.elapsed >= busyRetryWindow) rethrow;
+        await Future<void>.delayed(_busyPause(attempt));
+      }
+    }
+  }
+
+  /// How long [writeTransaction] keeps retrying a busy database.
+  static const busyRetryWindow = Duration(seconds: 30);
+
+  /// 50 ms, doubling up to one second.
+  static Duration _busyPause(int attempt) =>
+      Duration(milliseconds: 50 * (1 << attempt.clamp(0, 4)).clamp(1, 20));
+
+  static bool _isBusy(Object e) {
+    final cause = switch (e) {
+      DriftWrappedException(:final cause) => cause,
+      _ => e,
+    };
+    return cause is SqliteException &&
+        (cause.resultCode & 0xff) == 5; // SQLITE_BUSY
   }
 
   @override
