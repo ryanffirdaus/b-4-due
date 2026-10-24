@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -11,6 +12,7 @@ import 'app/routes.dart';
 import 'core/providers.dart';
 import 'features/calendar/data/calendar_wiring.dart';
 import 'features/calendar/domain/calendar_sync.dart';
+import 'features/currency/currency_providers.dart';
 import 'features/currency/data/exchange_rate_data.dart';
 import 'features/home_widget/data/home_widget_gateway.dart';
 import 'features/onboarding/onboarding_controller.dart';
@@ -37,6 +39,9 @@ Future<void> main() async {
   final lockConfig = await settings.getAppLock();
   final theme = await settings.getThemePreference();
   final accent = AccentColors.byName(await settings.getAccent());
+  final mainCurrency = await settings.ensureMainCurrency(
+    regionCode: PlatformDispatcher.instance.locale.countryCode,
+  );
   final initialLocation = await _initialLocation(runtime);
   final calendar = buildCalendarSync(runtime.database);
 
@@ -48,6 +53,7 @@ Future<void> main() async {
         initialAppLockConfigProvider.overrideWithValue(lockConfig),
         initialThemePreferenceProvider.overrideWithValue(theme),
         initialAccentProvider.overrideWithValue(accent),
+        initialMainCurrencyProvider.overrideWithValue(mainCurrency),
         notificationResponsesProvider.overrideWithValue(responses.stream),
         databaseProvider.overrideWithValue(runtime.database),
         reminderRuntimeProvider.overrideWithValue(runtime),

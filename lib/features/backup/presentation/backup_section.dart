@@ -14,6 +14,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../calendar/calendar_providers.dart';
+import '../../currency/currency_providers.dart';
 import '../../settings/theme_controller.dart';
 import '../data/backup_service.dart';
 import '../domain/backup_codec.dart';
@@ -99,6 +100,7 @@ class BackupSection extends ConsumerWidget {
     final orphanEvents = await service.restore(data);
     await ref.read(themePreferenceProvider.notifier).reload();
     await ref.read(accentProvider.notifier).reload();
+    await ref.read(mainCurrencyProvider.notifier).reload();
     final calendar = ref.read(calendarGatewayProvider);
     for (final eventId in orphanEvents) {
       await calendar.deleteEvent(eventId);
@@ -108,8 +110,9 @@ class BackupSection extends ConsumerWidget {
 
   Future<void> _csv(BuildContext context, WidgetRef ref) async {
     final l10n = AppLocalizations.of(context);
+    final main = context.mainCurrency;
     final data = await ref.read(backupServiceProvider).collect();
-    final export = buildCsvExport(data, l10n);
+    final export = buildCsvExport(data, l10n, main: main);
     final stamp = _fileStamp(ref);
     await SharePlus.instance.share(
       ShareParams(

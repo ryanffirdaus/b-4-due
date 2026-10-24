@@ -41,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   );
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   /// A transaction that takes SQLite's write lock before running [action].
   ///
@@ -114,6 +114,15 @@ class AppDatabase extends _$AppDatabase {
       from5To6: (m, schema) async {
         await m.addColumn(schema.bills, schema.bills.installmentTotal);
         await m.addColumn(schema.bills, schema.bills.installmentNumber);
+      },
+      from6To7: (m, schema) async {
+        await m.addColumn(schema.payments, schema.payments.currency);
+        // Bills priced in another currency were always flagged as an
+        // estimate; the flag is now only the user's own choice.
+        await m.database.customStatement(
+          'UPDATE bills SET amount_is_estimate = 0 '
+          'WHERE original_amount_minor IS NOT NULL',
+        );
       },
     ),
     beforeOpen: (details) async {

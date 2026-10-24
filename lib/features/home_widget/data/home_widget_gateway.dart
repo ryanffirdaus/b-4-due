@@ -9,8 +9,11 @@ import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../bills/data/drift_bill_repository.dart';
 import '../../bills/presentation/bill_labels.dart';
+import '../../currency/data/exchange_rate_data.dart';
+import '../../currency/domain/money.dart';
 import '../../home/domain/home_summary.dart';
 import '../../payments/data/drift_payment_repository.dart';
+import '../../settings/data/settings_repository.dart';
 import '../domain/widget_snapshot.dart';
 
 /// The Android widget class (android/.../BillWidgetProvider.kt).
@@ -54,22 +57,26 @@ Stream<Uri?> homeWidgetTaps() => kIsWeb || !Platform.isAndroid
 Map<String, Object> widgetFields(
   AppLocalizations l10n,
   WidgetSnapshot snapshot,
-  LocalDate today,
-) {
+  LocalDate today, {
+  Currency main = idr,
+}) {
   final format = Formatters.cached(l10n.localeName);
+  String money(int minor) => format.money(main, minor);
   final next = snapshot.next;
   return {
     'title': l10n.homeLeftThisMonth,
-    'remaining': format.rupiah(snapshot.remaining),
+    'remaining': money(snapshot.remaining),
     'paidOf':
-        '${l10n.homePaidShort(format.rupiah(snapshot.paid))} · '
-        '${l10n.homeOfTotal(format.rupiah(snapshot.total))}',
+        '${l10n.homePaidShort(money(snapshot.paid))} · '
+        '${l10n.homeOfTotal(money(snapshot.total))}',
     'percent': snapshot.percentPaid,
     'hasNext': next != null,
     'nextName': next?.name ?? '',
     'nextDue': next == null ? '' : relativeDueLabel(l10n, next.dueDate, today),
     'nextOverdue': next != null && next.dueDate.isBefore(today),
-    'nextPrice': next == null ? '' : billPrice(l10n, format, next) ?? '',
+    'nextPrice': next == null
+        ? ''
+        : billPrice(l10n, format, next, main: main) ?? '',
     'nextLink': (next == null ? WidgetLinks.home : WidgetLinks.bill(next.id))
         .toString(),
     'empty': l10n.homeNoUpcoming,
@@ -91,17 +98,21 @@ class HomeWidgetGateway {
       final payments = await DriftPaymentRepository(db)
           .watchForDueMonth(today.year, today.month)
           .first;
+      final main = await SettingsRepository(db).mainCurrency();
+      final rates = await DriftExchangeRateStore(db).load();
       final snapshot = WidgetSnapshot.from(
         HomeSummary.build(
           bills: bills,
           today: today,
           paymentsThisMonth: payments,
+          money: MoneyConverter(main, rates),
         ),
       );
       for (final MapEntry(:key, :value) in widgetFields(
         _l10n,
         snapshot,
         today,
+        main: main,
       ).entries) {
         await HomeWidget.saveWidgetData<Object>(key, value);
       }

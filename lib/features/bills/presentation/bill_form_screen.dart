@@ -6,13 +6,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
 import '../../../core/format/formatters.dart';
-import '../../../core/format/rupiah_input_formatter.dart';
+import '../../../core/format/whole_amount_input_formatter.dart';
 import '../../../core/providers.dart';
 import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../../currency/currency_providers.dart';
 import '../../currency/domain/money.dart';
+import '../../currency/presentation/currency_labels.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../../templates/domain/bill_template.dart';
 import '../domain/bill.dart';
@@ -52,6 +53,9 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
   late RecurrenceType _recurrenceType;
   late bool _amountIsEstimate;
   late Currency _currency;
+
+  /// The main currency when the form opened.
+  late Currency _main;
   int? _cardColor;
   late bool _installments;
 
@@ -89,7 +93,8 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     _dueDate =
         bill?.dueDate ?? template?.suggestedDueDate(today) ?? today.addDays(7);
     _amountIsEstimate = bill?.amountIsEstimate ?? false;
-    _currency = bill?.currency ?? template?.currency ?? idr;
+    _main = ref.read(mainCurrencyProvider);
+    _currency = bill?.currency ?? template?.currency ?? _main;
     _cardColor = bill?.cardColor;
     _installments = bill?.hasInstallments ?? false;
     _installmentTotal = TextEditingController(
@@ -98,7 +103,7 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     _installmentNumber = TextEditingController(
       text: bill?.installmentNumber?.toString() ?? '1',
     );
-    if (_currency != idr) _ensureRates();
+    if (_currency != _main) _ensureRates();
     _offsets = bill?.reminderOffsets;
     _minuteOfDay = bill?.reminderMinuteOfDay;
   }
@@ -110,10 +115,15 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     if (!_initialized) {
       final bill = widget.bill;
       final original = bill?.originalAmountMinor;
+      final format = context.formatters;
       if (bill != null && bill.isForeign && original != null) {
-        _amount.text = context.formatters.plainAmount(bill.currency, original);
+        _amount.text = _currency.decimals == 0
+            ? format.groupedNumber(original)
+            : format.plainAmount(bill.currency, original);
       } else if (bill?.amount case final amount?) {
-        _amount.text = context.formatters.groupedNumber(amount);
+        _amount.text = _main.decimals == 0
+            ? format.groupedNumber(amount)
+            : format.plainAmount(_main, amount);
       }
       _initialized = true;
     }
@@ -154,17 +164,18 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
   }
 
   /// Price typed in the selected currency, in minor units.
-  int? _originalMinor() => _currency == idr
-      ? parseRupiah(_amount.text)
+  int? _originalMinor() => _currency.decimals == 0
+      ? parseWholeAmount(_amount.text)
       : parseForeignAmount(_amount.text, _currency);
 
-  /// Rupiah for the draft: typed directly, or converted at the cached rate
-  /// (null until rates are available; filled in when they arrive).
-  int? _rupiah(ExchangeRates? rates) {
+  /// The amount in the main currency: typed directly, or converted at the
+  /// cached rate (null until rates are available; filled in when they
+  /// arrive).
+  int? _mainAmount(ExchangeRates? rates) {
     final original = _originalMinor();
     if (original == null) return null;
-    if (_currency == idr) return original;
-    return rates?.toIdr(_currency, original);
+    if (_currency == _main) return original;
+    return rates?.convert(original, _currency, _main);
   }
 
   BillDraft _draft() => BillDraft(
@@ -172,10 +183,10 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
     category: _category,
     dueDate: _dueDate,
     recurrence: _recurrence() ?? const Recurrence.monthly(),
-    amount: _rupiah(ref.read(exchangeRatesProvider).value),
+    amount: _mainAmount(ref.read(exchangeRatesProvider).value),
     amountIsEstimate: _amountIsEstimate,
     currency: _currency,
-    originalAmountMinor: _currency == idr ? null : _originalMinor(),
+    originalAmountMinor: _currency == _main ? null : _originalMinor(),
     cardColor: _cardColor,
     installmentTotal: _hasPlan ? _planTotal() : null,
     installmentNumber: _hasPlan ? _planNumber() : null,
@@ -313,13 +324,14 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                     label: l10n.formCurrency,
                     value: _currency,
                     options: [
-                      for (final c in supportedCurrencies) B4Option(c, c.code),
+                      for (final c in supportedCurrencies)
+                        B4Option(c, c.code, subtitle: currencyName(l10n, c)),
                     ],
                     onChanged: (value) => setState(() {
                       if (value == _currency) return;
                       _currency = value;
                       _amount.clear();
-                      if (value != idr) _ensureRates();
+                      if (value != _main) _ensureRates();
                     }),
                   ),
                 ),
@@ -332,8 +344,8 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    inputFormatters: _currency == idr
-                        ? [RupiahInputFormatter(format)]
+                    inputFormatters: _currency.decimals == 0
+                        ? [WholeAmountInputFormatter(format)]
                         : [
                             FilteringTextInputFormatter.allow(
                               RegExp(r'[0-9.,]'),
@@ -350,15 +362,16 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
                 ),
               ],
             ),
-            if (_currency != idr)
+            if (_currency != _main)
               _ConversionHint(
                 currency: _currency,
+                main: _main,
                 minorUnits: _originalMinor(),
                 onRetry: () => ref
                     .read(exchangeRateServiceProvider)
                     .refreshIfStale(force: true),
               ),
-            if (_amount.text.isNotEmpty && _currency == idr) ...[
+            if (_amount.text.isNotEmpty && _currency == _main) ...[
               const SizedBox(height: 8),
               B4SwitchRow(
                 title: l10n.formAmountEstimate,
@@ -563,11 +576,13 @@ class _BillFormScreenState extends ConsumerState<BillFormScreen> {
 class _ConversionHint extends ConsumerWidget {
   const _ConversionHint({
     required this.currency,
+    required this.main,
     required this.minorUnits,
     required this.onRetry,
   });
 
   final Currency currency;
+  final Currency main;
   final int? minorUnits;
   final VoidCallback onRetry;
 
@@ -576,10 +591,11 @@ class _ConversionHint extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
     final format = context.formatters;
     final rates = ref.watch(exchangeRatesProvider).value;
-    final rate = rates?.rateFor(currency);
+    // One unit of [currency] in the main currency.
+    final unit = rates?.convert(currency.minorPerUnit, currency, main);
     final style = context.text.bodySmall;
 
-    if (rates == null || rate == null) {
+    if (rates == null || unit == null) {
       return Padding(
         padding: const EdgeInsets.only(top: 8, left: 4),
         child: Row(
@@ -594,17 +610,17 @@ class _ConversionHint extends ConsumerWidget {
         ),
       );
     }
-    final rupiah = minorUnits == null
+    final converted = minorUnits == null
         ? null
-        : rates.toIdr(currency, minorUnits!);
+        : rates.convert(minorUnits!, currency, main);
     return Padding(
       padding: const EdgeInsets.only(top: 8, left: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (rupiah != null)
+          if (converted != null)
             Text(
-              l10n.formApproxRupiah(format.rupiah(rupiah)),
+              l10n.formApproxRupiah(format.money(main, converted)),
               style: context.text.titleMedium.copyWith(
                 color: context.palette.primaryText,
                 fontWeight: FontWeight.w600,
@@ -613,7 +629,7 @@ class _ConversionHint extends ConsumerWidget {
           Text(
             l10n.formRateLine(
               currency.code,
-              format.rupiah(rate.round()),
+              format.money(main, unit),
               format.longDate(rates.rateDate),
             ),
             style: style,

@@ -20,7 +20,7 @@ class WidgetSnapshot {
     ].firstOrNull,
   );
 
-  /// This month's bills in rupiah, paid or not.
+  /// This month's bills in the main currency, paid or not.
   final int total;
   final int paid;
 

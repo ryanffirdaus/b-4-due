@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import '../../../core/time/local_date.dart';
+import '../../currency/domain/money.dart';
 
 /// A recorded payment of one period of a bill.
 @immutable
@@ -12,6 +13,7 @@ class Payment {
     required this.paidAt,
     required this.createdAt,
     this.amount,
+    this.currency = idr,
   });
 
   final String id;
@@ -21,8 +23,12 @@ class Payment {
   final LocalDate dueDate;
   final DateTime paidAt;
 
-  /// Whole rupiah, copied from the bill when paid.
+  /// Minor units of [currency], copied from the bill when paid.
   final int? amount;
+
+  /// The main currency when the bill was paid. History keeps it, so a later
+  /// change of main currency never rewrites past amounts.
+  final Currency currency;
   final DateTime createdAt;
 
   @override

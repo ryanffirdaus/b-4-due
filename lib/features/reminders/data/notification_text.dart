@@ -3,6 +3,7 @@ import 'dart:ui';
 import '../../../core/format/formatters.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../bills/domain/bill.dart';
+import '../../currency/domain/money.dart';
 import '../domain/notification_gateway.dart';
 import '../domain/reminder_planner.dart';
 
@@ -22,8 +23,9 @@ AppLocalizations deviceLocalizations() {
 NotificationText buildNotificationText(
   AppLocalizations l10n,
   PlannedNotification plan,
-  Bill bill,
-) {
+  Bill bill, {
+  Currency main = idr,
+}) {
   final format = Formatters.cached(l10n.localeName);
   // A snooze carries signed "days before due"; normalise it.
   final (kind, days) = switch (plan.kind) {
@@ -42,10 +44,11 @@ NotificationText buildNotificationText(
   };
   final price = format.price(
     currency: bill.currency,
-    rupiah: bill.amount,
+    amount: bill.amount,
     originalMinor: bill.originalAmountMinor,
     isEstimate: false,
     estimateLabel: (a) => a,
+    main: main,
   );
   return NotificationText(
     title: bill.name,

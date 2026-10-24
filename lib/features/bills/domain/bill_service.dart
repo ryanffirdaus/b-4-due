@@ -1,6 +1,5 @@
 import 'package:uuid/uuid.dart';
 
-import '../../currency/domain/money.dart';
 import 'bill.dart';
 import 'bill_draft.dart';
 import 'bill_repository.dart';
@@ -93,12 +92,13 @@ class BillService {
     if (errors.isNotEmpty) throw InvalidBillDraft(errors);
   }
 
-  /// Rupiah converted from another currency is always an estimate.
+  /// "Nominal ini perkiraan" as the user set it. A converted amount is
+  /// always shown as an estimate anyway ([Bill.isForeign]).
   static bool _isEstimate(BillDraft draft) =>
-      draft.amount != null && (draft.amountIsEstimate || draft.currency != idr);
+      draft.amount != null && draft.amountIsEstimate;
 
-  static int? _original(BillDraft draft) =>
-      draft.currency == idr ? null : draft.originalAmountMinor;
+  /// The form leaves this null for a bill in the main currency.
+  static int? _original(BillDraft draft) => draft.originalAmountMinor;
 
   static String? _blankToNull(String? value) {
     final trimmed = value?.trim();

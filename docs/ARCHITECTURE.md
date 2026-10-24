@@ -115,6 +115,10 @@ consistent. Schema versions so far:
 | 1 | `bills`, `app_settings` |
 | 2 | `payments`, `bills.snoozed_until` |
 | 3 | `calendar_links` |
+| 4 | `bills.currency`, `bills.original_amount_minor`, `cached_rates` |
+| 5 | `bills.card_color` |
+| 6 | `bills.installment_total`, `bills.installment_number` |
+| 7 | `payments.currency`; clears the old forced estimate flag of converted bills |
 
 `drift_dev make-migrations` dumps each version to `drift_schemas/` and generates a
 step-by-step migration helper. Tests migrate every older version to every newer one and check
@@ -132,6 +136,24 @@ validates the whole file before touching the database, then replaces everything 
 transaction. App-lock secrets, onboarding state and calendar links are device-specific and
 never exported. Android Auto Backup includes only the database file.
 
+## Main currency
+
+Totals, the budget, statistics and the widget use one **main currency**, chosen in
+Pengaturan from the 31 currencies the European Central Bank publishes (`currency.main`).
+A fresh install takes the currency of the phone's region when it is supported; installs from
+before this setting keep rupiah.
+
+- `bills.amount` is in minor units of the main currency. Rupiah has no minor units in the
+  app, so older data needed no conversion.
+- A bill in another currency keeps its own price in `original_amount_minor`; `amount` is the
+  estimate. `ExchangeRates.convert` converts any pair through the rupiah table.
+- Every payment stores the main currency it was paid in. History is never rewritten; totals
+  convert older payments at the latest rate.
+- `MainCurrencyService` changes the main currency in one transaction: each bill is re-based
+  (`rebasedBill`, lossless because the price is kept), the budget is converted and rounded to
+  whole units, and the setting is stored. Without rates for both currencies it refuses
+  instead of losing amounts.
+
 ## Privacy by construction
 
 `INTERNET` is declared for one purpose: `features/currency` downloads ECB reference rates
@@ -139,8 +161,8 @@ from `api.frankfurter.dev` (EUR base, converted to rupiah per unit) with `dart:i
 `HttpClient`: GET only, 10 s timeout, no redirects, 64 KB response cap, no cookies or user
 data. Rates are cached in the `cached_rates` table and refreshed when older than 12 hours (on
 launch, on resume and in the background check); every failure keeps the last cached rates.
-After a refresh, foreign-currency bills get their rupiah `amount` recomputed from
-`original_amount_minor`, so reminders, totals and statistics keep working in rupiah offline.
+After a refresh, bills in another currency than the main one get their `amount` recomputed
+from `original_amount_minor`, so reminders, totals and statistics keep working offline.
 The manifest still removes `ACCESS_NETWORK_STATE`, and CI fails the release if the APK
 requests any permission outside an allowlist (`tool/check_apk_permissions.sh`). Payment links open in the
 user's browser via `url_launcher`.

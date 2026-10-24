@@ -7,6 +7,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
 import '../../bills/domain/bill_category.dart';
 import '../../bills/presentation/bill_labels.dart';
+import '../../currency/currency_providers.dart';
 import '../../payments/domain/payment.dart';
 import '../domain/insights.dart';
 
@@ -16,7 +17,6 @@ class StatisticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final format = context.formatters;
     final text = context.text;
     final p = context.palette;
     final today = ref.watch(todayProvider);
@@ -27,6 +27,7 @@ class StatisticsScreen extends ConsumerWidget {
       bills: bills,
       payments: [for (final e in history) e.payment],
       today: today,
+      money: ref.watch(moneyConverterProvider),
     );
 
     Widget card({required String title, required Widget child}) => Padding(
@@ -69,7 +70,7 @@ class StatisticsScreen extends ConsumerWidget {
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          format.rupiah(stats.averageMonthly),
+                          context.money(stats.averageMonthly),
                           style: text.displayLarge,
                         ),
                       ),
@@ -80,7 +81,7 @@ class StatisticsScreen extends ConsumerWidget {
                         child: Text(
                           l10n.statsUpcomingValue(
                             stats.upcomingCount,
-                            format.rupiah(stats.upcomingTotal),
+                            context.money(stats.upcomingTotal),
                           ),
                           style: text.headlineMedium,
                         ),
@@ -119,7 +120,7 @@ class StatisticsScreen extends ConsumerWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   l10n.statsPerMonth(
-                                    format.rupiah(stats.mostExpensiveMonthly),
+                                    context.money(stats.mostExpensiveMonthly),
                                   ),
                                   style: text.headlineMedium.copyWith(
                                     color: B4WalletCard.foreground,
@@ -155,7 +156,6 @@ class _CategoryChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final format = context.formatters;
     final p = context.palette;
     final colors = p.chart;
     final total = stats.byCategory.fold<int>(0, (sum, e) => sum + e.value);
@@ -186,7 +186,7 @@ class _CategoryChart extends StatelessWidget {
             color: colors[i % colors.length],
             category: stats.byCategory[i].key,
             label: stats.byCategory[i].key.label(l10n),
-            amount: format.rupiah(stats.byCategory[i].value),
+            amount: context.money(stats.byCategory[i].value),
             percent: total == 0
                 ? ''
                 : '${(stats.byCategory[i].value * 100 / total).round()}%',
@@ -269,7 +269,7 @@ class _MonthlyBars extends StatelessWidget {
             touchTooltipData: BarTouchTooltipData(
               getTooltipColor: (_) => p.inverseSurface,
               getTooltipItem: (group, _, rod, _) => BarTooltipItem(
-                format.rupiah(rod.toY.round()),
+                context.money(rod.toY.round()),
                 text.labelMedium.copyWith(color: p.onInverseSurface),
               ),
             ),

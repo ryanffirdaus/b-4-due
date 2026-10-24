@@ -5,6 +5,7 @@ import 'dart:io';
 import '../../../core/database/app_database.dart';
 import '../../bills/data/drift_bill_repository.dart';
 import '../../bills/domain/bill_service.dart';
+import '../../settings/data/settings_repository.dart';
 import '../domain/exchange_rate_service.dart';
 import '../domain/money.dart';
 
@@ -97,4 +98,5 @@ ExchangeRateService buildExchangeRateService(
   bills: DriftBillRepository(db),
   clock: DateTime.now,
   onChanged: onChanged,
+  mainCurrency: SettingsRepository(db).mainCurrency,
 );

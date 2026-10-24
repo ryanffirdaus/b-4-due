@@ -4,6 +4,7 @@ import '../../../core/time/local_date.dart';
 import '../../bills/domain/bill.dart';
 import '../../bills/domain/bill_repository.dart';
 import '../../bills/domain/bill_service.dart';
+import '../../currency/domain/money.dart';
 import 'payment.dart';
 import 'payment_repository.dart';
 
@@ -42,7 +43,9 @@ class PayBill {
     required this._clock,
     required this._onChanged,
     String Function()? newId,
-  }) : _newId = newId ?? const Uuid().v4;
+    Future<Currency> Function()? mainCurrency,
+  }) : _newId = newId ?? const Uuid().v4,
+       _mainCurrency = mainCurrency ?? (() async => idr);
 
   final BillRepository _bills;
   final PaymentRepository _payments;
@@ -50,6 +53,9 @@ class PayBill {
   final DateTime Function() _clock;
   final OnBillsChanged _onChanged;
   final String Function() _newId;
+
+  /// The currency [Bill.amount] is in, recorded with the payment.
+  final Future<Currency> Function() _mainCurrency;
 
   Future<PayResult> call(String billId, {LocalDate? expectedDueDate}) async {
     final result = await _transaction(() async {
@@ -71,6 +77,7 @@ class PayBill {
         dueDate: bill.dueDate,
         paidAt: now,
         amount: bill.amount,
+        currency: await _mainCurrency(),
         createdAt: now,
       );
       await _payments.add(payment);

@@ -77,11 +77,16 @@ class B4FieldButton extends StatelessWidget {
 }
 
 class B4Option<T> {
-  const B4Option(this.value, this.label, {this.icon});
+  const B4Option(this.value, this.label, {this.icon, this.subtitle});
 
   final T value;
+
+  /// Shown in the field and the sheet.
   final String label;
   final IconData? icon;
+
+  /// Extra line in the sheet only (e.g. a currency's name).
+  final String? subtitle;
 }
 
 /// Dropdown replacement: a field that opens a sheet listing [options].
@@ -141,6 +146,7 @@ Future<({T value})?> showB4OptionSheet<T>({
         for (final o in options)
           B4ListRow(
             title: o.label,
+            subtitle: o.subtitle,
             icon: o.icon,
             selected: o.value == selected,
             padding: const EdgeInsets.symmetric(

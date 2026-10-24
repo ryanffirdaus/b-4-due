@@ -573,7 +573,9 @@ class BillRow extends DataClass implements Insertable<BillRow> {
   final String name;
   final BillCategory category;
 
-  /// Whole rupiah; null when unknown.
+  /// Minor units of the main currency (whole rupiah while the main currency
+  /// is IDR); null when unknown. For a bill in another currency this is the
+  /// estimate at the latest known rate.
   final int? amount;
   final bool amountIsEstimate;
   final LocalDate dueDate;
@@ -599,7 +601,8 @@ class BillRow extends DataClass implements Insertable<BillRow> {
   /// ISO 4217 code of the bill's own currency. Added in v4.
   final String currency;
 
-  /// Price in the currency's minor units; null for rupiah bills. Added in v4.
+  /// Price in the currency's minor units; null when the bill is in the main
+  /// currency. Added in v4.
   final int? originalAmountMinor;
 
   /// Index into the wallet-card colours; null follows the category.
@@ -1591,6 +1594,22 @@ class $PaymentsTable extends Payments
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _currencyMeta = const VerificationMeta(
+    'currency',
+  );
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+    'currency',
+    aliasedName,
+    false,
+    additionalChecks: GeneratedColumn.checkTextLength(
+      minTextLength: 3,
+      maxTextLength: 3,
+    ),
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('IDR'),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1609,6 +1628,7 @@ class $PaymentsTable extends Payments
     dueDate,
     paidAt,
     amount,
+    currency,
     createdAt,
   ];
   @override
@@ -1650,6 +1670,12 @@ class $PaymentsTable extends Payments
         amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
       );
     }
+    if (data.containsKey('currency')) {
+      context.handle(
+        _currencyMeta,
+        currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1689,6 +1715,10 @@ class $PaymentsTable extends Payments
         DriftSqlType.int,
         data['${effectivePrefix}amount'],
       ),
+      currency: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}currency'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1713,8 +1743,12 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
   final LocalDate dueDate;
   final DateTime paidAt;
 
-  /// Whole rupiah, copied from the bill at payment time.
+  /// Minor units of [currency], copied from the bill at payment time.
   final int? amount;
+
+  /// ISO 4217 code of the main currency when the bill was paid. Added in
+  /// v7; older payments were all in rupiah.
+  final String currency;
   final DateTime createdAt;
   const PaymentRow({
     required this.id,
@@ -1722,6 +1756,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
     required this.dueDate,
     required this.paidAt,
     this.amount,
+    required this.currency,
     required this.createdAt,
   });
   @override
@@ -1738,6 +1773,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
     if (!nullToAbsent || amount != null) {
       map['amount'] = Variable<int>(amount);
     }
+    map['currency'] = Variable<String>(currency);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1751,6 +1787,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
       amount: amount == null && nullToAbsent
           ? const Value.absent()
           : Value(amount),
+      currency: Value(currency),
       createdAt: Value(createdAt),
     );
   }
@@ -1766,6 +1803,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
       dueDate: serializer.fromJson<LocalDate>(json['dueDate']),
       paidAt: serializer.fromJson<DateTime>(json['paidAt']),
       amount: serializer.fromJson<int?>(json['amount']),
+      currency: serializer.fromJson<String>(json['currency']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1778,6 +1816,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
       'dueDate': serializer.toJson<LocalDate>(dueDate),
       'paidAt': serializer.toJson<DateTime>(paidAt),
       'amount': serializer.toJson<int?>(amount),
+      'currency': serializer.toJson<String>(currency),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1788,6 +1827,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
     LocalDate? dueDate,
     DateTime? paidAt,
     Value<int?> amount = const Value.absent(),
+    String? currency,
     DateTime? createdAt,
   }) => PaymentRow(
     id: id ?? this.id,
@@ -1795,6 +1835,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
     dueDate: dueDate ?? this.dueDate,
     paidAt: paidAt ?? this.paidAt,
     amount: amount.present ? amount.value : this.amount,
+    currency: currency ?? this.currency,
     createdAt: createdAt ?? this.createdAt,
   );
   PaymentRow copyWithCompanion(PaymentsCompanion data) {
@@ -1804,6 +1845,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
       dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
       paidAt: data.paidAt.present ? data.paidAt.value : this.paidAt,
       amount: data.amount.present ? data.amount.value : this.amount,
+      currency: data.currency.present ? data.currency.value : this.currency,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1816,6 +1858,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
           ..write('dueDate: $dueDate, ')
           ..write('paidAt: $paidAt, ')
           ..write('amount: $amount, ')
+          ..write('currency: $currency, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1823,7 +1866,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
 
   @override
   int get hashCode =>
-      Object.hash(id, billId, dueDate, paidAt, amount, createdAt);
+      Object.hash(id, billId, dueDate, paidAt, amount, currency, createdAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1833,6 +1876,7 @@ class PaymentRow extends DataClass implements Insertable<PaymentRow> {
           other.dueDate == this.dueDate &&
           other.paidAt == this.paidAt &&
           other.amount == this.amount &&
+          other.currency == this.currency &&
           other.createdAt == this.createdAt);
 }
 
@@ -1842,6 +1886,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
   final Value<LocalDate> dueDate;
   final Value<DateTime> paidAt;
   final Value<int?> amount;
+  final Value<String> currency;
   final Value<DateTime> createdAt;
   final Value<int> rowid;
   const PaymentsCompanion({
@@ -1850,6 +1895,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
     this.dueDate = const Value.absent(),
     this.paidAt = const Value.absent(),
     this.amount = const Value.absent(),
+    this.currency = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -1859,6 +1905,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
     required LocalDate dueDate,
     required DateTime paidAt,
     this.amount = const Value.absent(),
+    this.currency = const Value.absent(),
     required DateTime createdAt,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
@@ -1872,6 +1919,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
     Expression<String>? dueDate,
     Expression<DateTime>? paidAt,
     Expression<int>? amount,
+    Expression<String>? currency,
     Expression<DateTime>? createdAt,
     Expression<int>? rowid,
   }) {
@@ -1881,6 +1929,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
       if (dueDate != null) 'due_date': dueDate,
       if (paidAt != null) 'paid_at': paidAt,
       if (amount != null) 'amount': amount,
+      if (currency != null) 'currency': currency,
       if (createdAt != null) 'created_at': createdAt,
       if (rowid != null) 'rowid': rowid,
     });
@@ -1892,6 +1941,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
     Value<LocalDate>? dueDate,
     Value<DateTime>? paidAt,
     Value<int?>? amount,
+    Value<String>? currency,
     Value<DateTime>? createdAt,
     Value<int>? rowid,
   }) {
@@ -1901,6 +1951,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
       dueDate: dueDate ?? this.dueDate,
       paidAt: paidAt ?? this.paidAt,
       amount: amount ?? this.amount,
+      currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
       rowid: rowid ?? this.rowid,
     );
@@ -1926,6 +1977,9 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
     if (amount.present) {
       map['amount'] = Variable<int>(amount.value);
     }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1943,6 +1997,7 @@ class PaymentsCompanion extends UpdateCompanion<PaymentRow> {
           ..write('dueDate: $dueDate, ')
           ..write('paidAt: $paidAt, ')
           ..write('amount: $amount, ')
+          ..write('currency: $currency, ')
           ..write('createdAt: $createdAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -3599,6 +3654,7 @@ typedef $$PaymentsTableCreateCompanionBuilder = PaymentsCompanion Function({
   required LocalDate dueDate,
   required DateTime paidAt,
   Value<int?> amount,
+  Value<String> currency,
   required DateTime createdAt,
   Value<int> rowid,
 });
@@ -3608,6 +3664,7 @@ typedef $$PaymentsTableUpdateCompanionBuilder = PaymentsCompanion Function({
   Value<LocalDate> dueDate,
   Value<DateTime> paidAt,
   Value<int?> amount,
+  Value<String> currency,
   Value<DateTime> createdAt,
   Value<int> rowid,
 });
@@ -3661,6 +3718,11 @@ class $$PaymentsTableFilterComposer
 
   ColumnFilters<int> get amount => $composableBuilder(
     column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get currency => $composableBuilder(
+    column: $table.currency,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3722,6 +3784,11 @@ class $$PaymentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get currency => $composableBuilder(
+    column: $table.currency,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3771,6 +3838,9 @@ class $$PaymentsTableAnnotationComposer
 
   GeneratedColumn<int> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3832,6 +3902,7 @@ class $$PaymentsTableTableManager
                 Value<LocalDate> dueDate = const Value.absent(),
                 Value<DateTime> paidAt = const Value.absent(),
                 Value<int?> amount = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => PaymentsCompanion(
@@ -3840,6 +3911,7 @@ class $$PaymentsTableTableManager
                 dueDate: dueDate,
                 paidAt: paidAt,
                 amount: amount,
+                currency: currency,
                 createdAt: createdAt,
                 rowid: rowid,
               ),
@@ -3850,6 +3922,7 @@ class $$PaymentsTableTableManager
                 required LocalDate dueDate,
                 required DateTime paidAt,
                 Value<int?> amount = const Value.absent(),
+                Value<String> currency = const Value.absent(),
                 required DateTime createdAt,
                 Value<int> rowid = const Value.absent(),
               }) => PaymentsCompanion.insert(
@@ -3858,6 +3931,7 @@ class $$PaymentsTableTableManager
                 dueDate: dueDate,
                 paidAt: paidAt,
                 amount: amount,
+                currency: currency,
                 createdAt: createdAt,
                 rowid: rowid,
               ),

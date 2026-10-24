@@ -118,7 +118,7 @@ class _DetailBody extends ConsumerWidget {
     final defaults =
         ref.watch(reminderSettingsProvider).value ?? const ReminderSettings();
     final url = bill.paymentUrl;
-    final price = billPrice(l10n, format, bill);
+    final price = billPrice(l10n, format, bill, main: context.mainCurrency);
 
     return B4Scaffold(
       topBar: B4TopBar(

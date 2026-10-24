@@ -49,6 +49,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       payments: ref.watch(paymentHistoryProvider).value ?? const [],
       month: _month,
       today: today,
+      main: context.mainCurrency,
     );
 
     return B4Scaffold(
@@ -256,8 +257,14 @@ class _DaySheet extends ConsumerWidget {
             child: _DayEntryCard(
               entry: e,
               price: switch (e.bill) {
-                final bill? => billPrice(l10n, format, bill),
-                null => e.amount == null ? null : format.rupiah(e.amount!),
+                final bill? => billPrice(
+                  l10n,
+                  format,
+                  bill,
+                  main: context.mainCurrency,
+                ),
+                null =>
+                  e.amount == null ? null : format.money(e.currency, e.amount!),
               },
               reminders: e.bill != null && e.status != BillStatus.paid
                   ? l10n.calendarReminderTimes(reminderTimes(e))
