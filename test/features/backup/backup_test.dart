@@ -202,7 +202,11 @@ void main() {
       expect(json, isNot(contains('onboarding')));
       expect(
         BackupCodec.decode(json).settings.keys,
-        unorderedEquals(['reminder.offsets', 'reminder.minuteOfDay']),
+        unorderedEquals([
+          'currency.main',
+          'reminder.offsets',
+          'reminder.minuteOfDay',
+        ]),
       );
 
       // Restoring onto a locked phone keeps that phone's PIN.
@@ -344,6 +348,78 @@ void main() {
     expect(data.bills, isNotEmpty);
   });
 
+  group('main currency', () {
+    test('a file from before main currencies restores as rupiah', () async {
+      const old = '''
+{"format":"b4due-backup","version":1,"exportedAt":"2026-08-01T00:00:00.000Z",
+ "bills":[{"id":"pln","name":"Listrik PLN","category":"electricity",
+   "amount":487500,"amountIsEstimate":true,"dueDate":"2026-08-20",
+   "anchorDay":20,"recurrence":"monthly","intervalMonths":1,
+   "createdAt":"2026-01-01T00:00:00.000Z","updatedAt":"2026-01-01T00:00:00.000Z"},
+  {"id":"claude","name":"Claude Pro","category":"subscription",
+   "amount":357611,"amountIsEstimate":true,"currency":"USD",
+   "originalAmountMinor":2000,"dueDate":"2026-08-12","anchorDay":12,
+   "recurrence":"monthly","intervalMonths":1,
+   "createdAt":"2026-01-01T00:00:00.000Z","updatedAt":"2026-01-01T00:00:00.000Z"}],
+ "payments":[{"id":"p1","billId":"pln","dueDate":"2026-07-20",
+   "paidAt":"2026-07-19T02:00:00.000Z","amount":470000,
+   "createdAt":"2026-07-19T02:00:00.000Z"}],
+ "settings":{}}''';
+      final db = AppDatabase(NativeDatabase.memory());
+      final settings = SettingsRepository(db);
+      await settings.setMainCurrency(usd);
+      final service = _service(db);
+
+      await service.restore(service.preview(old));
+
+      expect(await settings.mainCurrency(), idr);
+      final payment = (await DriftPaymentRepository(db).getAll()).single;
+      expect(payment.currency, idr);
+      final bills = DriftBillRepository(db);
+      expect((await bills.findById('pln'))!.amountIsEstimate, isTrue);
+      // The old forced flag of a converted bill is dropped.
+      expect((await bills.findById('claude'))!.amountIsEstimate, isFalse);
+      await db.close();
+    });
+
+    test('a dollar backup keeps its main currency and payments', () async {
+      final source = AppDatabase(NativeDatabase.memory());
+      await SettingsRepository(source).setMainCurrency(usd);
+      await SettingsRepository(source).setMonthlyBudget(50000);
+      await DriftBillRepository(source).save(
+        testBill(
+          'netflix',
+          due: LocalDate(2026, 8, 25),
+          amount: 1549,
+        ).copyWith(currency: usd),
+      );
+      await DriftPaymentRepository(source).add(
+        Payment(
+          id: 'p1',
+          billId: 'netflix',
+          dueDate: LocalDate(2026, 7, 25),
+          paidAt: DateTime.utc(2026, 7, 25),
+          createdAt: DateTime.utc(2026, 7, 25),
+          amount: 1549,
+          currency: usd,
+        ),
+      );
+      final json = await _service(source).exportJson();
+      final target = AppDatabase(NativeDatabase.memory());
+      final service = _service(target);
+
+      await service.restore(service.preview(json));
+
+      expect(await SettingsRepository(target).mainCurrency(), usd);
+      expect(await SettingsRepository(target).getMonthlyBudget(), 50000);
+      final payment = (await DriftPaymentRepository(target).getAll()).single;
+      expect(payment.currency, usd);
+      expect(await _service(target).exportJson(), json);
+      await source.close();
+      await target.close();
+    });
+  });
+
   test('CSV export: Excel-friendly with localized headers', () async {
     final db = await _populated();
     final data = await _service(db).collect();
@@ -352,12 +428,12 @@ void main() {
 
     expect(csv.bills.startsWith('﻿'), isTrue, reason: 'UTF-8 BOM');
     final lines = csv.bills.substring(1).trim().split('\r\n');
-    expect(lines.first, startsWith('Nama;Kategori;Nominal (Rp);'));
+    expect(lines.first, startsWith('Nama;Kategori;Nominal (IDR);Mata uang;'));
     // Deleted bills are left out; archived ones are marked done.
     expect(lines, hasLength(1 + 4));
     expect(
       csv.bills,
-      contains('Listrik PLN;Listrik;487500;Ya;2026-08-31;Bulanan;Aktif'),
+      contains('Listrik PLN;Listrik;487500;IDR;Ya;2026-08-31;Bulanan;Aktif'),
     );
     expect(csv.bills, contains('"ID pelanggan 5412 ""rumah""; lantai 2"'));
     expect(csv.bills, contains('Kursus (lunas)'));

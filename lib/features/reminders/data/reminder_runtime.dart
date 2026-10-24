@@ -9,6 +9,7 @@ import '../../../core/database/app_database.dart';
 import '../../../core/time/local_date.dart';
 import '../../../core/time/timezone_setup.dart';
 import '../../bills/data/drift_bill_repository.dart';
+import '../../currency/domain/money.dart';
 import '../../home_widget/data/home_widget_gateway.dart';
 import '../../payments/data/drift_payment_repository.dart';
 import '../../payments/domain/pay_bill.dart';
@@ -73,11 +74,14 @@ class ReminderRuntime {
     final gateway = LocalNotificationGateway(plugin, l10n);
     final settings = SettingsRepository(db);
     final bills = DriftBillRepository(db);
+    var main = idr;
     final sync = ReminderSync(
       bills: bills,
       settings: settings.getReminderSettings,
       gateway: gateway,
-      textFor: (plan, bill) => buildNotificationText(l10n, plan, bill),
+      beforeSync: () async => main = await settings.mainCurrency(),
+      textFor: (plan, bill) =>
+          buildNotificationText(l10n, plan, bill, main: main),
       now: () => tz.TZDateTime.from(clock(), tz.local),
       policy: currentSchedulePolicy(),
     );
@@ -94,6 +98,7 @@ class ReminderRuntime {
         transaction: db.writeTransaction,
         clock: clock,
         onChanged: resync,
+        mainCurrency: settings.mainCurrency,
       ),
       snooze: SnoozeBill(bills: bills, clock: clock, onChanged: resync),
     );

@@ -5,7 +5,7 @@ import 'package:meta/meta.dart';
 class BudgetStatus {
   const BudgetStatus({required this.budget, required this.planned});
 
-  /// The budget set in Pengaturan, in rupiah.
+  /// The budget set in Pengaturan, in the main currency's minor units.
   final int budget;
 
   /// Everything due this month, paid or not (the Beranda month total).

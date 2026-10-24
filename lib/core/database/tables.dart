@@ -10,7 +10,9 @@ class Bills extends Table {
   TextColumn get name => text().withLength(min: 1, max: 120)();
   TextColumn get category => text().map(const BillCategoryConverter())();
 
-  /// Whole rupiah; null when unknown.
+  /// Minor units of the main currency (whole rupiah while the main currency
+  /// is IDR); null when unknown. For a bill in another currency this is the
+  /// estimate at the latest known rate.
   IntColumn get amount => integer().nullable()();
   BoolColumn get amountIsEstimate =>
       boolean().withDefault(const Constant(false))();
@@ -42,7 +44,8 @@ class Bills extends Table {
   TextColumn get currency =>
       text().withLength(min: 3, max: 3).withDefault(const Constant('IDR'))();
 
-  /// Price in the currency's minor units; null for rupiah bills. Added in v4.
+  /// Price in the currency's minor units; null when the bill is in the main
+  /// currency. Added in v4.
   IntColumn get originalAmountMinor => integer().nullable()();
 
   /// Index into the wallet-card colours; null follows the category.
@@ -68,8 +71,13 @@ class Payments extends Table {
   TextColumn get dueDate => text().map(const LocalDateConverter())();
   DateTimeColumn get paidAt => dateTime()();
 
-  /// Whole rupiah, copied from the bill at payment time.
+  /// Minor units of [currency], copied from the bill at payment time.
   IntColumn get amount => integer().nullable()();
+
+  /// ISO 4217 code of the main currency when the bill was paid. Added in
+  /// v7; older payments were all in rupiah.
+  TextColumn get currency =>
+      text().withLength(min: 3, max: 3).withDefault(const Constant('IDR'))();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

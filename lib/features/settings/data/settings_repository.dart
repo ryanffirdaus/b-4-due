@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../../core/database/app_database.dart';
+import '../../currency/domain/money.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../../security/domain/app_lock.dart';
 import '../../security/domain/pin_hasher.dart';
@@ -25,6 +26,7 @@ class SettingsRepository {
   static const _themeKey = 'appearance.theme';
   static const _budgetKey = 'budget.monthly';
   static const _accentKey = 'appearance.accent';
+  static const _mainCurrencyKey = 'currency.main';
 
   Future<String?> _read(String key) async {
     final row = await (_db.select(
@@ -112,21 +114,54 @@ class SettingsRepository {
   Future<void> setThemePreference(ThemePreference preference) =>
       _write(_themeKey, preference.name);
 
-  /// The monthly budget in rupiah, or null when none is set.
+  /// The currency of totals, budgets and statistics, or null before one has
+  /// been stored (see [ensureMainCurrency]).
+  Future<Currency?> getMainCurrency() async {
+    final code = await _read(_mainCurrencyKey);
+    return code == null ? null : currencyByCode(code);
+  }
+
+  /// The main currency, rupiah until one is stored.
+  Future<Currency> mainCurrency() async => await getMainCurrency() ?? idr;
+
+  Stream<Currency> watchMainCurrency() =>
+      _watch(_mainCurrencyKey)
+          .map((code) => code == null ? idr : currencyByCode(code));
+
+  Future<void> setMainCurrency(Currency currency) =>
+      _write(_mainCurrencyKey, currency.code);
+
+  /// Stores a main currency when there is none yet and returns the result.
+  /// Installs from before main currencies keep rupiah, because their data
+  /// is in rupiah; a fresh install takes the currency of the phone's
+  /// region when it is supported.
+  Future<Currency> ensureMainCurrency({String? regionCode}) async {
+    final stored = await getMainCurrency();
+    if (stored != null) return stored;
+    final hasData =
+        await isOnboardingCompleted() ||
+        (await _db.select(_db.bills).get()).isNotEmpty;
+    final chosen = hasData ? idr : currencyForRegion(regionCode) ?? idr;
+    await setMainCurrency(chosen);
+    return chosen;
+  }
+
+  /// The monthly budget in the main currency's minor units, or null when
+  /// none is set.
   Stream<int?> watchMonthlyBudget() => _watch(_budgetKey).map(_parseBudget);
 
   Future<int?> getMonthlyBudget() async =>
       _parseBudget(await _read(_budgetKey));
 
   /// Null removes the budget.
-  Future<void> setMonthlyBudget(int? rupiah) async {
-    if (rupiah == null) {
+  Future<void> setMonthlyBudget(int? minorUnits) async {
+    if (minorUnits == null) {
       await (_db.delete(
         _db.appSettings,
       )..where((s) => s.key.equals(_budgetKey))).go();
       return;
     }
-    await _write(_budgetKey, rupiah.toString());
+    await _write(_budgetKey, minorUnits.toString());
   }
 
   static int? _parseBudget(String? value) {

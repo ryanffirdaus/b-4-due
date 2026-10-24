@@ -5,6 +5,7 @@ import '../../../core/time/local_date.dart';
 import '../../bills/domain/bill.dart';
 import '../../bills/domain/bill_category.dart';
 import '../../bills/domain/bill_status.dart';
+import '../../currency/domain/money.dart';
 import '../../payments/domain/payment.dart';
 
 /// One dot on the calendar: a bill due (or paid) on a given day.
@@ -16,6 +17,7 @@ class CalendarEntry {
     required this.date,
     required this.status,
     this.amount,
+    this.currency = idr,
     this.bill,
   });
 
@@ -23,7 +25,10 @@ class CalendarEntry {
   final String name;
   final LocalDate date;
   final BillStatus status;
+
+  /// In [currency]'s minor units.
   final int? amount;
+  final Currency currency;
 
   /// The bill, for upcoming entries (null for past payments of deleted bills).
   final Bill? bill;
@@ -40,6 +45,7 @@ Map<LocalDate, List<CalendarEntry>> calendarMonth({
   required List<PaymentEntry> payments,
   required LocalDate month,
   required LocalDate today,
+  Currency main = idr,
 }) {
   final first = LocalDate(month.year, month.month, 1);
   final last = first.addMonths(1).addDays(-1);
@@ -61,6 +67,7 @@ Map<LocalDate, List<CalendarEntry>> calendarMonth({
                 ? BillStatus.forDueDate(due, today)
                 : BillStatus.upcoming,
             amount: bill.amount,
+            currency: main,
             bill: bill,
           ),
         );
@@ -82,6 +89,7 @@ Map<LocalDate, List<CalendarEntry>> calendarMonth({
         date: p.dueDate,
         status: BillStatus.paid,
         amount: p.amount,
+        currency: p.currency,
       ),
     );
   }
@@ -112,7 +120,8 @@ class SpendingStats {
   /// Monthly-equivalent cost per category, largest first.
   final List<MapEntry<BillCategory, int>> byCategory;
 
-  /// Rupiah paid per calendar month, oldest first (last six months).
+  /// Paid per calendar month in the main currency, oldest first (last six
+  /// months).
   final List<MapEntry<LocalDate, int>> monthlyPaid;
 
   /// Bills due in the next 30 days.
@@ -126,8 +135,8 @@ class SpendingStats {
       averageMonthly == 0 && monthlyPaid.every((e) => e.value == 0);
 }
 
-/// Monthly-equivalent rupiah of a repeating bill (null for one-off bills and
-/// unknown amounts).
+/// Monthly-equivalent amount of a repeating bill in the main currency (null
+/// for one-off bills and unknown amounts).
 int? monthlyEquivalent(Bill bill) {
   final amount = bill.amount;
   final months = bill.recurrence.intervalMonths;
@@ -139,6 +148,7 @@ SpendingStats spendingStats({
   required List<Bill> bills,
   required List<Payment> payments,
   required LocalDate today,
+  MoneyConverter money = MoneyConverter.rupiahOnly,
 }) {
   final active = bills.where((b) => b.isActive).toList();
 
@@ -167,7 +177,9 @@ SpendingStats spendingStats({
   for (final p in payments) {
     final local = p.paidAt.toLocal();
     final key = LocalDate(local.year, local.month, 1);
-    if (paid.containsKey(key)) paid[key] = paid[key]! + (p.amount ?? 0);
+    if (paid.containsKey(key)) {
+      paid[key] = paid[key]! + (money.toMain(p.amount, p.currency) ?? 0);
+    }
   }
 
   final horizon = today.addDays(30);

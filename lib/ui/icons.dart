@@ -100,6 +100,9 @@ abstract final class RemixIcons {
   /// `equalizer-2-line`
   static const equalizer2Line = IconData(0xf404, fontFamily: _family);
 
+  /// `exchange-dollar-line`
+  static const exchangeDollarLine = IconData(0xeca9, fontFamily: _family);
+
   /// `error-warning-line`
   static const errorWarningLine = IconData(0xeca1, fontFamily: _family);
 

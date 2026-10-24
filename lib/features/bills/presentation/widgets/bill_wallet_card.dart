@@ -78,7 +78,7 @@ class BillWalletCard extends ConsumerWidget {
     final format = context.formatters;
     final text = context.text;
     final colors = bill.cardColors;
-    final price = billPrice(l10n, format, bill);
+    final price = billPrice(l10n, format, bill, main: context.mainCurrency);
     final due = relativeDueLabel(l10n, bill.dueDate, today);
     // The instalment count wins over the note line; lists show only it.
     final note = bill.hasInstallments

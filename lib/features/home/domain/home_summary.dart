@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../../../core/time/local_date.dart';
 import '../../bills/domain/bill.dart';
+import '../../currency/domain/money.dart';
 import '../../payments/domain/payment.dart';
 
 /// Everything the home screen shows, computed from plain data so it can be
@@ -24,10 +25,12 @@ class HomeSummary {
   ///
   /// [paymentsThisMonth] are payments for periods due this month; they count
   /// towards the month total so it does not shrink as bills get paid.
+  /// [money] converts payments made in an earlier main currency.
   factory HomeSummary.build({
     required List<Bill> bills,
     required LocalDate today,
     List<Payment> paymentsThisMonth = const [],
+    MoneyConverter money = MoneyConverter.rupiahOnly,
   }) {
     final active = bills.where((b) => b.isActive).toList()
       ..sort((a, b) {
@@ -66,7 +69,7 @@ class HomeSummary {
 
     var paid = 0;
     for (final payment in paymentsThisMonth) {
-      paid += payment.amount ?? 0;
+      paid += money.toMain(payment.amount, payment.currency) ?? 0;
     }
 
     return HomeSummary(

@@ -16,7 +16,8 @@ final jpy = currencyByCode('JPY');
 /// Shape of a real Frankfurter response (EUR base), trimmed.
 const _frankfurterBody = '''
 {"amount":1.0,"base":"EUR","date":"2026-10-09",
- "rates":{"IDR":20036.94,"USD":1.1206,"JPY":177.33,"SGD":1.4348,"BRL":6.1}}
+ "rates":{"IDR":20036.94,"USD":1.1206,"JPY":177.33,"SGD":1.4348,"BRL":6.1,
+  "XAU":0.0004}}
 ''';
 
 class FakeSource implements ExchangeRateSource {
@@ -91,8 +92,10 @@ void main() {
       expect(r.idrPerUnit['EUR'], 20036.94);
       expect(r.idrPerUnit['USD'], closeTo(17880.55, 0.01));
       expect(r.idrPerUnit['JPY'], closeTo(112.99, 0.01));
-      // Unsupported currencies are ignored; rupiah is never a key.
-      expect(r.idrPerUnit.containsKey('BRL'), isFalse);
+      // All 31 ECB currencies are kept; unknown codes are ignored; rupiah
+      // is never a key.
+      expect(r.idrPerUnit['BRL'], closeTo(3284.74, 0.01));
+      expect(r.idrPerUnit.containsKey('XAU'), isFalse);
       expect(r.idrPerUnit.containsKey('IDR'), isFalse);
     });
 
@@ -160,7 +163,9 @@ void main() {
         expect((await store.load())!.idrPerUnit['USD'], 17880.55);
         final claude = (await bills.findById('claude'))!;
         expect(claude.amount, 357611);
-        expect(claude.amountIsEstimate, isTrue);
+        // Converted, so shown as an estimate; the flag stays the user's.
+        expect(claude.isForeign, isTrue);
+        expect(claude.amountIsEstimate, isFalse);
         expect((await bills.findById('pln'))!.amount, 1);
         expect(changes, 1);
       },
@@ -198,7 +203,7 @@ void main() {
       expect(
         f.price(
           currency: usd,
-          rupiah: 357611,
+          amount: 357611,
           originalMinor: 2000,
           isEstimate: true,
           estimateLabel: est,
@@ -208,7 +213,7 @@ void main() {
       expect(
         f.price(
           currency: usd,
-          rupiah: null,
+          amount: null,
           originalMinor: 2000,
           isEstimate: true,
           estimateLabel: est,
@@ -218,7 +223,7 @@ void main() {
       expect(
         f.price(
           currency: idr,
-          rupiah: 150000,
+          amount: 150000,
           originalMinor: null,
           isEstimate: true,
           estimateLabel: est,

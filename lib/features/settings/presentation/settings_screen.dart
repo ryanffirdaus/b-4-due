@@ -9,6 +9,7 @@ import '../../../ui/ui.dart';
 import '../../backup/presentation/backup_section.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../budget/presentation/budget_section.dart';
+import '../../currency/presentation/main_currency_section.dart';
 import '../../reminders/domain/reminder_settings.dart';
 import '../../reminders/reminder_providers.dart';
 import '../../security/presentation/security_section.dart';
@@ -45,6 +46,8 @@ class SettingsScreen extends ConsumerWidget {
                 const _PermissionsCard(),
                 B4GroupLabel(l10n.settingsAppearanceHeader),
                 const ThemePicker(),
+                B4GroupLabel(l10n.settingsCurrencyHeader),
+                const MainCurrencySection(),
                 B4GroupLabel(l10n.settingsBudgetHeader),
                 const BudgetSection(),
                 B4GroupLabel(l10n.settingsRemindersHeader),

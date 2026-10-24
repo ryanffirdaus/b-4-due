@@ -4,6 +4,8 @@ import '../../../core/format/formatters.dart';
 import '../../../core/time/local_date.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../ui/ui.dart';
+import '../../currency/domain/money.dart';
+import '../../currency/presentation/main_currency_scope.dart';
 import '../domain/bill.dart';
 import '../domain/bill_category.dart';
 import '../domain/recurrence.dart';
@@ -94,21 +96,32 @@ String remindersSummary(
   );
 }
 
-/// Access to [Formatters] for the current locale.
+/// Access to [Formatters] and the main currency for the current context.
 extension FormattersContext on BuildContext {
   Formatters get formatters =>
       Formatters.cached(Localizations.localeOf(this).toLanguageTag());
+
+  /// The currency of totals, the budget and statistics.
+  Currency get mainCurrency => MainCurrencyScope.of(this);
+
+  /// [minorUnits] of the main currency: `Rp 150.000`, `US$12.50`.
+  String money(int minorUnits) => formatters.money(mainCurrency, minorUnits);
 }
 
 /// `Rp 150.000`, `Rp 487.500 (perkiraan)` or `US$20,00 ≈ Rp 357.611`.
-String? billPrice(AppLocalizations l10n, Formatters format, Bill bill) =>
-    format.price(
-      currency: bill.currency,
-      rupiah: bill.amount,
-      originalMinor: bill.originalAmountMinor,
-      isEstimate: bill.amountIsEstimate,
-      estimateLabel: l10n.detailAmountEstimate,
-    );
+String? billPrice(
+  AppLocalizations l10n,
+  Formatters format,
+  Bill bill, {
+  Currency main = idr,
+}) => format.price(
+  currency: bill.currency,
+  amount: bill.amount,
+  originalMinor: bill.originalAmountMinor,
+  isEstimate: bill.amountIsEstimate,
+  estimateLabel: l10n.detailAmountEstimate,
+  main: main,
+);
 
 /// The wallet-card colours at [index], or the [category]'s own when the
 /// index is null or out of range.

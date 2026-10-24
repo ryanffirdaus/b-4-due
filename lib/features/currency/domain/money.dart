@@ -33,12 +33,19 @@ class Currency {
 
 const idr = Currency('IDR', 0, 'Rp');
 const usd = Currency('USD', 2, 'US\$');
+const eur = Currency('EUR', 2, '€');
 
-/// Ordered roughly by how often Indonesians pay subscriptions in them.
+/// Every currency the European Central Bank publishes a reference rate for
+/// (all 31, so any pair can be converted), ordered roughly by how often
+/// people pay bills and subscriptions in them. Symbols are unambiguous:
+/// currencies that share "\$" or "kr" get a prefix or their code.
+///
+/// IDR keeps 0 decimals (not ISO's 2): rupiah amounts were stored as whole
+/// rupiah before other main currencies existed, and sen are never used.
 const supportedCurrencies = <Currency>[
   idr,
   usd,
-  Currency('EUR', 2, '€'),
+  eur,
   Currency('SGD', 2, 'S\$'),
   Currency('MYR', 2, 'RM'),
   Currency('JPY', 0, '¥'),
@@ -53,7 +60,86 @@ const supportedCurrencies = <Currency>[
   Currency('CAD', 2, 'C\$'),
   Currency('CHF', 2, 'CHF '),
   Currency('NZD', 2, 'NZ\$'),
+  Currency('BRL', 2, 'R\$'),
+  Currency('MXN', 2, 'MX\$'),
+  Currency('TRY', 2, '₺'),
+  Currency('ILS', 2, '₪'),
+  Currency('ZAR', 2, 'ZAR '),
+  Currency('SEK', 2, 'SEK '),
+  Currency('NOK', 2, 'NOK '),
+  Currency('DKK', 2, 'DKK '),
+  Currency('ISK', 0, 'ISK '),
+  Currency('PLN', 2, 'PLN '),
+  Currency('CZK', 2, 'CZK '),
+  Currency('HUF', 2, 'HUF '),
+  Currency('RON', 2, 'RON '),
+  Currency('BGN', 2, 'BGN '),
 ];
+
+/// The usual currency of a country (ISO 3166 code, e.g. "US"), if it is
+/// supported. Used to pick the main currency on a fresh install.
+Currency? currencyForRegion(String? countryCode) {
+  final code = switch (countryCode?.toUpperCase()) {
+    'ID' => 'IDR',
+    'US' || 'EC' || 'SV' || 'PA' || 'PR' || 'TL' => 'USD',
+    'AT' ||
+    'BE' ||
+    'CY' ||
+    'DE' ||
+    'EE' ||
+    'ES' ||
+    'FI' ||
+    'FR' ||
+    'GR' ||
+    'HR' ||
+    'IE' ||
+    'IT' ||
+    'LT' ||
+    'LU' ||
+    'LV' ||
+    'MT' ||
+    'NL' ||
+    'PT' ||
+    'SI' ||
+    'SK' ||
+    'MC' ||
+    'SM' ||
+    'VA' ||
+    'AD' ||
+    'ME' ||
+    'XK' => 'EUR',
+    'SG' => 'SGD',
+    'MY' => 'MYR',
+    'JP' => 'JPY',
+    'GB' => 'GBP',
+    'AU' => 'AUD',
+    'CN' => 'CNY',
+    'HK' => 'HKD',
+    'KR' => 'KRW',
+    'TH' => 'THB',
+    'PH' => 'PHP',
+    'IN' => 'INR',
+    'CA' => 'CAD',
+    'CH' || 'LI' => 'CHF',
+    'NZ' => 'NZD',
+    'BR' => 'BRL',
+    'MX' => 'MXN',
+    'TR' => 'TRY',
+    'IL' => 'ILS',
+    'ZA' => 'ZAR',
+    'SE' => 'SEK',
+    'NO' => 'NOK',
+    'DK' => 'DKK',
+    'IS' => 'ISK',
+    'PL' => 'PLN',
+    'CZ' => 'CZK',
+    'HU' => 'HUF',
+    'RO' => 'RON',
+    'BG' => 'BGN',
+    _ => null,
+  };
+  return code == null ? null : currencyByCode(code);
+}
 
 /// Looks a currency up by code; unknown codes (e.g. from a newer backup)
 /// fall back to rupiah so amounts are never misread as another currency.
@@ -63,6 +149,9 @@ Currency currencyByCode(String code) => supportedCurrencies.firstWhere(
 );
 
 /// Exchange rates expressed as rupiah per one unit of each currency.
+///
+/// Rupiah is only the pivot of the stored table; [convert] works between
+/// any two supported currencies.
 @immutable
 class ExchangeRates {
   const ExchangeRates({
@@ -92,6 +181,17 @@ class ExchangeRates {
     final rate = rateFor(currency);
     if (rate == null) return null;
     return (minorUnits / currency.minorPerUnit * rate).round();
+  }
+
+  /// Converts [minorUnits] of [from] to minor units of [to], rounded. Null
+  /// when a rate is missing for either currency.
+  int? convert(int minorUnits, Currency from, Currency to) {
+    if (from == to) return minorUnits;
+    final fromRate = rateFor(from);
+    final toRate = rateFor(to);
+    if (fromRate == null || toRate == null || toRate <= 0) return null;
+    final idrValue = minorUnits / from.minorPerUnit * fromRate;
+    return (idrValue / toRate * to.minorPerUnit).round();
   }
 
   bool isStale(DateTime now, {Duration maxAge = const Duration(hours: 12)}) =>
@@ -129,4 +229,23 @@ int _pow10(int exponent) {
     result *= 10;
   }
   return result;
+}
+
+/// Converts amounts to the main currency for totals. Without rates, only
+/// amounts already in the main currency count.
+@immutable
+class MoneyConverter {
+  const MoneyConverter(this.main, [this.rates]);
+
+  /// Every amount is already in rupiah (the app before main currencies).
+  static const rupiahOnly = MoneyConverter(idr);
+
+  final Currency main;
+  final ExchangeRates? rates;
+
+  int? toMain(int? minorUnits, Currency from) {
+    if (minorUnits == null) return null;
+    if (from == main) return minorUnits;
+    return rates?.convert(minorUnits, from, main);
+  }
 }

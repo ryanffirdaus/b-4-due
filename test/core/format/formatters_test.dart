@@ -41,17 +41,17 @@ void main() {
     expect(f.timeOfDay(9 * 60), '09:00');
   });
 
-  group('parseRupiah', () {
+  group('parseWholeAmount', () {
     test('accepts grouped and prefixed input', () {
-      expect(parseRupiah('1.250.000'), 1250000);
-      expect(parseRupiah('Rp 50000'), 50000);
-      expect(parseRupiah(' 7 500 '), 7500);
+      expect(parseWholeAmount('1.250.000'), 1250000);
+      expect(parseWholeAmount('Rp 50000'), 50000);
+      expect(parseWholeAmount(' 7 500 '), 7500);
     });
 
     test('returns null for empty or absurd input', () {
-      expect(parseRupiah(''), isNull);
-      expect(parseRupiah('abc'), isNull);
-      expect(parseRupiah('9' * 16), isNull);
+      expect(parseWholeAmount(''), isNull);
+      expect(parseWholeAmount('abc'), isNull);
+      expect(parseWholeAmount('9' * 16), isNull);
     });
   });
 }

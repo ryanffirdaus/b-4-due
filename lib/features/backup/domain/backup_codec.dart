@@ -56,7 +56,12 @@ abstract final class BackupCodec {
   static bool isPortableSetting(String key) =>
       key.startsWith('reminder.') ||
       key.startsWith('appearance.') ||
-      key.startsWith('budget.');
+      key.startsWith('budget.') ||
+      key.startsWith('currency.');
+
+  /// The main currency of a backup; files from before main currencies were
+  /// all in rupiah.
+  static const mainCurrencyKey = 'currency.main';
 
   static String encode(BackupData data) {
     final json = {
@@ -114,6 +119,8 @@ abstract final class BackupCodec {
         bills: bills,
         payments: payments,
         settings: {
+          // Older files have no main currency: their amounts are rupiah.
+          mainCurrencyKey: 'IDR',
           for (final e in rawSettings.entries)
             if (isPortableSetting(e.key)) e.key: e.value as String,
         },
@@ -171,7 +178,11 @@ abstract final class BackupCodec {
       name: name,
       category: BillCategory.fromName(j['category'] as String),
       amount: amount,
-      amountIsEstimate: j['amountIsEstimate'] as bool? ?? false,
+      // Older files flagged every converted amount as an estimate; the flag
+      // is now only the user's choice for a bill in the main currency.
+      amountIsEstimate:
+          (j['amountIsEstimate'] as bool? ?? false) &&
+          j['originalAmountMinor'] == null,
       currency: currencyByCode(j['currency'] as String? ?? 'IDR'),
       originalAmountMinor: j['originalAmountMinor'] as int?,
       cardColor: j['cardColor'] as int?,
@@ -198,6 +209,7 @@ abstract final class BackupCodec {
     'dueDate': p.dueDate.toIso(),
     'paidAt': _instant(p.paidAt),
     'amount': p.amount,
+    'currency': p.currency.code,
     'createdAt': _instant(p.createdAt),
   };
 
@@ -207,6 +219,7 @@ abstract final class BackupCodec {
     dueDate: LocalDate.parse(j['dueDate'] as String),
     paidAt: DateTime.parse(j['paidAt'] as String),
     amount: j['amount'] as int?,
+    currency: currencyByCode(j['currency'] as String? ?? 'IDR'),
     createdAt: DateTime.parse(j['createdAt'] as String),
   );
 

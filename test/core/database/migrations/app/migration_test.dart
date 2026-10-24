@@ -13,6 +13,7 @@ import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
 import 'generated/schema_v6.dart' as v6;
+import 'generated/schema_v7.dart' as v7;
 
 void main() {
   driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
@@ -203,6 +204,72 @@ void main() {
         expect(migrated.cardColor, 6);
         expect(migrated.installmentTotal, isNull);
         expect(migrated.installmentNumber, isNull);
+      },
+    );
+  });
+
+  test('v6 to v7 marks old payments as rupiah and clears the forced '
+      'estimate flag of converted bills', () async {
+    const pln = v6.BillsData(
+      id: '0b9f6a52-4d0b-4c1e-9c41-2f6d0b6f7a06',
+      name: 'Listrik PLN',
+      category: 'electricity',
+      amount: 487500,
+      amountIsEstimate: 1,
+      dueDate: '2026-08-20',
+      anchorDay: 20,
+      recurrence: 'monthly',
+      intervalMonths: 1,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      currency: 'IDR',
+    );
+    const claude = v6.BillsData(
+      id: '0b9f6a52-4d0b-4c1e-9c41-2f6d0b6f7a07',
+      name: 'Claude Pro',
+      category: 'subscription',
+      amount: 357611,
+      amountIsEstimate: 1,
+      dueDate: '2026-08-12',
+      anchorDay: 12,
+      recurrence: 'monthly',
+      intervalMonths: 1,
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      currency: 'USD',
+      originalAmountMinor: 2000,
+    );
+    const payment = v6.PaymentsData(
+      id: '0b9f6a52-4d0b-4c1e-9c41-2f6d0b6f7a08',
+      billId: '0b9f6a52-4d0b-4c1e-9c41-2f6d0b6f7a06',
+      dueDate: '2026-07-20',
+      paidAt: '2026-07-19T02:00:00.000Z',
+      amount: 470000,
+      createdAt: '2026-07-19T02:00:00.000Z',
+    );
+    await verifier.testWithDataIntegrity(
+      oldVersion: 6,
+      newVersion: 7,
+      createOld: v6.DatabaseAtV6.new,
+      createNew: v7.DatabaseAtV7.new,
+      openTestedDatabase: AppDatabase.new,
+      createItems: (batch, oldDb) {
+        batch
+          ..insert(oldDb.bills, pln)
+          ..insert(oldDb.bills, claude)
+          ..insert(oldDb.payments, payment);
+      },
+      validateItems: (newDb) async {
+        final bills = {
+          for (final b in await newDb.select(newDb.bills).get()) b.name: b,
+        };
+        // The user's own estimate stays; the forced one goes.
+        expect(bills['Listrik PLN']!.amountIsEstimate, 1);
+        expect(bills['Claude Pro']!.amountIsEstimate, 0);
+        expect(bills['Claude Pro']!.originalAmountMinor, 2000);
+        final migrated = (await newDb.select(newDb.payments).get()).single;
+        expect(migrated.amount, 470000);
+        expect(migrated.currency, 'IDR');
       },
     );
   });

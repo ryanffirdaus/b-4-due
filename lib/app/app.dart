@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/platform/device_channel.dart';
 import '../core/providers.dart';
 import '../features/currency/currency_providers.dart';
+import '../features/currency/presentation/main_currency_scope.dart';
 import '../features/home_widget/data/home_widget_gateway.dart';
 import '../features/reminders/domain/reminder_payload.dart';
 import '../features/reminders/reminder_providers.dart';
@@ -146,7 +147,9 @@ class B4AppFrame extends ConsumerWidget {
     return B4ThemeScope(
       brightness: brightness ?? chosen,
       accent: ref.watch(accentProvider),
-      child: AppLockGate(child: B4Toaster(child: child)),
+      child: MainCurrencyFrame(
+        child: AppLockGate(child: B4Toaster(child: child)),
+      ),
     );
   }
 }

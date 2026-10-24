@@ -11,12 +11,14 @@ import '../../bills/domain/bill.dart';
 import '../../bills/presentation/bill_labels.dart';
 import '../../bills/presentation/widgets/bill_wallet_card.dart';
 import '../../budget/domain/budget_status.dart';
+import '../../currency/currency_providers.dart';
 import '../../payments/domain/payment.dart';
 import '../domain/home_summary.dart';
 
 final homeSummaryProvider = Provider<AsyncValue<HomeSummary>>((ref) {
   final today = ref.watch(todayProvider);
   final payments = ref.watch(paymentsThisMonthProvider).value ?? const [];
+  final money = ref.watch(moneyConverterProvider);
   return ref
       .watch(activeBillsProvider)
       .whenData(
@@ -24,6 +26,7 @@ final homeSummaryProvider = Provider<AsyncValue<HomeSummary>>((ref) {
           bills: bills,
           today: today,
           paymentsThisMonth: payments,
+          money: money,
         ),
       );
 });
@@ -198,7 +201,6 @@ class _MonthSummary extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final format = context.formatters;
     final text = context.text;
     final p = context.palette;
     final total = summary.monthTotal;
@@ -219,7 +221,7 @@ class _MonthSummary extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(format.rupiah(remaining), style: text.displayLarge),
+            child: Text(context.money(remaining), style: text.displayLarge),
           ),
           const SizedBox(height: 14),
           ExcludeSemantics(child: B4ProgressBar(value: progress)),
@@ -229,11 +231,11 @@ class _MonthSummary extends StatelessWidget {
             spacing: 12,
             children: [
               Text(
-                l10n.homePaidShort(format.rupiah(paid)),
+                l10n.homePaidShort(context.money(paid)),
                 style: text.bodySmall,
               ),
               Text(
-                l10n.homeOfTotal(format.rupiah(total)),
+                l10n.homeOfTotal(context.money(total)),
                 style: text.bodySmall,
               ),
             ],
@@ -267,17 +269,16 @@ class _BudgetLine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final format = context.formatters;
     if (status.isOver) {
       return B4Note(
         tone: B4Tone.danger,
-        text: l10n.homeBudgetOver(format.rupiah(status.difference)),
+        text: l10n.homeBudgetOver(context.money(status.difference)),
       );
     }
     return Text(
       l10n.homeBudgetRoom(
-        format.rupiah(status.budget),
-        format.rupiah(status.difference),
+        context.money(status.budget),
+        context.money(status.difference),
       ),
       style: context.text.bodySmall,
     );
@@ -302,7 +303,10 @@ class _RecentPaymentRow extends StatelessWidget {
       subtitle: l10n.historyPaidOn(format.longDate(paidOn)),
       trailing: amount == null
           ? null
-          : Text(format.rupiah(amount), style: context.text.titleSmall),
+          : Text(
+              format.money(entry.payment.currency, amount),
+              style: context.text.titleSmall,
+            ),
     );
   }
 }

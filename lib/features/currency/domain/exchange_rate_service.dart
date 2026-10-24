@@ -84,7 +84,8 @@ class ExchangeRateService {
     required this._bills,
     required this._clock,
     required this._onChanged,
-  });
+    Future<Currency> Function()? mainCurrency,
+  }) : _mainCurrency = mainCurrency ?? (() async => idr);
 
   /// Rates older than this are refreshed on the next opportunity.
   static const maxAge = Duration(hours: 12);
@@ -94,6 +95,7 @@ class ExchangeRateService {
   final BillRepository _bills;
   final DateTime Function() _clock;
   final OnBillsChanged _onChanged;
+  final Future<Currency> Function() _mainCurrency;
 
   Future<ExchangeRates?> cached() => _store.load();
 
@@ -116,12 +118,13 @@ class ExchangeRateService {
     return RefreshOutcome.refreshed;
   }
 
-  /// Recomputes the rupiah amount of every active foreign-currency bill.
-  /// Returns how many bills changed.
+  /// Recomputes the main-currency estimate of every active bill priced in
+  /// another currency. Returns how many bills changed.
   Future<int> repriceBills(ExchangeRates rates) async {
+    final main = await _mainCurrency();
     var changed = 0;
     for (final bill in await _bills.getActive()) {
-      final updated = repriced(bill, rates);
+      final updated = repriced(bill, rates, main: main);
       if (updated != null) {
         await _bills.save(updated.copyWith(updatedAt: _clock().toUtc()));
         changed++;
@@ -131,12 +134,35 @@ class ExchangeRateService {
   }
 }
 
-/// The bill with its rupiah estimate updated for [rates], or null when
-/// nothing changes (rupiah bills, unknown rate, same amount).
-Bill? repriced(Bill bill, ExchangeRates rates) {
+/// The bill with its estimate in [main] updated for [rates], or null when
+/// nothing changes (a bill in the main currency, unknown rate, same amount).
+Bill? repriced(Bill bill, ExchangeRates rates, {Currency main = idr}) {
   final original = bill.originalAmountMinor;
-  if (bill.currency == idr || original == null) return null;
-  final amount = rates.toIdr(bill.currency, original);
+  if (bill.currency == main || original == null) return null;
+  final amount = rates.convert(original, bill.currency, main);
   if (amount == null || amount == bill.amount) return null;
-  return bill.copyWith(amount: () => amount, amountIsEstimate: true);
+  return bill.copyWith(amount: () => amount);
+}
+
+/// [bill] re-expressed after the main currency changes from [from] to
+/// [to]. Its own price never changes: a bill in [to] gets that price as its
+/// amount; any other bill keeps its price and gets an estimate in [to]
+/// (null until rates are known).
+Bill rebasedBill(
+  Bill bill, {
+  required Currency from,
+  required Currency to,
+  ExchangeRates? rates,
+}) {
+  if (from == to) return bill;
+  final price =
+      bill.originalAmountMinor ?? (bill.currency == from ? bill.amount : null);
+  if (bill.currency == to) {
+    return bill.copyWith(amount: () => price, originalAmountMinor: () => null);
+  }
+  return bill.copyWith(
+    originalAmountMinor: () => price,
+    amount: () =>
+        price == null ? null : rates?.convert(price, bill.currency, to),
+  );
 }

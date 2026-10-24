@@ -24,7 +24,11 @@ class BackupService {
     return BackupData(
       bills: bills,
       payments: payments,
-      settings: {for (final s in settings) s.key: s.value},
+      settings: {
+        // Always state the currency the amounts are in.
+        BackupCodec.mainCurrencyKey: 'IDR',
+        for (final s in settings) s.key: s.value,
+      },
       exportedAt: _clock().toUtc(),
     );
   }
@@ -45,9 +49,15 @@ class BackupService {
       await _db.delete(_db.calendarLinks).go();
       await _db.delete(_db.payments).go();
       await _db.delete(_db.bills).go();
-      await (_db.delete(
-        _db.appSettings,
-      )..where((s) => s.key.like('reminder.%'))).go();
+      // Amounts in the file are in its main currency, so the main currency
+      // and the budget are replaced with the file's (never mixed).
+      await (_db.delete(_db.appSettings)..where(
+            (s) =>
+                s.key.like('reminder.%') |
+                s.key.like('budget.%') |
+                s.key.like('currency.%'),
+          ))
+          .go();
       await _db.batch((batch) {
         batch
           ..insertAll(_db.bills, data.bills.map(billToCompanion))

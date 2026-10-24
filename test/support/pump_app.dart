@@ -1,5 +1,6 @@
 import 'package:b4due/core/providers.dart';
 import 'package:b4due/core/time/local_date.dart';
+import 'package:b4due/features/currency/presentation/main_currency_scope.dart';
 import 'package:b4due/l10n/generated/app_localizations.dart';
 import 'package:b4due/ui/ui.dart';
 import 'package:flutter/widgets.dart';
@@ -53,7 +54,7 @@ Future<void> pumpScreen(
               .copyWith(textScaler: TextScaler.linear(textScale)),
           child: B4ThemeScope(
             brightness: brightness,
-            child: B4Toaster(child: child!),
+            child: MainCurrencyFrame(child: B4Toaster(child: child!)),
           ),
         ),
         home: child,

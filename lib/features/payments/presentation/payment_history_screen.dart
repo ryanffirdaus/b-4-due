@@ -102,7 +102,10 @@ class _PaymentTile extends StatelessWidget {
           '${l10n.historyPeriod(format.longDate(payment.dueDate))}',
       trailing: amount == null
           ? null
-          : Text(format.rupiah(amount), style: context.text.titleSmall),
+          : Text(
+              format.money(payment.currency, amount),
+              style: context.text.titleSmall,
+            ),
     );
   }
 }

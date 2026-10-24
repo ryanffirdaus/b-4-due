@@ -40,19 +40,22 @@ class Bill {
   final String name;
   final BillCategory category;
 
-  /// Whole rupiah. `null` when the user does not know the amount. For a
-  /// foreign-currency bill this is the estimate at the latest known rate.
+  /// Minor units of the main currency (whole rupiah while it is IDR).
+  /// `null` when the user does not know the amount. For a bill in another
+  /// currency this is the estimate at the latest known rate.
   final int? amount;
   final bool amountIsEstimate;
 
-  /// The currency the bill is priced in. Rupiah for most bills.
+  /// The currency the bill is priced in, usually the main currency.
   final Currency currency;
 
-  /// The price in [currency]'s minor units (e.g. 2000 = US\$20.00). Null for
-  /// rupiah bills, where [amount] is the price.
+  /// The price in [currency]'s minor units (e.g. 2000 = US\$20.00). Null
+  /// when [currency] is the main currency, where [amount] is the price.
   final int? originalAmountMinor;
 
-  bool get isForeign => currency != idr;
+  /// Priced in a currency other than the main one, so [amount] is a
+  /// converted estimate.
+  bool get isForeign => originalAmountMinor != null;
 
   /// Which wallet-card colour to show (an index into the app's card
   /// colours); null follows the category.

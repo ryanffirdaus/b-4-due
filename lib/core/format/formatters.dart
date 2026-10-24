@@ -61,24 +61,25 @@ class Formatters {
         decimalDigits: currency.decimals,
       ).format(minorUnits / currency.minorPerUnit);
 
-  /// A bill's price as shown everywhere: `Rp 150.000`, or for a foreign
-  /// bill `US$20,00 ≈ Rp 357.611` (`US$20,00` until a rate is known).
-  /// [estimateLabel] wraps a rupiah estimate the user marked as such.
+  /// A bill's price as shown everywhere: `Rp 150.000`, or for a bill in
+  /// another currency than [main] `US$20,00 ≈ Rp 357.611` (`US$20,00`
+  /// until a rate is known). [amount] is in [main]'s minor units.
+  /// [estimateLabel] wraps an amount the user marked as an estimate.
   String? price({
     required Currency currency,
-    required int? rupiah,
+    required int? amount,
     required int? originalMinor,
     required bool isEstimate,
     required String Function(String amount) estimateLabel,
+    Currency main = idr,
   }) {
-    if (currency != idr && originalMinor != null) {
-      final foreign = money(currency, originalMinor);
-      return rupiah == null ? foreign : '$foreign ≈ ${this.rupiah(rupiah)}';
+    if (currency != main && originalMinor != null) {
+      final own = money(currency, originalMinor);
+      return amount == null ? own : '$own ≈ ${money(main, amount)}';
     }
-    if (rupiah == null) return null;
-    return isEstimate
-        ? estimateLabel(this.rupiah(rupiah))
-        : this.rupiah(rupiah);
+    if (amount == null) return null;
+    final text = money(main, amount);
+    return isEstimate ? estimateLabel(text) : text;
   }
 
   /// `1.250.000`, used inside the amount text field.
@@ -109,9 +110,10 @@ class Formatters {
   }
 }
 
-/// Parses user-typed rupiah ("1.250.000", "Rp 50000") into an integer.
+/// Parses a whole amount typed by the user ("1.250.000", "Rp 50000") into
+/// an integer, for currencies without minor units (IDR, JPY, KRW, ISK).
 /// Returns null for empty or non-numeric input.
-int? parseRupiah(String input) {
+int? parseWholeAmount(String input) {
   final digits = input.replaceAll(RegExp(r'[^0-9]'), '');
   if (digits.isEmpty) return null;
   // 15 digits is far beyond any household bill and avoids overflow.

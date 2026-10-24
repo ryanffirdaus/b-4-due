@@ -36,6 +36,7 @@ class ReminderSync {
     required this._textFor,
     required this._now,
     this._policy = SchedulePolicy.android,
+    this._beforeSync,
   });
 
   final BillRepository _bills;
@@ -44,6 +45,9 @@ class ReminderSync {
   final NotificationTextBuilder _textFor;
   final tz.TZDateTime Function() _now;
   final SchedulePolicy _policy;
+
+  /// Runs before each sync, e.g. to read settings the text builder needs.
+  final Future<void> Function()? _beforeSync;
 
   Future<ReminderSyncResult>? _running;
   var _rerunRequested = false;
@@ -69,6 +73,7 @@ class ReminderSync {
   }
 
   Future<ReminderSyncResult> _syncOnce() async {
+    await _beforeSync?.call();
     final bills = await _bills.getActive();
     final plan = planNotifications(
       bills: bills,

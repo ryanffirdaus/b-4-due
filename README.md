@@ -41,7 +41,8 @@ dolar). Permintaan itu tidak membawa data Anda sama sekali.
 - **Tombol di notifikasi**: "Sudah dibayar" mencatat riwayat dan membuat jatuh tempo berikutnya. "Ingatkan besok" menunda 24 jam.
 - **Tagihan berulang**: sekali, bulanan, tahunan, 5 tahunan (perpanjang STNK), atau tiap N bulan. Tanggal 31 tetap tanggal 31, termasuk setelah Februari.
 - **Template Indonesia**: Listrik PLN, PDAM, BPJS Kesehatan, pajak kendaraan, PBB, KPR, kartu kredit, paylater, Netflix, Spotify, dan lainnya.
-- **Mata uang asing**: isi harga dalam USD, EUR, SGD, JPY, dan lainnya. B4Due langsung menampilkan perkiraan rupiah dengan kurs hari ini (sumber: Bank Sentral Eropa lewat [Frankfurter](https://frankfurter.dev)), lalu memperbaruinya otomatis. Tanpa internet, kurs terakhir tetap dipakai.
+- **Mata uang utama bisa dipilih**: total, anggaran, statistik, dan widget memakai mata uang utama Anda, misalnya rupiah, dolar AS, atau euro (Pengaturan → Mata uang). Pemasangan baru mengikuti wilayah HP.
+- **31 mata uang**: isi harga tagihan dalam salah satu dari 31 mata uang Bank Sentral Eropa (USD, EUR, SGD, JPY, GBP, AUD, dan lainnya). B4Due langsung menampilkan perkiraan dalam mata uang utama dengan kurs hari ini (sumber: Bank Sentral Eropa lewat [Frankfurter](https://frankfurter.dev)), lalu memperbaruinya otomatis. Tanpa internet, kurs terakhir tetap dipakai.
 - **Beranda**: total bulan ini dengan progres yang sudah lunas, aksi cepat, pembayaran mendatang, dan pembayaran terakhir. Geser kartu ke kanan untuk menandai lunas, ke kiri untuk menghapus.
 - **Kalender**: titik berwarna per status (terlambat, hari ini, segera, mendatang, lunas); ketuk tanggal untuk melihat tagihan, nominal, dan jam pengingatnya.
 - **Statistik**: rata-rata pengeluaran per bulan, tagihan 30 hari ke depan, langganan paling mahal, diagram per kategori, dan grafik pembayaran 6 bulan terakhir.
@@ -150,7 +151,7 @@ berkala itu; pengingat tetap berjalan sepenuhnya offline. Lihat [PRIVACY.md](PRI
 
 **Kursnya dari mana dan seberapa akurat?**
 Kurs referensi harian Bank Sentral Eropa (hari kerja). Bank atau kartu Anda biasanya
-mengenakan kurs dan biaya sedikit berbeda, jadi nominal rupiah selalu ditandai sebagai perkiraan.
+mengenakan kurs dan biaya sedikit berbeda, jadi nominal hasil konversi selalu ditandai sebagai perkiraan (≈).
 
 **Kenapa notifikasi saya telat atau tidak muncul?**
 Hampir selalu karena penghemat baterai HP. Ikuti bagian [Agar notifikasi tidak terlewat](#agar-notifikasi-tidak-terlewat),
@@ -253,8 +254,9 @@ is then created automatically. All data stays on your phone.
 
 **Features:** automatic reminders (customizable per bill); notification actions (paid,
 remind me tomorrow); one-off, monthly, yearly, 5-yearly or every-N-months bills; templates
-for common Indonesian bills (PLN, PDAM, BPJS, vehicle tax, KPR, Netflix…); prices in foreign
-currencies (USD, EUR, SGD, JPY…) with a live rupiah estimate; a home screen with the monthly
+for common Indonesian bills (PLN, PDAM, BPJS, vehicle tax, KPR, Netflix…); a main currency
+of your choice for totals, the budget and statistics; prices in any of the 31 ECB currencies
+(USD, EUR, SGD, JPY…) with a live estimate in the main currency; a home screen with the monthly
 total, swipe to mark paid, a calendar view and spending statistics; payment history; JSON backup and restore
 through your own storage; CSV export; Android Auto Backup; optional PIN or biometric lock;
 optional calendar events as a second reminder layer. Light and dark mode follow the system.

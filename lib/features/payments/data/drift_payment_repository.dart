@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/database/converters.dart';
 import '../../../core/time/local_date.dart';
+import '../../currency/domain/money.dart';
 import '../domain/payment.dart';
 import '../domain/payment_repository.dart';
 
@@ -80,6 +81,7 @@ Payment paymentFromRow(PaymentRow row) => Payment(
   dueDate: row.dueDate,
   paidAt: row.paidAt,
   amount: row.amount,
+  currency: currencyByCode(row.currency),
   createdAt: row.createdAt,
 );
 
@@ -89,5 +91,6 @@ PaymentsCompanion paymentToCompanion(Payment p) => PaymentsCompanion.insert(
   dueDate: p.dueDate,
   paidAt: p.paidAt,
   amount: Value(p.amount),
+  currency: Value(p.currency.code),
   createdAt: p.createdAt,
 );

@@ -78,6 +78,7 @@ final payBillProvider = Provider<PayBill>((ref) {
     transaction: db.writeTransaction,
     clock: ref.watch(clockProvider),
     onChanged: ref.watch(onBillsChangedProvider),
+    mainCurrency: ref.watch(settingsRepositoryProvider).mainCurrency,
   );
 });
 
