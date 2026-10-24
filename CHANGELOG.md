@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/ryanffirdaus/b-4-due/compare/v0.2.0...v0.3.0) (2026-10-24)
+
+
+### Features
+
+* **bills:** track instalment plans and stop after the last payment ([#91](https://github.com/ryanffirdaus/b-4-due/issues/91)) ([bdc4563](https://github.com/ryanffirdaus/b-4-due/commit/bdc456347f5663082aa56311955066a0ed0b86c6))
+* **budget:** set a monthly budget and warn on Beranda when it is exceeded ([#93](https://github.com/ryanffirdaus/b-4-due/issues/93)) ([4291e07](https://github.com/ryanffirdaus/b-4-due/commit/4291e07b5b02d6ac61b68a1587e736cbb09f3c50))
+* **currency:** let people choose the main currency and support all 31 ECB currencies ([#96](https://github.com/ryanffirdaus/b-4-due/issues/96)) ([62ab739](https://github.com/ryanffirdaus/b-4-due/commit/62ab739d48ba8e6f69d8904d4032d9af9a50a0a6))
+* **widget:** show what is left this month and the next bill on the home screen ([#89](https://github.com/ryanffirdaus/b-4-due/issues/89)) ([25323e6](https://github.com/ryanffirdaus/b-4-due/commit/25323e61e2589660bcd2e39023b8299f906e2105))
+
+
+### Bug Fixes
+
+* **database:** retry a busy write so notification actions are never lost ([#87](https://github.com/ryanffirdaus/b-4-due/issues/87)) ([03418fa](https://github.com/ryanffirdaus/b-4-due/commit/03418faec906327bc590fa1802c1a73f0df50310))
+
 ## [0.2.0](https://github.com/ryanffirdaus/b-4-due/compare/v0.1.0...v0.2.0) (2026-10-18)
 
 

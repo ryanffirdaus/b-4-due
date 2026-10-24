@@ -2,7 +2,7 @@ name: b4due
 description: "Pengingat tagihan & langganan, offline tanpa izin internet."
 publish_to: 'none'
 
-version: 0.2.0+3
+version: 0.3.0+4
 
 environment:
   sdk: ^3.13.5
