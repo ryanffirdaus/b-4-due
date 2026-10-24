@@ -356,7 +356,7 @@
   "settingsBudgetHeader": "Budget",
   "settingsBudget": "Monthly budget",
   "settingsBudgetNone": "Not set",
-  "settingsBudgetHelp": "A limit for all bills in a month. Beranda tells you when it is exceeded.",
+  "settingsBudgetHelp": "A limit for all bills in a month. Home shows a warning when your bills go over it.",
   "settingsBudgetAmount": "Amount (Rp)",
   "settingsBudgetError": "Enter an amount above 0.",
   "settingsBudgetRemove": "Remove budget",
